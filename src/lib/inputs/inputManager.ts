@@ -13,8 +13,6 @@ import { InputAction } from './inputAction';
 export class InputManager {
   public inputState = new InputState();
 
-  private mouseSensivity = 0.1;
-
   constructor(engine: Engine) {
     const deviceSourceManager = new DeviceSourceManager(engine);
     deviceSourceManager.onDeviceConnectedObservable.add(this.listenDevice.bind(this));
@@ -32,10 +30,6 @@ export class InputManager {
             InputAction.SHOOT,
             mouseEvent.type === 'pointerdown',
           );
-        } else if (mouseEvent.inputIndex === PointerInput.Move) {
-          const axisX = mouseEvent.movementX * this.mouseSensivity;
-          const axisY = mouseEvent.movementY * this.mouseSensivity;
-          this.inputState.setAxis(axisX, axisY);
         }
       });
     }

@@ -5,19 +5,36 @@ import { AssetManager } from './assetManager';
 
 export class Player {
   private inputs: InputState;
-  private camera: UniversalCamera;
+  private camera!: UniversalCamera;
   private speed = 7;
 
   constructor(private game: Game) {
     this.inputs = game.inputManager.inputState;
+    this.initPlayerCamera();
+
+    this.init();
+  }
+
+  private initPlayerCamera(): void {
     this.camera = new UniversalCamera(
       'playerCamera',
       new Vector3(0, 2, -10),
       this.game.scene,
     );
-    this.camera.setTarget(Vector3.Zero());
 
-    this.init();
+    this.camera.setTarget(Vector3.Zero());
+    this.camera.attachControl(this.game.scene.getEngine().getRenderingCanvas(), true); // Enable mouse control
+    // Attach control binds the camera to mouse and keyboard inputs, we want to use only mouse inputs
+    // So we remove all unwelcomed inputs
+
+    this.camera.inputs.removeByType('FreeCameraKeyboardMoveInput');
+    this.camera.inputs.removeByType('FreeCameraGamepadInput');
+    this.camera.inputs.removeByType('FreeCameraTouchInput');
+
+    // No deceleration
+    this.camera.inertia = 0;
+    // Cam sensitivity
+    this.camera.angularSensibility = 1000;
   }
 
   // Just for testing purposes
@@ -33,21 +50,20 @@ export class Player {
 
   public update(deltaTime: number): void {
     if (!this.game.isPointerLocked) return;
-    this.move(deltaTime);
+    this.movePlayer(deltaTime);
   }
 
-  private move(deltaTime: number): void {
-    const directionX = this.inputs.directions.x * deltaTime * this.speed;
-    const directionY = this.inputs.directions.y * deltaTime * this.speed;
+  /**Moves the player based on InputState directions. Currently only moves the camera. */
+  private movePlayer(deltaTime: number): void {
+    const direction = new Vector3(this.inputs.directions.x, 0, this.inputs.directions.y);
+
+    const directionX = direction.x * deltaTime * this.speed;
+    const directionY = direction.z * deltaTime * this.speed;
     this.camera.position.x +=
       directionY * Math.sin(this.camera.rotation.y) +
       directionX * Math.cos(this.camera.rotation.y);
     this.camera.position.z +=
       directionY * Math.cos(this.camera.rotation.y) -
       directionX * Math.sin(this.camera.rotation.y);
-
-    const axis = this.inputs.getAxis();
-    this.camera.rotation.y += axis.x * deltaTime;
-    this.camera.rotation.x += axis.y * deltaTime;
   }
 }
