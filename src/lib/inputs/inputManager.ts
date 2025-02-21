@@ -9,9 +9,13 @@ import {
 import { DeviceSourceType } from '@babylonjs/core/DeviceInput/internalDeviceSourceManager';
 import { InputState } from './inputState';
 import { InputAction } from './inputAction';
+import { Player } from '../player';
 
 export class InputManager {
   public inputState = new InputState();
+
+  private weaponSwitchDelay = 500;
+  private lastWeaponSwitch = 0;
 
   constructor(engine: Engine) {
     const deviceSourceManager = new DeviceSourceManager(engine);
@@ -53,6 +57,21 @@ export class InputManager {
             InputAction.RIGHT,
             keyboardEvent.type === 'keydown',
           );
+        }
+
+        // Weapon switch, useless key for now
+        if (keyboardEvent.code === 'KeyH') {
+          this.inputState.actions.set(
+            InputAction.SWITCH_WEAPON,
+            keyboardEvent.type === 'keydown',
+          );
+
+          // Only update the desired weapon index if the key was not pressed recently
+          if (Date.now() - this.lastWeaponSwitch > this.weaponSwitchDelay) {
+            this.inputState.desiredWeaponIndex =
+              (this.inputState.desiredWeaponIndex + 1) % Player.MAX_AMOUNT_WEAPONS;
+            this.lastWeaponSwitch = Date.now();
+          }
         }
 
         // Update the direction

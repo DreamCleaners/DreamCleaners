@@ -1,24 +1,31 @@
 import { UniversalCamera, Vector3 } from '@babylonjs/core';
 import { InputState } from './inputs/inputState';
 import { Game } from './game';
-import { AssetManager } from './assetManager';
 import { Weapon } from './weapons/weapon';
 import { WeaponRarity } from './weapons/weaponRarity';
+import { InputAction } from './inputs/inputAction';
 
 export class Player {
+  public static readonly MAX_AMOUNT_WEAPONS = 2;
+
   private inputs: InputState;
-  private camera!: UniversalCamera;
+  public camera!: UniversalCamera;
   private speed = 7;
 
-  constructor(private game: Game) {
+  private weapons!: Array<Weapon>;
+  public equippedWeapon!: Weapon;
+
+  constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
     this.initPlayerCamera();
+    this.weapons = new Array<Weapon>();
 
-    // Debug
-    console.log('Init glock for debug');
-    new Weapon(game, 'glock', WeaponRarity.LEGENDARY);
+    const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
+    this.weapons.push(simpleGlock);
+    this.equippedWeapon = simpleGlock;
 
-    this.init();
+    const shotgun = new Weapon(this, 'shotgun', WeaponRarity.LEGENDARY);
+    this.weapons.push(shotgun);
   }
 
   private initPlayerCamera(): void {
@@ -43,20 +50,24 @@ export class Player {
     this.camera.angularSensibility = 1000;
   }
 
-  // Just for testing purposes
-  private async init(): Promise<void> {
-    const container = await AssetManager.loadAsset('glock.glb', this.game.scene);
-    container.addAllToScene();
-    const glock = container.meshes[0];
-    glock.parent = this.camera;
-    glock.position.addInPlace(new Vector3(0.5, -0.4, 1.5));
-    glock.rotation.z = Math.PI;
-    glock.scaling = new Vector3(0.15, 0.15, 0.15);
-  }
-
   public update(deltaTime: number): void {
     if (!this.game.isPointerLocked) return;
     this.movePlayer(deltaTime);
+
+    console.log(
+      'Equipped weapon: ' +
+        this.equippedWeapon.weaponName +
+        ' of rarity: ' +
+        WeaponRarity[this.equippedWeapon.currentRarity],
+    );
+
+    if (this.inputs.actions.get(InputAction.SHOOT)) {
+      this.equippedWeapon.handlePrimaryFire();
+    }
+
+    if (this.inputs.actions.get(InputAction.SWITCH_WEAPON)) {
+      this.equipWeapon(this.inputs.desiredWeaponIndex);
+    }
   }
 
   /**Moves the player based on InputState directions. Currently only moves the camera. */
@@ -71,5 +82,23 @@ export class Player {
     this.camera.position.z +=
       directionY * Math.cos(this.camera.rotation.y) -
       directionX * Math.sin(this.camera.rotation.y);
+  }
+
+  public addWeaponToPlayer(weapon: Weapon): void {
+    this.weapons.push(weapon);
+  }
+
+  public removeWeaponFromPlayer(index: number): void {
+    this.weapons.splice(index, 1);
+  }
+
+  /** Called whenever the players changes weapon in-hand
+   * We ask the previous weapon to be hidden and the new one to be shown
+   * And we replace the equippedWeapon field with the new weapon, to correctly handle shooting
+   */
+  public equipWeapon(index: number): void {
+    this.equippedWeapon.hideInScene();
+    this.equippedWeapon = this.weapons[index];
+    this.equippedWeapon.showInScene();
   }
 }

@@ -1,13 +1,15 @@
-import { Container } from 'react-dom/client';
-import { Game } from '../game';
 import { WeaponRarity } from './weaponRarity';
 import { WeaponStatistic } from './weaponStatistic';
 import { StaticWeaponStatistic } from './staticWeaponStatistic';
+import { Player } from '../player';
+import { AssetManager } from '../assetManager';
+import { AbstractMesh, Vector3 } from '@babylonjs/core';
+import { AssetType } from '../assetType';
 
 export class Weapon {
-  public container!: Container;
+  private mesh!: AbstractMesh;
 
-  private game!: Game;
+  private player!: Player;
 
   public weaponName!: string;
 
@@ -21,21 +23,51 @@ export class Weapon {
 
   private staticStats!: Map<StaticWeaponStatistic, number>;
 
-  constructor(game: Game, name: string, rarity: WeaponRarity) {
-    this.game = game;
+  constructor(player: Player, name: string, rarity: WeaponRarity) {
+    this.player = player;
     this.currentRarity = rarity;
     this.weaponName = name;
     this.initArrays();
     this.loadStatsFromJSON();
+    this.initContainer();
 
     // TO SATISFY THE FREAKING LEFTHOOK
     console.log(
       'Initiated weapon: ' +
         this.weaponName +
         ' of rarity: ' +
-        WeaponRarity[this.currentRarity], + " game: " + String(this.game),
+        WeaponRarity[this.currentRarity],
+      +' game: ' + String(this.player),
     );
   }
+
+  // ----------------- Container related (babylon) -----------------
+  // ---------------------------------------------------------------
+
+  private async initContainer(): Promise<void> {
+    const container = await AssetManager.loadAsset(
+      AssetType.WEAPON,
+      this.weaponName,
+      this.player.game.scene,
+    );
+    container.addAllToScene();
+    this.mesh = container.meshes[0];
+    this.mesh.parent = this.player.camera;
+    this.mesh.position.addInPlace(new Vector3(0.5, -0.4, 1.5));
+    this.mesh.rotation.z = Math.PI;
+    this.mesh.scaling = new Vector3(0.15, 0.15, 0.15);
+  }
+
+  public hideInScene(): void {
+    this.mesh.setEnabled(false);
+  }
+
+  public showInScene(): void {
+    this.mesh.setEnabled(true);
+  }
+
+  // --------------------- Stats related ---------------------------
+  // ---------------------------------------------------------------
 
   private initArrays(): void {
     this.globalStats = new Map<WeaponStatistic, Array<number>>();
@@ -102,5 +134,14 @@ export class Weapon {
       return -1;
     }
     return ret;
+  }
+
+  // --------------------- Shooting related ---------------------------
+  // ---------------------------------------------------------------
+
+  /** Handles primary fire for the weapon */
+  public handlePrimaryFire(): void {
+    //TODO! Handle delta time between shots, based on the weapon cadency
+    console.log('Primary fire');
   }
 }
