@@ -4,5 +4,6 @@ export enum InputAction {
   LEFT,
   RIGHT,
   SHOOT,
-  SWITCH_WEAPON,
+  PRESS_ONE,
+  PRESS_TWO,
 }

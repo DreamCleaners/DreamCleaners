@@ -15,6 +15,9 @@ export class Player {
   private weapons!: Array<Weapon>;
   public equippedWeapon!: Weapon;
 
+  private weaponSwitchDelay = 500;
+  private lastWeaponSwitch = 0;
+
   constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
     this.initPlayerCamera();
@@ -65,9 +68,13 @@ export class Player {
       this.equippedWeapon.handlePrimaryFire();
     }
 
-    if (this.inputs.actions.get(InputAction.SWITCH_WEAPON)) {
-      this.equipWeapon(this.inputs.desiredWeaponIndex);
+    if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
+      this.equipWeapon(0);
     }
+    if(this.inputs.actions.get(InputAction.PRESS_TWO)) {
+      this.equipWeapon(1);
+    }
+
   }
 
   /**Moves the player based on InputState directions. Currently only moves the camera. */
@@ -97,6 +104,16 @@ export class Player {
    * And we replace the equippedWeapon field with the new weapon, to correctly handle shooting
    */
   public equipWeapon(index: number): void {
+    // Only update the desired weapon index if the key was not pressed recently
+    if (Date.now() - this.lastWeaponSwitch > this.weaponSwitchDelay) {
+      this.lastWeaponSwitch = Date.now();
+      return;
+    }
+    if (index >= this.weapons.length) {
+      console.error('Trying to equip a weapon that does not exist');
+      return;
+    }
+    
     this.equippedWeapon.hideInScene();
     this.equippedWeapon = this.weapons[index];
     this.equippedWeapon.showInScene();
