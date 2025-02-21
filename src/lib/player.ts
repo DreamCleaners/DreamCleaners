@@ -2,6 +2,8 @@ import { UniversalCamera, Vector3 } from '@babylonjs/core';
 import { InputState } from './inputs/inputState';
 import { Game } from './game';
 import { AssetManager } from './assetManager';
+import { Weapon } from './weapons/weapon';
+import { WeaponRarity } from './weapons/weaponRarity';
 
 export class Player {
   private inputs: InputState;
@@ -11,6 +13,10 @@ export class Player {
   constructor(private game: Game) {
     this.inputs = game.inputManager.inputState;
     this.initPlayerCamera();
+
+    // Debug
+    console.log('Init glock for debug');
+    new Weapon(game, 'glock', WeaponRarity.LEGENDARY);
 
     this.init();
   }
