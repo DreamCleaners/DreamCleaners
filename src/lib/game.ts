@@ -3,6 +3,7 @@ import { SceneManager } from './sceneManager';
 import { InputManager } from './inputs/inputManager';
 import { Player } from './player';
 import { InputAction } from './inputs/inputAction';
+import { Inspector } from '@babylonjs/inspector';
 
 export class Game {
   public scene!: Scene;
@@ -21,6 +22,8 @@ export class Game {
     this.player = new Player(this);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
+
+    if (process.env.NODE_ENV === 'development') this.listenToDebugInputs();
 
     this.engine.runRenderLoop(() => {
       this.update();
@@ -58,4 +61,23 @@ export class Game {
   private onPointerLockChange = (): void => {
     this.isPointerLocked = document.pointerLockElement === this.canvas;
   };
+
+  private listenToDebugInputs(): void {
+    window.addEventListener('keydown', (event) => {
+      if (event.code === 'KeyI') {
+        this.toggleDebugLayer();
+      }
+    });
+  }
+
+  /**
+   * Toggle babylonjs inspector
+   */
+  private toggleDebugLayer(): void {
+    if (Inspector.IsVisible) {
+      Inspector.Hide();
+    } else {
+      Inspector.Show(this.scene, { overlay: true, handleResize: true });
+    }
+  }
 }
