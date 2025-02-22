@@ -3,6 +3,7 @@ export enum InputAction {
   BACKWARD,
   LEFT,
   RIGHT,
+  JUMP,
   SHOOT,
   PRESS_ONE,
   PRESS_TWO,

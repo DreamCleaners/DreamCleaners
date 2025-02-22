@@ -20,26 +20,23 @@ export class Game {
     this.canvas = canvas;
     this.engine = new Engine(this.canvas);
     this.scene = new Scene(this.engine);
-    this.sceneManager = new SceneManager(this.scene);
-    this.inputManager = new InputManager(this.engine);
-    this.player = new Player(this);
-
     const physicsPlugin = await this.getPhysicsPlugin();
     const gravity = new Vector3(0, -9.81, 0);
     this.scene.enablePhysics(gravity, physicsPlugin);
+
+    this.sceneManager = new SceneManager(this.scene);
+    this.inputManager = new InputManager(this.engine);
+    this.player = new Player(this);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
 
     if (process.env.NODE_ENV === 'development') this.listenToDebugInputs();
 
-    this.engine.runRenderLoop(() => {
-      this.update();
-      this.scene.render();
-    });
+    this.engine.runRenderLoop(this.update.bind(this));
   }
 
   private update(): void {
-    const deltaTime = this.engine.getDeltaTime() / 1000;
+    this.scene.render();
 
     if (
       this.inputManager.inputState.actions.get(InputAction.SHOOT) &&
@@ -48,7 +45,7 @@ export class Game {
       this.lockPointer();
     }
 
-    this.player.update(deltaTime);
+    this.player.update();
     this.sceneManager.update();
   }
 

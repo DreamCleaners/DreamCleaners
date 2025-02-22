@@ -53,16 +53,17 @@ export class InputManager {
             InputAction.RIGHT,
             keyboardEvent.type === 'keydown',
           );
+        } else if (keyboardEvent.code === 'Space') {
+          this.inputState.actions.set(InputAction.JUMP, keyboardEvent.type === 'keydown');
         }
 
         // Weapon switch, useless key for now
-        if (keyboardEvent.code === 'Digit1') {
+        else if (keyboardEvent.code === 'Digit1') {
           this.inputState.actions.set(
             InputAction.PRESS_ONE,
             keyboardEvent.type === 'keydown',
           );
-        }
-        if(keyboardEvent.code === 'Digit2') {
+        } else if (keyboardEvent.code === 'Digit2') {
           this.inputState.actions.set(
             InputAction.PRESS_TWO,
             keyboardEvent.type === 'keydown',
