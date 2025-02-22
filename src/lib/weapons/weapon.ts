@@ -3,7 +3,7 @@ import { WeaponStatistic } from './weaponStatistic';
 import { StaticWeaponStatistic } from './staticWeaponStatistic';
 import { Player } from '../player';
 import { AssetManager } from '../assetManager';
-import { AbstractMesh, Vector3 } from '@babylonjs/core';
+import { AbstractMesh, Color3, Matrix, MeshBuilder, Quaternion, StandardMaterial, Vector3 } from '@babylonjs/core';
 import { AssetType } from '../assetType';
 
 export class Weapon {
@@ -22,6 +22,9 @@ export class Weapon {
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
 
   private staticStats!: Map<StaticWeaponStatistic, number>;
+
+  private lastWeaponFire = 0;
+
 
   constructor(player: Player, name: string, rarity: WeaponRarity) {
     this.player = player;
@@ -139,9 +142,106 @@ export class Weapon {
   // --------------------- Shooting related ---------------------------
   // ---------------------------------------------------------------
 
-  /** Handles primary fire for the weapon */
+  /** Handles primary fire for the weapon.
+   * Builds the projectiles and shoots them based on the weapon's static stats
+   * that describe the weapon's overall behaviour
+  */
   public handlePrimaryFire(): void {
-    //TODO! Handle delta time between shots, based on the weapon cadency
-    console.log('Primary fire');
+    const currentTime = Date.now();
+    const cadency = this.getStat(WeaponStatistic.CADENCY) * 1000;
+
+    if (!(currentTime - this.lastWeaponFire >= cadency)) {
+      return;
+    }
+
+    console.log("Entering handlePrimaryFire, able to shoot");
+
+    this.lastWeaponFire = currentTime;
+
+    const isBurst = this.staticStats.get(StaticWeaponStatistic.IS_BURST) || false;
+    const bulletsPerBurst = this.staticStats.get(StaticWeaponStatistic.BULLETS_PER_BURST) || 1;
+    const bulletsPerShot = this.staticStats.get(StaticWeaponStatistic.BULLETS_PER_SHOT) || 1;
+    const projectionCone = this.staticStats.get(StaticWeaponStatistic.PROJECTION_CONE) || 0;
+
+    if (isBurst) {
+      const delayBetweenShotsInBurst = this.staticStats.get(StaticWeaponStatistic.DELAY_BETWEEN_SHOTS_IN_BURST) || 0;
+
+      for (let i = 0; i < bulletsPerBurst; i++) {
+        setTimeout(() => {
+          this.shootBullets(bulletsPerShot, projectionCone);
+        }, i * delayBetweenShotsInBurst * 1000); // We space each bullet of the burst by a delay
+      }
+    } else {
+      this.shootBullets(bulletsPerShot, projectionCone);
+    }
+
+    console.log('Leaving handlePrimaryFire');
+  }
+
+  /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
+   * depending on the projection cone of the weapon (The most obvious example is the shotgun)
+   */
+  private shootBullets(bulletsPerShot: number, projectionCone: number): void {
+    if(projectionCone === 0) {
+      // Not a "cone" weapon, just shoot straight in the direction of the camera
+      for (let i = 0; i < bulletsPerShot; i++) {
+        this.performRaycast(this.player.camera.getForwardRay().direction);
+      }
+    }
+    else{
+      // Based on the projection cone, we must determine a direction for each bullet (raycast)
+      for (let i = 0; i < bulletsPerShot; i++) {
+        const direction = this.calculateRandomDirection(projectionCone);
+        this.performRaycast(direction);
+      }
+    }
+  }
+
+  /** Calculates a random direction within the projection cone */
+  private calculateRandomDirection(projectionCone: number): Vector3 {
+    const forward = this.player.camera.getForwardRay().direction;
+
+    // Random angles within the cone for both X and Y directions
+    const angleX = (Math.random() - 0.5) * projectionCone;
+    const angleY = (Math.random() - 0.5) * projectionCone;
+
+    // Rotation around the Y axis
+    const quaternionY = Quaternion.RotationAxis(Vector3.Up(), angleY);
+    const rotationMatrixY = new Matrix();
+    quaternionY.toRotationMatrix(rotationMatrixY);
+    let direction = Vector3.TransformCoordinates(forward, rotationMatrixY).normalize();
+
+    // Rotation around the X axis
+    const right = Vector3.Cross(Vector3.Up(), direction).normalize();
+    const quaternionX = Quaternion.RotationAxis(right, angleX);
+    const rotationMatrixX = new Matrix();
+    quaternionX.toRotationMatrix(rotationMatrixX);
+    direction = Vector3.TransformCoordinates(direction, rotationMatrixX).normalize();
+
+    return direction;
+  }
+
+  /** Performs a raycast and visualizes it with a tube */
+  private performRaycast(direction: Vector3): void {
+    console.log('Shooting raycast !');
+
+    // DEBUG RAYCAST, FINAL IMPLEMENTATION WITH PHYSICS SHALL DIFFER
+
+    const origin = this.player.camera.position;
+    const length = 1000; // Adjust the length of the ray as needed
+
+    // Create a tube to visualize the ray
+    const path = [origin, origin.add(direction.scale(length))];
+    const tube = MeshBuilder.CreateTube("ray", { path: path, radius: 0.1 }, this.player.game.scene); // Adjust the radius as needed
+    const material = new StandardMaterial("tubeMaterial", this.player.game.scene);
+    material.emissiveColor = new Color3(1, 0, 0); // Red color for the tube
+    tube.material = material;
+
+    // Optionally, remove the tube after some time
+    setTimeout(() => {
+      tube.dispose();
+    }, 1000); // Remove the tube after 1 second
+
+    return;
   }
 }

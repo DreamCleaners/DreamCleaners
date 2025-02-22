@@ -9,6 +9,11 @@
     },
     "staticStats": {
       "IS_AUTOMATIC": false,
-      "BULLETS_PER_BURST": null
+      "IS_BURST": false,
+      "BULLETS_PER_BURST": null,
+      "DELAY_BETWEEN_SHOTS_IN_BURST": null,
+      "BULLETS_PER_SHOT": 8,
+      "PROJECTION_CONE": 0.20,
+      "KNOCKBACK": 30
     }
   }

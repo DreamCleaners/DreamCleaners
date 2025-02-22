@@ -57,12 +57,6 @@ export class Player {
     if (!this.game.isPointerLocked) return;
     this.movePlayer(deltaTime);
 
-    console.log(
-      'Equipped weapon: ' +
-        this.equippedWeapon.weaponName +
-        ' of rarity: ' +
-        WeaponRarity[this.equippedWeapon.currentRarity],
-    );
 
     if (this.inputs.actions.get(InputAction.SHOOT)) {
       this.equippedWeapon.handlePrimaryFire();
