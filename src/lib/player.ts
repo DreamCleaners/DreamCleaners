@@ -57,7 +57,6 @@ export class Player {
     if (!this.game.isPointerLocked) return;
     this.movePlayer(deltaTime);
 
-
     if (this.inputs.actions.get(InputAction.SHOOT)) {
       this.equippedWeapon.handlePrimaryFire();
     }
@@ -65,10 +64,16 @@ export class Player {
     if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
       this.equipWeapon(0);
     }
-    if(this.inputs.actions.get(InputAction.PRESS_TWO)) {
+    if (this.inputs.actions.get(InputAction.PRESS_TWO)) {
       this.equipWeapon(1);
     }
 
+    if (this.inputs.actions.get(InputAction.RELOAD)) {
+      this.equippedWeapon.reload();
+    }
+
+    //debug
+    console.log("Equipped weapon ammo remaining:" + this.equippedWeapon.currentAmmoRemaining);
   }
 
   /**Moves the player based on InputState directions. Currently only moves the camera. */
@@ -107,7 +112,7 @@ export class Player {
       console.error('Trying to equip a weapon that does not exist');
       return;
     }
-    
+
     this.equippedWeapon.hideInScene();
     this.equippedWeapon = this.weapons[index];
     this.equippedWeapon.showInScene();

@@ -6,4 +6,5 @@ export enum InputAction {
   SHOOT,
   PRESS_ONE,
   PRESS_TWO,
+  RELOAD,
 }

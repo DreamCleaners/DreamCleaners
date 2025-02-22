@@ -62,9 +62,17 @@ export class InputManager {
             keyboardEvent.type === 'keydown',
           );
         }
-        if(keyboardEvent.code === 'Digit2') {
+        if (keyboardEvent.code === 'Digit2') {
           this.inputState.actions.set(
             InputAction.PRESS_TWO,
+            keyboardEvent.type === 'keydown',
+          );
+        }
+
+        // RELOADING
+        if (keyboardEvent.code === 'KeyR') {
+          this.inputState.actions.set(
+            InputAction.RELOAD,
             keyboardEvent.type === 'keydown',
           );
         }

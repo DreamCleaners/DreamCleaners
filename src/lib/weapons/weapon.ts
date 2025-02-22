@@ -3,7 +3,15 @@ import { WeaponStatistic } from './weaponStatistic';
 import { StaticWeaponStatistic } from './staticWeaponStatistic';
 import { Player } from '../player';
 import { AssetManager } from '../assetManager';
-import { AbstractMesh, Color3, Matrix, MeshBuilder, Quaternion, StandardMaterial, Vector3 } from '@babylonjs/core';
+import {
+  AbstractMesh,
+  Color3,
+  Matrix,
+  MeshBuilder,
+  Quaternion,
+  StandardMaterial,
+  Vector3,
+} from '@babylonjs/core';
 import { AssetType } from '../assetType';
 
 export class Weapon {
@@ -25,6 +33,8 @@ export class Weapon {
 
   private lastWeaponFire = 0;
 
+  public currentAmmoRemaining !: number;
+  private isReloading = false;
 
   constructor(player: Player, name: string, rarity: WeaponRarity) {
     this.player = player;
@@ -127,6 +137,8 @@ export class Weapon {
         'Current stat for ' + WeaponStatistic[key] + ' is: ' + this.currentStats.get(key),
       );
     }
+
+    this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
   }
 
   /** Returns the current value of the weapon given stat */
@@ -139,13 +151,22 @@ export class Weapon {
     return ret;
   }
 
+  private getStaticStat(stat: StaticWeaponStatistic): number {
+    const ret = this.staticStats.get(stat);
+    if (ret === undefined) {
+      console.error(`Static Stat ${stat} not found for weapon ${this.weaponName}`);
+      return -1;
+    }
+    return ret;
+  }
+
   // --------------------- Shooting related ---------------------------
   // ---------------------------------------------------------------
 
   /** Handles primary fire for the weapon.
    * Builds the projectiles and shoots them based on the weapon's static stats
    * that describe the weapon's overall behaviour
-  */
+   */
   public handlePrimaryFire(): void {
     const currentTime = Date.now();
     const cadency = this.getStat(WeaponStatistic.CADENCY) * 1000;
@@ -154,41 +175,59 @@ export class Weapon {
       return;
     }
 
-    console.log("Entering handlePrimaryFire, able to shoot");
+    if(this.isReloading){
+      console.log('Cannot shoot while reloading');
+      return;
+    }
+
+    if(this.currentAmmoRemaining <= 0){
+      console.log('Out of ammo!');
+      return;
+    }
 
     this.lastWeaponFire = currentTime;
 
-    const isBurst = this.staticStats.get(StaticWeaponStatistic.IS_BURST) || false;
-    const bulletsPerBurst = this.staticStats.get(StaticWeaponStatistic.BULLETS_PER_BURST) || 1;
-    const bulletsPerShot = this.staticStats.get(StaticWeaponStatistic.BULLETS_PER_SHOT) || 1;
-    const projectionCone = this.staticStats.get(StaticWeaponStatistic.PROJECTION_CONE) || 0;
+    const isBurst = this.getStaticStat(StaticWeaponStatistic.IS_BURST) || false;
+    const bulletsPerBurst =
+      this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_BURST) || 1;
+    const bulletsPerShot =
+    this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT) || 1;
+    const projectionCone =
+    this.getStaticStat(StaticWeaponStatistic.PROJECTION_CONE) || 0;
 
     if (isBurst) {
-      const delayBetweenShotsInBurst = this.staticStats.get(StaticWeaponStatistic.DELAY_BETWEEN_SHOTS_IN_BURST) || 0;
+      const delayBetweenShotsInBurst =
+      this.getStaticStat(StaticWeaponStatistic.DELAY_BETWEEN_SHOTS_IN_BURST) || 0;
 
       for (let i = 0; i < bulletsPerBurst; i++) {
-        setTimeout(() => {
-          this.shootBullets(bulletsPerShot, projectionCone);
-        }, i * delayBetweenShotsInBurst * 1000); // We space each bullet of the burst by a delay
+        setTimeout(
+          () => {
+            if(this.currentAmmoRemaining <= 0) {
+              console.log('Out of ammo!');
+              return;
+            }
+            this.shootBullets(bulletsPerShot, projectionCone);
+            this.currentAmmoRemaining--;
+          },
+          i * delayBetweenShotsInBurst * 1000,
+        ); // We space each bullet of the burst by a delay
       }
     } else {
       this.shootBullets(bulletsPerShot, projectionCone);
+      this.currentAmmoRemaining--;
     }
-
-    console.log('Leaving handlePrimaryFire');
   }
 
   /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
    * depending on the projection cone of the weapon (The most obvious example is the shotgun)
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
-    if(projectionCone === 0) {
+    if (projectionCone === 0) {
       // Not a "cone" weapon, just shoot straight in the direction of the camera
       for (let i = 0; i < bulletsPerShot; i++) {
         this.performRaycast(this.player.camera.getForwardRay().direction);
       }
-    }
-    else{
+    } else {
       // Based on the projection cone, we must determine a direction for each bullet (raycast)
       for (let i = 0; i < bulletsPerShot; i++) {
         const direction = this.calculateRandomDirection(projectionCone);
@@ -223,8 +262,6 @@ export class Weapon {
 
   /** Performs a raycast and visualizes it with a tube */
   private performRaycast(direction: Vector3): void {
-    console.log('Shooting raycast !');
-
     // DEBUG RAYCAST, FINAL IMPLEMENTATION WITH PHYSICS SHALL DIFFER
 
     const origin = this.player.camera.position;
@@ -232,8 +269,12 @@ export class Weapon {
 
     // Create a tube to visualize the ray
     const path = [origin, origin.add(direction.scale(length))];
-    const tube = MeshBuilder.CreateTube("ray", { path: path, radius: 0.1 }, this.player.game.scene); // Adjust the radius as needed
-    const material = new StandardMaterial("tubeMaterial", this.player.game.scene);
+    const tube = MeshBuilder.CreateTube(
+      'ray',
+      { path: path, radius: 0.1 },
+      this.player.game.scene,
+    ); // Adjust the radius as needed
+    const material = new StandardMaterial('tubeMaterial', this.player.game.scene);
     material.emissiveColor = new Color3(1, 0, 0); // Red color for the tube
     tube.material = material;
 
@@ -244,4 +285,26 @@ export class Weapon {
 
     return;
   }
+
+  // --------------------- Ammo related ---------------------------
+  // ---------------------------------------------------------------
+
+  public reload(): void {
+    if(this.isReloading){
+      console.log('Already reloading');
+      return;
+    }
+
+    if(this.currentAmmoRemaining === this.getStat(WeaponStatistic.MAGAZINE_CAPACITY)){
+      console.log('Magazine is full');
+      return;
+    }
+
+    this.isReloading = true;
+    setTimeout(() => {
+      this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
+      this.isReloading = false;
+    }, this.getStat(WeaponStatistic.RELOAD_TIME) * 1000);
+  }
+
 }
