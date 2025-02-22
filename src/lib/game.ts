@@ -1,9 +1,10 @@
-import { Engine, Scene } from '@babylonjs/core';
+import { Engine, HavokPlugin, Scene, Vector3 } from '@babylonjs/core';
+import HavokPhysics from '@babylonjs/havok';
+import { Inspector } from '@babylonjs/inspector';
 import { SceneManager } from './sceneManager';
 import { InputManager } from './inputs/inputManager';
 import { Player } from './player';
 import { InputAction } from './inputs/inputAction';
-import { Inspector } from '@babylonjs/inspector';
 
 export class Game {
   public scene!: Scene;
@@ -12,14 +13,20 @@ export class Game {
 
   private engine!: Engine;
   private sceneManager!: SceneManager;
+  private canvas!: HTMLCanvasElement;
   private player!: Player;
 
-  constructor(private canvas: HTMLCanvasElement) {
+  public async start(canvas: HTMLCanvasElement): Promise<void> {
+    this.canvas = canvas;
     this.engine = new Engine(this.canvas);
     this.scene = new Scene(this.engine);
     this.sceneManager = new SceneManager(this.scene);
     this.inputManager = new InputManager(this.engine);
     this.player = new Player(this);
+
+    const physicsPlugin = await this.getPhysicsPlugin();
+    const gravity = new Vector3(0, -9.81, 0);
+    this.scene.enablePhysics(gravity, physicsPlugin);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
 
@@ -43,6 +50,15 @@ export class Game {
 
     this.player.update(deltaTime);
     this.sceneManager.update();
+  }
+
+  private async getPhysicsPlugin(): Promise<HavokPlugin> {
+    const wasmBinary: Response = await fetch('bin/HavokPhysics.wasm');
+    const wasmBinaryArrayBuffer = await wasmBinary.arrayBuffer();
+    const havokInstance = await HavokPhysics({
+      wasmBinary: wasmBinaryArrayBuffer,
+    });
+    return new HavokPlugin(true, havokInstance);
   }
 
   private async lockPointer(): Promise<void> {

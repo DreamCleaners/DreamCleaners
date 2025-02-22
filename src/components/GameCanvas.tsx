@@ -7,7 +7,8 @@ const GameCanvas = () => {
 
   useEffect(() => {
     if (canvasRef.current && !gameRef.current) {
-      gameRef.current = new Game(canvasRef.current);
+      gameRef.current = new Game();
+      gameRef.current.start(canvasRef.current);
     }
   }, [canvasRef]);
 

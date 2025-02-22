@@ -30,15 +30,6 @@ export class Weapon {
     this.initArrays();
     this.loadStatsFromJSON();
     this.initContainer();
-
-    // TO SATISFY THE FREAKING LEFTHOOK
-    console.log(
-      'Initiated weapon: ' +
-        this.weaponName +
-        ' of rarity: ' +
-        WeaponRarity[this.currentRarity],
-      +' game: ' + String(this.player),
-    );
   }
 
   // ----------------- Container related (babylon) -----------------
@@ -78,12 +69,11 @@ export class Weapon {
   /** Parses JSON of the weapon stats and load it into class' arrays fields */
   private async loadStatsFromJSON(): Promise<void> {
     const name = this.weaponName.toLowerCase();
-    console.log('Loading stats from JSON for weapon: ' + name);
     try {
       const response = await fetch(`/weapons/stats/${name}.json`);
       if (!response.ok) {
         throw new Error(`Weapon stats for ${this.weaponName} not found`);
-      } else console.log('Stats found for weapon: ' + this.weaponName);
+      }
       const data = await response.json();
 
       // Load global stats
@@ -107,8 +97,6 @@ export class Weapon {
     }
 
     this.applyCurrentStats();
-
-    console.log('Get damage: ' + this.getStat(WeaponStatistic.DAMAGE));
   }
 
   /** Based on the current item's rarity we update its currentStats array */
@@ -120,9 +108,6 @@ export class Weapon {
 
     for (const [key, value] of this.globalStats) {
       this.currentStats.set(key, value[this.currentRarity]);
-      console.log(
-        'Current stat for ' + WeaponStatistic[key] + ' is: ' + this.currentStats.get(key),
-      );
     }
   }
 
@@ -142,6 +127,5 @@ export class Weapon {
   /** Handles primary fire for the weapon */
   public handlePrimaryFire(): void {
     //TODO! Handle delta time between shots, based on the weapon cadency
-    console.log('Primary fire');
   }
 }

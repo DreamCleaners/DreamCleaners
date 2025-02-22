@@ -57,13 +57,6 @@ export class Player {
     if (!this.game.isPointerLocked) return;
     this.movePlayer(deltaTime);
 
-    console.log(
-      'Equipped weapon: ' +
-        this.equippedWeapon.weaponName +
-        ' of rarity: ' +
-        WeaponRarity[this.equippedWeapon.currentRarity],
-    );
-
     if (this.inputs.actions.get(InputAction.SHOOT)) {
       this.equippedWeapon.handlePrimaryFire();
     }
@@ -71,10 +64,9 @@ export class Player {
     if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
       this.equipWeapon(0);
     }
-    if(this.inputs.actions.get(InputAction.PRESS_TWO)) {
+    if (this.inputs.actions.get(InputAction.PRESS_TWO)) {
       this.equipWeapon(1);
     }
-
   }
 
   /**Moves the player based on InputState directions. Currently only moves the camera. */
@@ -113,7 +105,7 @@ export class Player {
       console.error('Trying to equip a weapon that does not exist');
       return;
     }
-    
+
     this.equippedWeapon.hideInScene();
     this.equippedWeapon = this.weapons[index];
     this.equippedWeapon.showInScene();
