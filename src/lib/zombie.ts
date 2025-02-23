@@ -144,6 +144,7 @@ export class Zombie implements IDamageable {
     });
 
     animation.onAnimationGroupEndObservable.add(() => {
+      if (this.state === ZombieState.DEAD) return;
       this.state = ZombieState.START_WALK;
       this.isAttacking = false;
     });
