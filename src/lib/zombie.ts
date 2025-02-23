@@ -70,6 +70,8 @@ export class Zombie implements IDamageable {
       this.game.scene,
     );
     this.physicsAggregate.body.setMassProperties({ inertia: new Vector3(0, 0, 0) });
+
+    // disablePreStep to false so we can rotate the mesh without affecting the physics body
     this.physicsAggregate.body.disablePreStep = false;
     this.physicsAggregate.body.setCollisionCallbackEnabled(true);
     const observable = this.physicsAggregate.body.getCollisionObservable();
@@ -78,7 +80,9 @@ export class Zombie implements IDamageable {
 
   public update(): void {
     this.animationController.update();
+  }
 
+  public fixedUpdate(): void {
     switch (this.state) {
       case ZombieState.START_WALK:
         this.startWalk();

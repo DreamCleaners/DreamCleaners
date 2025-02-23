@@ -46,4 +46,10 @@ export class GameScene {
       zombie.update();
     });
   }
+
+  public fixedUpdate(): void {
+    this.zombies.forEach((zombie) => {
+      zombie.fixedUpdate();
+    });
+  }
 }

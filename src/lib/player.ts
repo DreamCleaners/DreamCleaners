@@ -108,7 +108,6 @@ export class Player implements IDamageable {
 
   public update(): void {
     if (!this.game.isPointerLocked) return;
-    this.updateVelocity();
 
     if (this.inputs.actions.get(InputAction.SHOOT)) {
       this.equippedWeapon.handlePrimaryFire();
@@ -120,9 +119,14 @@ export class Player implements IDamageable {
     if (this.inputs.actions.get(InputAction.PRESS_TWO)) {
       this.equipWeapon(1);
     }
-    if(this.inputs.actions.get(InputAction.RELOAD)){
+    if (this.inputs.actions.get(InputAction.RELOAD)) {
       this.equippedWeapon.reload();
     }
+  }
+
+  public fixedUpdate(): void {
+    if (!this.game.isPointerLocked) return;
+    this.updateVelocity();
   }
 
   public onGameOver(): void {

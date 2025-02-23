@@ -18,6 +18,9 @@ export class Game {
   public player!: Player;
   public assetManager!: AssetManager;
 
+  private lastFixedUpdate = 0;
+  private fixedUpdateInterval = 1000 / 60;
+
   public async start(canvas: HTMLCanvasElement): Promise<void> {
     this.canvas = canvas;
     this.engine = new Engine(this.canvas);
@@ -51,6 +54,20 @@ export class Game {
 
     this.player.update();
     this.sceneManager.update();
+
+    // fixed update loop
+    const deltaTime = this.engine.getDeltaTime();
+    this.lastFixedUpdate += deltaTime;
+
+    while (this.lastFixedUpdate >= this.fixedUpdateInterval) {
+      this.fixedUpdate();
+      this.lastFixedUpdate -= this.fixedUpdateInterval;
+    }
+  }
+
+  private fixedUpdate(): void {
+    this.player.fixedUpdate();
+    this.sceneManager.fixedUpdate();
   }
 
   private async getPhysicsPlugin(): Promise<HavokPlugin> {

@@ -13,4 +13,9 @@ export class SceneManager {
     if (!this.gameScene.isLoaded) return;
     this.gameScene.update();
   }
+
+  public fixedUpdate(): void {
+    if (!this.gameScene.isLoaded) return;
+    this.gameScene.fixedUpdate();
+  }
 }
