@@ -12,6 +12,7 @@ import { AssetType } from './assetType';
 import { HealthController } from './healthController';
 import { IDamageable } from './damageable';
 import { GameEntityType } from './gameEntityType';
+import { AnimationController } from './animations/animationController';
 
 enum ZombieState {
   START_WALK,
@@ -20,9 +21,15 @@ enum ZombieState {
   DEAD,
 }
 
+enum ZombieAnimation {
+  WALK = 'walk',
+  BITE = 'bite',
+}
+
 export class Zombie implements IDamageable {
   public mesh!: Mesh;
   private healthController: HealthController = new HealthController(200);
+  private animationController: AnimationController = new AnimationController();
   private state: ZombieState = ZombieState.START_WALK;
   private isAttacking = false;
 
@@ -46,6 +53,14 @@ export class Zombie implements IDamageable {
     this.mesh.scaling.scaleInPlace(0.35);
     this.mesh.position = position;
 
+    entries.animationGroups.forEach((animationGroup) => {
+      if (animationGroup.name === 'Zombie|ZombieWalk') {
+        this.animationController.addAnimation(ZombieAnimation.WALK, animationGroup);
+      } else if (animationGroup.name === 'Zombie|ZombieBite') {
+        this.animationController.addAnimation(ZombieAnimation.BITE, animationGroup);
+      }
+    });
+
     this.physicsAggregate = new PhysicsAggregate(
       this.mesh,
       PhysicsShapeType.BOX,
@@ -62,6 +77,8 @@ export class Zombie implements IDamageable {
   }
 
   public update(): void {
+    this.animationController.update();
+
     switch (this.state) {
       case ZombieState.START_WALK:
         this.startWalk();
@@ -86,6 +103,12 @@ export class Zombie implements IDamageable {
   }
 
   private startWalk(): void {
+    this.animationController.startAnimation(ZombieAnimation.WALK, {
+      loop: true,
+      smoothTransition: true,
+      transitionSpeed: 0.02,
+      speedRatio: 1.5,
+    });
     this.state = ZombieState.WALK;
   }
 
@@ -106,6 +129,20 @@ export class Zombie implements IDamageable {
 
     this.velocity = Vector3.Zero();
     this.game.player.takeDamage(this.ATTACK_RANGE);
+
+    const animation = this.animationController.startAnimation(ZombieAnimation.BITE, {
+      loop: false,
+      smoothTransition: true,
+      transitionSpeed: 0.02,
+      from: 50,
+      to: 150,
+      speedRatio: 1.25,
+    });
+
+    animation.onAnimationGroupEndObservable.add(() => {
+      this.state = ZombieState.START_WALK;
+      this.isAttacking = false;
+    });
   }
 
   private onCollision(collisionEvent: IPhysicsCollisionEvent): void {

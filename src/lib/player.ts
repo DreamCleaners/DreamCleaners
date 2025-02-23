@@ -21,7 +21,7 @@ import { GameEntityType } from './gameEntityType';
 export class Player implements IDamageable {
   private inputs: InputState;
   public camera!: UniversalCamera;
-  private mesh!: Mesh;
+  private hitbox!: Mesh;
   private readonly SPEED = 7;
   private readonly healthController = new HealthController(1000);
 
@@ -58,7 +58,7 @@ export class Player implements IDamageable {
   }
 
   private initPhysicsAggregate(): void {
-    this.mesh = MeshBuilder.CreateCapsule(
+    this.hitbox = MeshBuilder.CreateCapsule(
       GameEntityType.PLAYER,
       {
         height: 2,
@@ -66,11 +66,12 @@ export class Player implements IDamageable {
       },
       this.game.scene,
     );
-    this.mesh.position.y = 1;
-    this.mesh.checkCollisions = false;
+    this.hitbox.position.y = 1;
+    this.hitbox.checkCollisions = false;
+    this.hitbox.isVisible = false;
 
     this.physicsAggregate = new PhysicsAggregate(
-      this.mesh,
+      this.hitbox,
       PhysicsShapeType.BOX,
       { mass: 1 },
       this.game.scene,
@@ -89,7 +90,7 @@ export class Player implements IDamageable {
       this.game.scene,
     );
 
-    this.camera.parent = this.mesh;
+    this.camera.parent = this.hitbox;
     this.camera.setTarget(new Vector3(0, 1, 1));
     this.camera.attachControl(this.game.scene.getEngine().getRenderingCanvas(), true); // Enable mouse control
 
