@@ -1,3 +1,4 @@
 export enum AssetType {
-  WEAPON,
+  WEAPON = 'weapons',
+  CHARACTER = 'characters',
 }
