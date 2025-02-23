@@ -1,0 +1,19 @@
+.playerCrosshair {
+  position: absolute;
+  background-color: white;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.verticalLine {
+  width: 2px;
+  height: 15px;
+}
+
+.horizontalLine {
+  width: 15px;
+  height: 2px;
+}

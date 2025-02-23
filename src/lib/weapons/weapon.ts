@@ -2,69 +2,59 @@ import { WeaponRarity } from './weaponRarity';
 import { WeaponStatistic } from './weaponStatistic';
 import { StaticWeaponStatistic } from './staticWeaponStatistic';
 import { Player } from '../player';
-import { AssetManager } from '../assetManager';
 import {
   AbstractMesh,
-  Color3,
   Matrix,
+  Mesh,
   MeshBuilder,
+  PhysicsEngineV2,
+  PhysicsRaycastResult,
   Quaternion,
-  StandardMaterial,
   Vector3,
 } from '@babylonjs/core';
 import { AssetType } from '../assetType';
+import { IDamageable } from '../damageable';
 
 export class Weapon {
   private mesh!: AbstractMesh;
-
   private player!: Player;
-
   public weaponName!: string;
-
   public currentRarity!: WeaponRarity;
+  private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
+  private physicsEngine!: PhysicsEngineV2;
 
-  private globalStats!: Map<WeaponStatistic, Array<number>>;
   // Array containing all non static stats for the weapon, for every rarity tier
+  private globalStats!: Map<WeaponStatistic, Array<number>>;
 
-  private currentStats!: Map<WeaponStatistic, number>;
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
+  private currentStats!: Map<WeaponStatistic, number>;
 
   private staticStats!: Map<StaticWeaponStatistic, number>;
 
   private lastWeaponFire = 0;
 
-  public currentAmmoRemaining !: number;
+  public currentAmmoRemaining!: number;
   private isReloading = false;
 
   constructor(player: Player, name: string, rarity: WeaponRarity) {
     this.player = player;
     this.currentRarity = rarity;
     this.weaponName = name;
+    this.physicsEngine = player.game.scene.getPhysicsEngine() as PhysicsEngineV2;
     this.initArrays();
     this.loadStatsFromJSON();
-    this.initContainer();
-
-    // TO SATISFY THE FREAKING LEFTHOOK
-    console.log(
-      'Initiated weapon: ' +
-        this.weaponName +
-        ' of rarity: ' +
-        WeaponRarity[this.currentRarity],
-      +' game: ' + String(this.player),
-    );
+    this.initMesh();
   }
 
   // ----------------- Container related (babylon) -----------------
   // ---------------------------------------------------------------
 
-  private async initContainer(): Promise<void> {
-    const container = await AssetManager.loadAsset(
-      AssetType.WEAPON,
+  private async initMesh(): Promise<void> {
+    const entries = await this.player.game.assetManager.loadAsset(
       this.weaponName,
-      this.player.game.scene,
+      AssetType.WEAPON,
     );
-    container.addAllToScene();
-    this.mesh = container.meshes[0];
+    this.mesh = entries.rootNodes[0] as Mesh;
     this.mesh.parent = this.player.camera;
     this.mesh.position.addInPlace(new Vector3(0.5, -0.4, 1.5));
     this.mesh.rotation.z = Math.PI;
@@ -91,12 +81,11 @@ export class Weapon {
   /** Parses JSON of the weapon stats and load it into class' arrays fields */
   private async loadStatsFromJSON(): Promise<void> {
     const name = this.weaponName.toLowerCase();
-    console.log('Loading stats from JSON for weapon: ' + name);
     try {
-      const response = await fetch(`/weapons/stats/${name}.json`);
+      const response = await fetch(`/data/stats/${name}.json`);
       if (!response.ok) {
         throw new Error(`Weapon stats for ${this.weaponName} not found`);
-      } else console.log('Stats found for weapon: ' + this.weaponName);
+      }
       const data = await response.json();
 
       // Load global stats
@@ -120,8 +109,6 @@ export class Weapon {
     }
 
     this.applyCurrentStats();
-
-    console.log('Get damage: ' + this.getStat(WeaponStatistic.DAMAGE));
   }
 
   /** Based on the current item's rarity we update its currentStats array */
@@ -133,9 +120,6 @@ export class Weapon {
 
     for (const [key, value] of this.globalStats) {
       this.currentStats.set(key, value[this.currentRarity]);
-      console.log(
-        'Current stat for ' + WeaponStatistic[key] + ' is: ' + this.currentStats.get(key),
-      );
     }
 
     this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
@@ -175,12 +159,12 @@ export class Weapon {
       return;
     }
 
-    if(this.isReloading){
+    if (this.isReloading) {
       console.log('Cannot shoot while reloading');
       return;
     }
 
-    if(this.currentAmmoRemaining <= 0){
+    if (this.currentAmmoRemaining <= 0) {
       console.log('Out of ammo!');
       return;
     }
@@ -191,18 +175,17 @@ export class Weapon {
     const bulletsPerBurst =
       this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_BURST) || 1;
     const bulletsPerShot =
-    this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT) || 1;
-    const projectionCone =
-    this.getStaticStat(StaticWeaponStatistic.PROJECTION_CONE) || 0;
+      this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT) || 1;
+    const projectionCone = this.getStaticStat(StaticWeaponStatistic.PROJECTION_CONE) || 0;
 
     if (isBurst) {
       const delayBetweenShotsInBurst =
-      this.getStaticStat(StaticWeaponStatistic.DELAY_BETWEEN_SHOTS_IN_BURST) || 0;
+        this.getStaticStat(StaticWeaponStatistic.DELAY_BETWEEN_SHOTS_IN_BURST) || 0;
 
       for (let i = 0; i < bulletsPerBurst; i++) {
         setTimeout(
           () => {
-            if(this.currentAmmoRemaining <= 0) {
+            if (this.currentAmmoRemaining <= 0) {
               console.log('Out of ammo!');
               return;
             }
@@ -262,49 +245,53 @@ export class Weapon {
 
   /** Performs a raycast and visualizes it with a tube */
   private performRaycast(direction: Vector3): void {
-    // DEBUG RAYCAST, FINAL IMPLEMENTATION WITH PHYSICS SHALL DIFFER
+    // testing raycast
+    const start = this.player.camera.globalPosition.clone();
+    const end = start.add(direction.scale(this.getStat(WeaponStatistic.RANGE)));
 
-    const origin = this.player.camera.position;
-    const length = 1000; // Adjust the length of the ray as needed
+    this.physicsEngine.raycastToRef(start, end, this.raycastResult);
 
-    // Create a tube to visualize the ray
-    const path = [origin, origin.add(direction.scale(length))];
-    const tube = MeshBuilder.CreateTube(
-      'ray',
-      { path: path, radius: 0.1 },
+    if (this.raycastResult.hasHit && this.raycastResult.body?.transformNode.metadata) {
+      console.log('Hit entity');
+      const damageableEntity = this.raycastResult.body?.transformNode
+        .metadata as IDamageable;
+      damageableEntity.takeDamage(this.getStat(WeaponStatistic.DAMAGE));
+    }
+
+    // Debug shooting line
+    const line = MeshBuilder.CreateLines(
+      'lines',
+      { points: [this.mesh.absolutePosition, end] },
       this.player.game.scene,
-    ); // Adjust the radius as needed
-    const material = new StandardMaterial('tubeMaterial', this.player.game.scene);
-    material.emissiveColor = new Color3(1, 0, 0); // Red color for the tube
-    tube.material = material;
+    );
 
-    // Optionally, remove the tube after some time
     setTimeout(() => {
-      tube.dispose();
-    }, 1000); // Remove the tube after 1 second
-
-    return;
+      line.dispose();
+    }, 50);
   }
 
   // --------------------- Ammo related ---------------------------
   // ---------------------------------------------------------------
 
   public reload(): void {
-    if(this.isReloading){
+    if (this.isReloading) {
       console.log('Already reloading');
       return;
     }
 
-    if(this.currentAmmoRemaining === this.getStat(WeaponStatistic.MAGAZINE_CAPACITY)){
+    if (this.currentAmmoRemaining === this.getStat(WeaponStatistic.MAGAZINE_CAPACITY)) {
       console.log('Magazine is full');
       return;
     }
 
     this.isReloading = true;
-    setTimeout(() => {
-      this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
-      this.isReloading = false;
-    }, this.getStat(WeaponStatistic.RELOAD_TIME) * 1000);
+    setTimeout(
+      () => {
+        this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
+        this.isReloading = false;
+      console.log("Done reloading");
+      },
+      this.getStat(WeaponStatistic.RELOAD_TIME) * 1000,
+    );
   }
-
 }
