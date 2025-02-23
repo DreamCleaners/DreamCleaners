@@ -2,24 +2,30 @@ import { WeaponRarity } from './weaponRarity';
 import { WeaponStatistic } from './weaponStatistic';
 import { StaticWeaponStatistic } from './staticWeaponStatistic';
 import { Player } from '../player';
-import { AssetManager } from '../assetManager';
-import { AbstractMesh, Vector3 } from '@babylonjs/core';
+import {
+  AbstractMesh,
+  Mesh,
+  MeshBuilder,
+  PhysicsEngineV2,
+  PhysicsRaycastResult,
+  Vector3,
+} from '@babylonjs/core';
 import { AssetType } from '../assetType';
+import { IDamageable } from '../damageable';
 
 export class Weapon {
   private mesh!: AbstractMesh;
-
   private player!: Player;
-
   public weaponName!: string;
-
   public currentRarity!: WeaponRarity;
+  private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
+  private physicsEngine!: PhysicsEngineV2;
 
-  private globalStats!: Map<WeaponStatistic, Array<number>>;
   // Array containing all non static stats for the weapon, for every rarity tier
+  private globalStats!: Map<WeaponStatistic, Array<number>>;
 
-  private currentStats!: Map<WeaponStatistic, number>;
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
+  private currentStats!: Map<WeaponStatistic, number>;
 
   private staticStats!: Map<StaticWeaponStatistic, number>;
 
@@ -27,22 +33,21 @@ export class Weapon {
     this.player = player;
     this.currentRarity = rarity;
     this.weaponName = name;
+    this.physicsEngine = player.game.scene.getPhysicsEngine() as PhysicsEngineV2;
     this.initArrays();
     this.loadStatsFromJSON();
-    this.initContainer();
+    this.initMesh();
   }
 
   // ----------------- Container related (babylon) -----------------
   // ---------------------------------------------------------------
 
-  private async initContainer(): Promise<void> {
-    const container = await AssetManager.loadAsset(
-      AssetType.WEAPON,
+  private async initMesh(): Promise<void> {
+    const entries = await this.player.game.assetManager.loadAsset(
       this.weaponName,
-      this.player.game.scene,
+      AssetType.WEAPON,
     );
-    container.addAllToScene();
-    this.mesh = container.meshes[0];
+    this.mesh = entries.rootNodes[0] as Mesh;
     this.mesh.parent = this.player.camera;
     this.mesh.position.addInPlace(new Vector3(0.5, -0.4, 1.5));
     this.mesh.rotation.z = Math.PI;
@@ -70,7 +75,7 @@ export class Weapon {
   private async loadStatsFromJSON(): Promise<void> {
     const name = this.weaponName.toLowerCase();
     try {
-      const response = await fetch(`/weapons/stats/${name}.json`);
+      const response = await fetch(`/data/stats/${name}.json`);
       if (!response.ok) {
         throw new Error(`Weapon stats for ${this.weaponName} not found`);
       }
@@ -126,6 +131,29 @@ export class Weapon {
 
   /** Handles primary fire for the weapon */
   public handlePrimaryFire(): void {
-    //TODO! Handle delta time between shots, based on the weapon cadency
+    // testing raycast
+    const start = this.player.camera.globalPosition.clone();
+    const direction = this.player.camera.getForwardRay().direction;
+    const end = start.add(direction.scale(this.getStat(WeaponStatistic.RANGE)));
+
+    this.physicsEngine.raycastToRef(start, end, this.raycastResult);
+
+    if (this.raycastResult.hasHit && this.raycastResult.body?.transformNode.metadata) {
+      console.log('Hit entity');
+      const damageableEntity = this.raycastResult.body?.transformNode
+        .metadata as IDamageable;
+      damageableEntity.takeDamage(this.getStat(WeaponStatistic.DAMAGE));
+    }
+
+    // Debug shooting line
+    const line = MeshBuilder.CreateLines(
+      'lines',
+      { points: [this.mesh.absolutePosition, end] },
+      this.player.game.scene,
+    );
+
+    setTimeout(() => {
+      line.dispose();
+    }, 50);
   }
 }

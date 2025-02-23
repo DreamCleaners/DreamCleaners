@@ -5,6 +5,7 @@ import { SceneManager } from './sceneManager';
 import { InputManager } from './inputs/inputManager';
 import { Player } from './player';
 import { InputAction } from './inputs/inputAction';
+import { AssetManager } from './assetManager';
 
 export class Game {
   public scene!: Scene;
@@ -14,19 +15,22 @@ export class Game {
   private engine!: Engine;
   private sceneManager!: SceneManager;
   private canvas!: HTMLCanvasElement;
-  private player!: Player;
+  public player!: Player;
+  public assetManager!: AssetManager;
 
   public async start(canvas: HTMLCanvasElement): Promise<void> {
     this.canvas = canvas;
     this.engine = new Engine(this.canvas);
     this.scene = new Scene(this.engine);
+    this.assetManager = new AssetManager(this.scene);
+    this.inputManager = new InputManager(this.engine);
+
     const physicsPlugin = await this.getPhysicsPlugin();
     const gravity = new Vector3(0, -9.81, 0);
     this.scene.enablePhysics(gravity, physicsPlugin);
 
-    this.sceneManager = new SceneManager(this.scene);
-    this.inputManager = new InputManager(this.engine);
     this.player = new Player(this);
+    this.sceneManager = new SceneManager(this);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
 

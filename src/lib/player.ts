@@ -14,12 +14,16 @@ import { Game } from './game';
 import { Weapon } from './weapons/weapon';
 import { WeaponRarity } from './weapons/weaponRarity';
 import { InputAction } from './inputs/inputAction';
+import { IDamageable } from './damageable';
+import { HealthController } from './healthController';
+import { GameEntityType } from './gameEntityType';
 
-export class Player {
+export class Player implements IDamageable {
   private inputs: InputState;
   public camera!: UniversalCamera;
   private mesh!: Mesh;
   private readonly SPEED = 7;
+  private readonly healthController = new HealthController(1000);
 
   // jump
   private readonly JUMP_FORCE = 6;
@@ -39,6 +43,7 @@ export class Player {
 
   constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
+    this.healthController.onDeath.add(this.onGameOver.bind(this));
 
     this.initPhysicsAggregate();
     this.initPlayerCamera();
@@ -54,7 +59,7 @@ export class Player {
 
   private initPhysicsAggregate(): void {
     this.mesh = MeshBuilder.CreateCapsule(
-      'playerMesh',
+      GameEntityType.PLAYER,
       {
         height: 2,
         radius: 0.5,
@@ -116,6 +121,20 @@ export class Player {
     }
   }
 
+  public onGameOver(): void {
+    console.log('GAME OVER: YOU ARE FIRED');
+  }
+
+  public takeDamage(damage: number): void {
+    this.healthController.removeHealth(damage);
+    console.log(
+      `Player took ${damage} damage, current health: ${this.healthController.getHealth()}`,
+    );
+  }
+
+  // --------------------- Physics --------------------------
+  // --------------------------------------------------------
+
   /**
    * Updates player's velocity based on inputs
    */
@@ -150,12 +169,15 @@ export class Player {
     const other = collisionEvent.collidedAgainst;
     if (
       collisionEvent.type === PhysicsEventType.COLLISION_STARTED &&
-      other.transformNode.name === 'ground'
+      other.transformNode.name === GameEntityType.GROUND
     ) {
       this.isGrounded = true;
       this.canJump = true;
     }
   }
+
+  // --------------------- Weapons ---------------------------
+  // ---------------------------------------------------------
 
   public addWeaponToPlayer(weapon: Weapon): void {
     this.weapons.push(weapon);
