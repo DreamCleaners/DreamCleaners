@@ -107,7 +107,7 @@ export class Weapon implements WeaponData {
   private async loadStatsFromJSON(): Promise<void> {
     try {
       const data = await this.player.game.assetManager.loadWeaponJson(this.weaponName);
-  
+
       if (data) {
         // Load global stats
         for (const [key, values] of Object.entries(data.globalStats)) {
@@ -116,7 +116,7 @@ export class Weapon implements WeaponData {
             values as Array<number>,
           );
         }
-  
+
         // Load static stats
         for (const [key, value] of Object.entries(data.staticStats)) {
           this.staticStats.set(
@@ -128,9 +128,11 @@ export class Weapon implements WeaponData {
         console.error(`No data found for weapon ${this.weaponName}`);
       }
     } catch (error) {
-      console.error(`Could not load stats from JSON for weapon of name ${this.weaponName}, error trace: ${error}`);
+      console.error(
+        `Could not load stats from JSON for weapon of name ${this.weaponName}, error trace: ${error}`,
+      );
     }
-  
+
     this.applyCurrentStats();
   }
 

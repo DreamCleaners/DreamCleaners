@@ -104,6 +104,9 @@ export class Player implements IDamageable {
     this.camera.inertia = 0;
     // Cam sensitivity
     this.camera.angularSensibility = 1000;
+    // Allows no "near clipping" of meshes when close to the camera
+    this.camera.minZ = 0.01;
+
   }
 
   public update(): void {
