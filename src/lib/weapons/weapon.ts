@@ -57,8 +57,28 @@ export class Weapon {
     this.mesh = entries.rootNodes[0] as Mesh;
     this.mesh.parent = this.player.camera;
     this.mesh.position.addInPlace(new Vector3(0.5, -0.4, 1.5));
-    this.mesh.rotation.z = Math.PI;
-    this.mesh.scaling = new Vector3(0.15, 0.15, 0.15);
+
+    // Positioning and scaling, hard coded values
+    switch (this.weaponName) {
+      case 'glock':
+        this.mesh.scaling = new Vector3(0.15, 0.15, 0.15);
+        break;
+      case 'shotgun':
+        this.mesh.rotation = new Vector3(0, Math.PI, -Math.PI/2);
+        this.mesh.scaling = new Vector3(1.3, 1.3, 1.3);
+        break;
+      default:
+        console.log("Weapon " + this.weaponName + " not found, cannot properly position and scale it, going default values");
+        break;
+    }
+
+    this.hideInScene();
+
+    // TODO! Remove this, only present until the stages are implemented as it will be gameScene's
+    // role to show the weapon at stage entrance.
+    if(this.weaponName === 'glock') {
+      this.showInScene();
+    }
   }
 
   public hideInScene(): void {
@@ -243,7 +263,7 @@ export class Weapon {
     return direction;
   }
 
-  /** Performs a raycast and visualizes it with a tube */
+  /** Performs a raycast in a given direction */
   private performRaycast(direction: Vector3): void {
     // testing raycast
     const start = this.player.camera.globalPosition.clone();
@@ -252,10 +272,16 @@ export class Weapon {
     this.physicsEngine.raycastToRef(start, end, this.raycastResult);
 
     if (this.raycastResult.hasHit && this.raycastResult.body?.transformNode.metadata) {
-      console.log('Hit entity');
       const damageableEntity = this.raycastResult.body?.transformNode
         .metadata as IDamageable;
-      damageableEntity.takeDamage(this.getStat(WeaponStatistic.DAMAGE));
+
+        // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
+      const damagePerBullet = this.getStat(WeaponStatistic.DAMAGE) / this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT);
+
+      damageableEntity.takeDamage(damagePerBullet);
+
+      console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
+
     }
 
     // Debug shooting line
