@@ -268,8 +268,11 @@ export class Weapon implements WeaponData {
 
   /** Performs a raycast in a given direction */
   private performRaycast(direction: Vector3): void {
-    // testing raycast
+    // The raycasts stars at the player's camera position and not at the weapon's position
+    // Thus, we need to add a small offset to the start position in order not to hit the player
     const start = this.player.camera.globalPosition.clone();
+    start.addInPlace(this.player.camera.getForwardRay().direction.scale(0.5));
+
     const end = start.add(direction.scale(this.getStat(WeaponStatistic.RANGE)));
 
     this.physicsEngine.raycastToRef(start, end, this.raycastResult);
