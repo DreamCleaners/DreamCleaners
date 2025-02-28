@@ -6,9 +6,11 @@ import {
 } from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { AssetType } from './assetType';
+import { WeaponData } from './weapons/weaponData';
 
 export class AssetManager {
   private loadedContainers: Map<string, AssetContainer> = new Map();
+  private loadedWeaponJsons: Map<string, WeaponData> = new Map();
 
   constructor(private scene: Scene) {}
 
@@ -45,5 +47,27 @@ export class AssetManager {
       container.dispose();
       this.loadedContainers.delete(assetKey);
     }
+  }
+
+  /**
+   * Load a weapon JSON file
+   */
+  public async loadWeaponJson(weaponName: string): Promise<WeaponData | null> {
+    console.log('Loading weapon JSON:', weaponName);
+    // Check if the weapon JSON is already loaded in map, if not we fetch it from public folder
+    const lowerCasedWeaponName = weaponName.toLowerCase();
+    let weaponJson = this.loadedWeaponJsons.get(lowerCasedWeaponName);
+    if (!weaponJson) {
+      console.log(`${weaponName} was never fetched before, fetching now`);
+      try {
+        const response = await fetch(`./data/stats/${lowerCasedWeaponName}.json`);
+        weaponJson = (await response.json()) as WeaponData;
+        this.loadedWeaponJsons.set(lowerCasedWeaponName, weaponJson);
+      } catch (error) {
+        console.error(`Failed to load weapon JSON: ${weaponName} ` + error);
+        return null;
+      }
+    }
+    return weaponJson;
   }
 }

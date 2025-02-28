@@ -14,8 +14,9 @@ import {
 } from '@babylonjs/core';
 import { AssetType } from '../assetType';
 import { IDamageable } from '../damageable';
+import { WeaponData } from './weaponData';
 
-export class Weapon {
+export class Weapon implements WeaponData {
   private mesh!: AbstractMesh;
   private player!: Player;
   public weaponName!: string;
@@ -24,12 +25,12 @@ export class Weapon {
   private physicsEngine!: PhysicsEngineV2;
 
   // Array containing all non static stats for the weapon, for every rarity tier
-  private globalStats!: Map<WeaponStatistic, Array<number>>;
+  public globalStats!: Map<WeaponStatistic, Array<number>>;
 
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
   private currentStats!: Map<WeaponStatistic, number>;
 
-  private staticStats!: Map<StaticWeaponStatistic, number>;
+  public staticStats!: Map<StaticWeaponStatistic, number>;
 
   private lastWeaponFire = 0;
 
@@ -64,19 +65,23 @@ export class Weapon {
         this.mesh.scaling = new Vector3(0.15, 0.15, 0.15);
         break;
       case 'shotgun':
-        this.mesh.rotation = new Vector3(0, Math.PI, -Math.PI/2);
+        this.mesh.rotation = new Vector3(0, Math.PI, -Math.PI / 2);
         this.mesh.scaling = new Vector3(1.3, 1.3, 1.3);
         break;
       default:
-        console.log("Weapon " + this.weaponName + " not found, cannot properly position and scale it, going default values");
+        console.log(
+          'Weapon ' +
+            this.weaponName +
+            ' not found, cannot properly position and scale it, going default values',
+        );
         break;
     }
 
     this.hideInScene();
 
-    // TODO! Remove this, only present until the stages are implemented as it will be gameScene's
+    // TODO! Remove this, only present until the stages are implemented as it will be gameScene's (or sceneManager)
     // role to show the weapon at stage entrance.
-    if(this.weaponName === 'glock') {
+    if (this.weaponName === 'glock') {
       this.showInScene();
     }
   }
@@ -100,34 +105,32 @@ export class Weapon {
 
   /** Parses JSON of the weapon stats and load it into class' arrays fields */
   private async loadStatsFromJSON(): Promise<void> {
-    const name = this.weaponName.toLowerCase();
     try {
-      const response = await fetch(`/data/stats/${name}.json`);
-      if (!response.ok) {
-        throw new Error(`Weapon stats for ${this.weaponName} not found`);
-      }
-      const data = await response.json();
-
-      // Load global stats
-      for (const [key, values] of Object.entries(data.globalStats)) {
-        this.globalStats.set(
-          WeaponStatistic[key as keyof typeof WeaponStatistic],
-          values as Array<number>,
-        );
-      }
-
-      // Load static stats
-      for (const [key, value] of Object.entries(data.staticStats)) {
-        this.staticStats.set(
-          StaticWeaponStatistic[key as keyof typeof StaticWeaponStatistic],
-          value as number,
-        );
+      const data = await this.player.game.assetManager.loadWeaponJson(this.weaponName);
+  
+      if (data) {
+        // Load global stats
+        for (const [key, values] of Object.entries(data.globalStats)) {
+          this.globalStats.set(
+            WeaponStatistic[key as keyof typeof WeaponStatistic],
+            values as Array<number>,
+          );
+        }
+  
+        // Load static stats
+        for (const [key, value] of Object.entries(data.staticStats)) {
+          this.staticStats.set(
+            StaticWeaponStatistic[key as keyof typeof StaticWeaponStatistic],
+            value as number,
+          );
+        }
+      } else {
+        console.error(`No data found for weapon ${this.weaponName}`);
       }
     } catch (error) {
-      console.error(`Could not load stats from JSON for weapon of name ${this.weaponName},
-                 error trace: ${error}`);
+      console.error(`Could not load stats from JSON for weapon of name ${this.weaponName}, error trace: ${error}`);
     }
-
+  
     this.applyCurrentStats();
   }
 
@@ -275,13 +278,14 @@ export class Weapon {
       const damageableEntity = this.raycastResult.body?.transformNode
         .metadata as IDamageable;
 
-        // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
-      const damagePerBullet = this.getStat(WeaponStatistic.DAMAGE) / this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT);
+      // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
+      const damagePerBullet =
+        this.getStat(WeaponStatistic.DAMAGE) /
+        this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT);
 
       damageableEntity.takeDamage(damagePerBullet);
 
       console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
-
     }
 
     // Debug shooting line
@@ -315,7 +319,7 @@ export class Weapon {
       () => {
         this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
         this.isReloading = false;
-      console.log("Done reloading");
+        console.log('Done reloading');
       },
       this.getStat(WeaponStatistic.RELOAD_TIME) * 1000,
     );
