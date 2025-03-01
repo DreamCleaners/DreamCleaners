@@ -57,7 +57,7 @@ export class InputManager {
           this.inputState.actions.set(InputAction.JUMP, keyboardEvent.type === 'keydown');
         }
 
-        // Weapon switch, useless key for now
+        // Switching weapons
         else if (keyboardEvent.code === 'Digit1') {
           this.inputState.actions.set(
             InputAction.PRESS_ONE,
@@ -69,6 +69,15 @@ export class InputManager {
             keyboardEvent.type === 'keydown',
           );
         }
+        
+        // Crouching / Sliding
+        if (keyboardEvent.code === 'ShiftLeft') {
+          this.inputState.actions.set(
+            InputAction.CROUCH,
+            keyboardEvent.type === 'keydown',
+          );
+        }
+      
 
         // RELOADING
         if (keyboardEvent.code === 'KeyR') {

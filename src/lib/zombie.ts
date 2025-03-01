@@ -36,7 +36,7 @@ export class Zombie implements IDamageable {
   private physicsAggregate!: PhysicsAggregate;
   private velocity: Vector3 = Vector3.Zero();
   private target: Vector3 = Vector3.Zero();
-  private SPEED = 1;
+  private SPEED = 0;
   private ATTACK_RANGE = 100;
 
   constructor(private game: Game) {}

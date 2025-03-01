@@ -41,6 +41,10 @@ export class Player implements IDamageable {
   private weaponSwitchDelay = 500;
   private lastWeaponSwitch = 0;
 
+  // Crouching / sliding
+  private isCrouching = false;
+  private isSliding = false;
+
   constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
     this.healthController.onDeath.add(this.onGameOver.bind(this));
@@ -106,16 +110,16 @@ export class Player implements IDamageable {
     this.camera.angularSensibility = 1000;
     // Allows no "near clipping" of meshes when close to the camera
     this.camera.minZ = 0.01;
-
   }
 
   public update(): void {
+
     if (!this.game.isPointerLocked) return;
 
     if (this.inputs.actions.get(InputAction.SHOOT)) {
       this.equippedWeapon.handlePrimaryFire();
     }
-
+  
     if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
       this.equipWeapon(0);
     }
@@ -125,6 +129,19 @@ export class Player implements IDamageable {
     if (this.inputs.actions.get(InputAction.RELOAD)) {
       this.equippedWeapon.reload();
     }
+  
+    if (this.inputs.actions.get(InputAction.CROUCH)) {
+      if (!this.isCrouching) {
+        this.crouch();
+      }
+    } else {
+      if (this.isCrouching) {
+        this.restoreHitboxHeight();
+      }
+    }
+  
+    // debugging display players hitbox stats
+    //console.log("Player's hitbox stats: ", this.physicsAggregate.body.getBoundingBox());
   }
 
   public fixedUpdate(): void {
@@ -162,8 +179,17 @@ export class Player implements IDamageable {
       directionX * Math.sin(this.camera.rotation.y);
 
     direction.normalize(); // Prevents faster diagonal movement
-    this.velocity.x = direction.x * this.SPEED;
-    this.velocity.z = direction.y * this.SPEED;
+
+    // Slower movement when crouching
+    if(this.isCrouching) {
+      this.velocity.x = direction.x * (this.SPEED/2);
+      this.velocity.z = direction.y * (this.SPEED/2);
+    }
+    else{
+      this.velocity.x = direction.x * this.SPEED;
+      this.velocity.z = direction.y * this.SPEED;
+    }
+    
 
     if (this.isGrounded && this.inputs.actions.get(InputAction.JUMP) && this.canJump) {
       this.velocity.y = this.JUMP_FORCE;
@@ -218,4 +244,49 @@ export class Player implements IDamageable {
     this.equippedWeapon = this.weapons[index];
     this.equippedWeapon.showInScene();
   }
+
+
+  // Sliding related, might be better to put these in another class
+
+  /** Crouching logic for the player, we initiate an animation for simply reducing the player's body
+   * height, this will lower the camera as well and reduce the player's speed.
+   */
+  private crouch(): void {
+    if (this.isCrouching) {
+      console.log("Already crouching !");
+      return;
+    }
+  
+    this.isCrouching = true;
+    this.interpolateHitboxHeight(2, 1, 350);
+  }
+  
+  /** Restore player's body height at original value */
+  private restoreHitboxHeight(): void {
+    this.isCrouching = false;
+    this.interpolateHitboxHeight(1, 2, 350);
+  }
+  
+  /** Actual body's height modification over a duration to smooth the operation */
+  private interpolateHitboxHeight(startHeight: number, targetHeight: number, duration: number): void {
+    const startTime = performance.now();
+    const initialCameraY = this.camera.position.y;
+  
+    const animate = (currentTime: number) => {
+      const elapsedTime = currentTime - startTime;
+      const progress = Math.min(elapsedTime / duration, 1);
+      const newHeight = startHeight + (targetHeight - startHeight) * progress;
+  
+      this.hitbox.scaling.y = 1; 
+      this.hitbox.position.y = newHeight / 2; 
+      this.camera.position.y = initialCameraY - (startHeight - newHeight) / 2; 
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+  
+    requestAnimationFrame(animate);
+  }
+
 }

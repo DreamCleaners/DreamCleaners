@@ -32,7 +32,7 @@ export class GameScene {
       mass: 0,
     });
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 1; i++) {
       const zombie = new Zombie(this.game);
       await zombie.init(new Vector3(Math.random() * 0.15, 0, Math.random() * 0.15));
       this.zombies.push(zombie);

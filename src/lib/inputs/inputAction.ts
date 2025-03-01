@@ -4,6 +4,7 @@ export enum InputAction {
   LEFT,
   RIGHT,
   JUMP,
+  CROUCH,
   SHOOT,
   PRESS_ONE,
   PRESS_TWO,
