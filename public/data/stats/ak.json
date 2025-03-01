@@ -15,5 +15,10 @@
       "BULLETS_PER_SHOT": 1,
       "PROJECTION_CONE": 0,
       "KNOCKBACK": 12
+    },
+    "meshParameters":{
+      "SCALE": 0.4,
+      "POSITION": [0.5, -0.5, 0.7],
+      "ROTATION": ["0", "-PI/2", "0"]
     }
 }

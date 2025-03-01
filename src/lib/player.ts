@@ -65,9 +65,9 @@ export class Player implements IDamageable {
     this.initPlayerCamera();
     this.weapons = new Array<Weapon>();
 
-    //const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
-    //this.weapons.push(simpleGlock);
-    //this.equippedWeapon = simpleGlock;
+    /* const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
+    this.weapons.push(simpleGlock);
+    this.equippedWeapon = simpleGlock; */
 
     const ak = new Weapon(this, 'ak', WeaponRarity.COMMON);
     this.weapons.push(ak);

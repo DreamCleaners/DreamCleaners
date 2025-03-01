@@ -15,6 +15,7 @@ import {
 import { AssetType } from '../assetType';
 import { IDamageable } from '../damageable';
 import { WeaponData } from './weaponData';
+import { WeaponMeshParameter } from './weaponMeshParameters';
 
 export class Weapon implements WeaponData {
   private mesh!: AbstractMesh;
@@ -40,14 +41,18 @@ export class Weapon implements WeaponData {
   public justShot = false;
   // Used for preventing automatic shooting
 
+  // Values for the weapon's mesh
+  public meshParameters!: Map<WeaponMeshParameter, Array<number>>;
+
   constructor(player: Player, name: string, rarity: WeaponRarity) {
     this.player = player;
     this.currentRarity = rarity;
     this.weaponName = name;
     this.physicsEngine = player.game.scene.getPhysicsEngine() as PhysicsEngineV2;
     this.initArrays();
-    this.loadStatsFromJSON();
-    this.initMesh();
+    this.loadJSONIntoArrays().then(() => {
+      this.initMesh();
+    });
   }
 
   // ----------------- Container related (babylon) -----------------
@@ -58,31 +63,37 @@ export class Weapon implements WeaponData {
       this.weaponName,
       AssetType.WEAPON,
     );
+    console.log('Init mesh for weapon ' + this.weaponName);
     this.mesh = entries.rootNodes[0] as Mesh;
     this.mesh.parent = this.player.camera;
-    this.mesh.position.addInPlace(new Vector3(0.5, -0.4, 1.5));
 
-    // Positioning and scaling, hard coded values
-    switch (this.weaponName) {
-      case 'glock':
-        this.mesh.scaling = new Vector3(0.15, 0.15, 0.15);
-        break;
-      case 'shotgun':
-        this.mesh.rotation = new Vector3(0, Math.PI, -Math.PI / 2);
-        this.mesh.scaling = new Vector3(1.3, 1.3, 1.3);
-        break;
-      case 'ak':
-        this.mesh.rotation = new Vector3(0, -Math.PI / 2, 0);
-        this.mesh.scaling = new Vector3(0.4, 0.4, 0.4);
-        this.mesh.position = new Vector3(0.5, -0.5, 0.7);
-        break;
-      default:
-        console.log(
-          'Weapon ' +
-            this.weaponName +
-            ' not found, cannot properly position and scale it, going default values',
-        );
-        break;
+    const meshPositionArray = this.meshParameters.get(WeaponMeshParameter.POSITION);
+    const meshRotationArray = this.meshParameters.get(WeaponMeshParameter.ROTATION);
+    const meshScaleArray = this.meshParameters.get(WeaponMeshParameter.SCALE);
+
+    if (meshPositionArray && meshRotationArray && meshScaleArray) {
+      const meshPosition = new Vector3(
+        meshPositionArray[0],
+        meshPositionArray[1],
+        meshPositionArray[2],
+      );
+      const meshRotation = new Vector3(
+        meshRotationArray[0],
+        meshRotationArray[1],
+        meshRotationArray[2],
+      );
+      const meshScale = meshScaleArray[0];
+      console.log('mesh scale array: ' + meshScaleArray);
+      console.log('Mesh scale: ' + meshScale);
+
+      console.log('Adding in place at ' + meshPosition);
+      this.mesh.position.addInPlace(meshPosition);
+      console.log('Setting rotation to ' + meshRotation);
+      this.mesh.rotation = meshRotation;
+      console.log('Setting scaling to ' + meshScale);
+      this.mesh.scaling = new Vector3(meshScale, meshScale, meshScale);
+    } else {
+      console.error('Mesh parameters not found for weapon ' + this.weaponName);
     }
 
     this.hideInScene();
@@ -90,6 +101,7 @@ export class Weapon implements WeaponData {
     // TODO! Remove this, only present until the stages are implemented as it will be gameScene's (or sceneManager)
     // role to show the weapon at stage entrance.
     if (this.weaponName === 'ak') {
+      console.log('Showing the ak');
       this.showInScene();
     }
   }
@@ -109,10 +121,11 @@ export class Weapon implements WeaponData {
     this.globalStats = new Map<WeaponStatistic, Array<number>>();
     this.currentStats = new Map<WeaponStatistic, number>();
     this.staticStats = new Map<StaticWeaponStatistic, number>();
+    this.meshParameters = new Map<WeaponMeshParameter, Array<number>>();
   }
 
-  /** Parses JSON of the weapon stats and load it into class' arrays fields */
-  private async loadStatsFromJSON(): Promise<void> {
+  /** Parses JSON of the weapon stats and mesh parameters and load it into class' arrays fields */
+  private async loadJSONIntoArrays(): Promise<void> {
     try {
       const data = await this.player.game.assetManager.loadWeaponJson(this.weaponName);
 
@@ -132,12 +145,34 @@ export class Weapon implements WeaponData {
             value as number,
           );
         }
+
+        // Load mesh parameters
+        for (const [key, values] of Object.entries(data.meshParameters)) {
+          const enumKey = WeaponMeshParameter[key as keyof typeof WeaponMeshParameter];
+          console.log(`Key: ${key}, Enum Key: ${enumKey}, Values: ${values}`);
+          if (enumKey === undefined) {
+            console.error(`Invalid key: ${key}`);
+            continue;
+          }
+          if (key === 'ROTATION') {
+            // Convert string values to numbers
+            const rotationValues = (values as Array<string>).map((value) => {
+              return eval(value.replace('PI', 'Math.PI'));
+            });
+            this.meshParameters.set(enumKey, rotationValues);
+          } else if (key === 'SCALE') {
+            // Convert single number to array
+            this.meshParameters.set(enumKey, [values as number]);
+          } else {
+            this.meshParameters.set(enumKey, values as Array<number>);
+          }
+        }
       } else {
         console.error(`No data found for weapon ${this.weaponName}`);
       }
     } catch (error) {
       console.error(
-        `Could not load stats from JSON for weapon of name ${this.weaponName}, error trace: ${error}`,
+        `Could not load JSON data for weapon of name ${this.weaponName}, error trace: ${error}`,
       );
     }
 
