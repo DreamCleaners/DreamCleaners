@@ -50,6 +50,13 @@ export class Player implements IDamageable {
   // By how much we multiply the player's velocity during the current slide
   private readonly INITIAL_SLIDING_SPEED_FACTOR = 1.02; // The initial factor
 
+  private crouchStartTime: number | null = null;
+  private crouchDuration = 350; 
+  // Duration of the crouch (lowering the camera and player's body) 
+  // animation in milliseconds
+  private readonly ORIGINAL_PLAYER_HEIGHT = 2;
+  private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT; 
+
   constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
     this.healthController.onDeath.add(this.onGameOver.bind(this));
@@ -118,13 +125,12 @@ export class Player implements IDamageable {
   }
 
   public update(): void {
-
     if (!this.game.isPointerLocked) return;
 
     if (this.inputs.actions.get(InputAction.SHOOT)) {
       this.equippedWeapon.handlePrimaryFire();
     }
-  
+
     if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
       this.equipWeapon(0);
     }
@@ -134,7 +140,7 @@ export class Player implements IDamageable {
     if (this.inputs.actions.get(InputAction.RELOAD)) {
       this.equippedWeapon.reload();
     }
-  
+
     if (this.inputs.actions.get(InputAction.CROUCH)) {
       if (!this.isCrouching) {
         this.crouch();
@@ -144,7 +150,7 @@ export class Player implements IDamageable {
         this.restoreHitboxHeight();
       }
     }
-  
+
     // debugging display players hitbox stats
     //console.log("Player's hitbox stats: ", this.physicsAggregate.body.getBoundingBox());
   }
@@ -186,27 +192,25 @@ export class Player implements IDamageable {
     direction.normalize(); // Prevents faster diagonal movement
 
     // Slower movement when crouching
-    if(this.isCrouching && !this.isSliding){
-      this.velocity.x = direction.x * (this.SPEED/2);
-      this.velocity.z = direction.y * (this.SPEED/2);
-    }
-    else if(this.isCrouching && this.isSliding){
-      console.log("HELL YEAH SLIDING");
+    if (this.isCrouching && !this.isSliding) {
+      this.velocity.x = direction.x * (this.SPEED / 2);
+      this.velocity.z = direction.y * (this.SPEED / 2);
+    } else if (this.isCrouching && this.isSliding) {
       // Sliding movement
-      this.velocity = this.currentSlideVector; 
+      this.velocity = this.currentSlideVector;
       // Overwrite the velocity with the one before sliding, the player is not able to change direction during a slide
       // Actually we make the slide slightly faster than the player's normal speed
-      this.currentSlidingSpeedFactor = Math.max(0, this.currentSlidingSpeedFactor - 0.0005);
+      this.currentSlidingSpeedFactor = Math.max(
+        0,
+        this.currentSlidingSpeedFactor - 0.0005,
+      );
       // We reduce this factor over time during slide to make the slide stop eventually
       this.velocity.x = this.velocity.x * this.currentSlidingSpeedFactor;
       this.velocity.z = this.velocity.z * this.currentSlidingSpeedFactor;
-
-    }
-    else{
+    } else {
       this.velocity.x = direction.x * this.SPEED;
       this.velocity.z = direction.y * this.SPEED;
     }
-    
 
     if (this.isGrounded && this.inputs.actions.get(InputAction.JUMP) && this.canJump) {
       this.velocity.y = this.JUMP_FORCE;
@@ -262,7 +266,6 @@ export class Player implements IDamageable {
     this.equippedWeapon.showInScene();
   }
 
-
   // Sliding related, might be better to put these in another class
 
   /** Crouching logic for the player, we initiate an animation for simply reducing the player's body
@@ -270,21 +273,22 @@ export class Player implements IDamageable {
    */
   private crouch(): void {
     if (this.isCrouching) {
-      console.log("Already crouching !");
+      console.log('Already crouching !');
       return;
     }
 
-    if(this.isMoving() && this.isGrounded){
+    if (this.isMoving() && this.isGrounded) {
       // We try to crouch while moving, we initiate a slide
       this.isSliding = true;
       this.currentSlidingSpeedFactor = this.INITIAL_SLIDING_SPEED_FACTOR;
       this.currentSlideVector = this.velocity;
-      console.log("Initiating slide !");
     }
-  
+
     this.isCrouching = true;
-    this.interpolateHitboxHeight(2, 1, 350);
+    this.crouchStartTime = performance.now();
+    this.interpolateHitboxHeight(this.currentCrouchHeight, 1, this.crouchDuration);
   }
+
   /** Whether the player is in movement, used to detect sliding initiation */
   private isMoving(): boolean {
     return this.inputs.directions.x !== 0 || this.inputs.directions.y !== 0;
@@ -292,31 +296,37 @@ export class Player implements IDamageable {
 
   /** Restore player's body height at original value */
   private restoreHitboxHeight(): void {
-    this.interpolateHitboxHeight(1, 2, 350);
     this.isCrouching = false;
     this.isSliding = false;
+    this.crouchStartTime = null;
+    this.interpolateHitboxHeight(this.currentCrouchHeight, this.ORIGINAL_PLAYER_HEIGHT, this.crouchDuration);
   }
-  
+
   /** Actual body's height modification over a duration to smooth the operation */
   private interpolateHitboxHeight(startHeight: number, targetHeight: number, duration: number): void {
-    const startTime = performance.now();
+    const startTime = this.crouchStartTime || performance.now();
     const initialCameraY = this.camera.position.y;
-  
+
     const animate = (currentTime: number) => {
       const elapsedTime = currentTime - startTime;
       const progress = Math.min(elapsedTime / duration, 1);
       const newHeight = startHeight + (targetHeight - startHeight) * progress;
-  
-      this.hitbox.scaling.y = 1; 
-      this.hitbox.position.y = newHeight / 2; 
-      this.camera.position.y = initialCameraY - (startHeight - newHeight) / 2; 
+
+      this.hitbox.scaling.y = 1;
+      this.hitbox.position.y = newHeight / 2;
+      this.camera.position.y = initialCameraY - (startHeight - newHeight) / 2;
+
+      this.currentCrouchHeight = newHeight; 
+      // Store the current height, in case the player cancels the crouch then 
+      // instantly crouches again, we need to know the current height to interpolate from
 
       if (progress < 1) {
         requestAnimationFrame(animate);
+      } else {
+        this.crouchStartTime = null;
       }
     };
-  
+
     requestAnimationFrame(animate);
   }
-
 }
