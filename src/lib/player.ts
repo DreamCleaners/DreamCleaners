@@ -51,11 +51,11 @@ export class Player implements IDamageable {
   private readonly INITIAL_SLIDING_SPEED_FACTOR = 1.02; // The initial factor
 
   private crouchStartTime: number | null = null;
-  private crouchDuration = 350; 
-  // Duration of the crouch (lowering the camera and player's body) 
+  private crouchDuration = 350;
+  // Duration of the crouch (lowering the camera and player's body)
   // animation in milliseconds
   private readonly ORIGINAL_PLAYER_HEIGHT = 2;
-  private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT; 
+  private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT;
 
   constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
@@ -65,9 +65,13 @@ export class Player implements IDamageable {
     this.initPlayerCamera();
     this.weapons = new Array<Weapon>();
 
-    const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
-    this.weapons.push(simpleGlock);
-    this.equippedWeapon = simpleGlock;
+    //const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
+    //this.weapons.push(simpleGlock);
+    //this.equippedWeapon = simpleGlock;
+
+    const ak = new Weapon(this, 'ak', WeaponRarity.COMMON);
+    this.weapons.push(ak);
+    this.equippedWeapon = ak;
 
     const shotgun = new Weapon(this, 'shotgun', WeaponRarity.LEGENDARY);
     this.weapons.push(shotgun);
@@ -129,6 +133,12 @@ export class Player implements IDamageable {
 
     if (this.inputs.actions.get(InputAction.SHOOT)) {
       this.equippedWeapon.handlePrimaryFire();
+    } else {
+      if (this.equippedWeapon.justShot) {
+        // Meaning we just shot and released the button, we can now reset the justShot flag
+        // To allow another shot
+        this.equippedWeapon.justShot = false;
+      }
     }
 
     if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
@@ -299,11 +309,19 @@ export class Player implements IDamageable {
     this.isCrouching = false;
     this.isSliding = false;
     this.crouchStartTime = null;
-    this.interpolateHitboxHeight(this.currentCrouchHeight, this.ORIGINAL_PLAYER_HEIGHT, this.crouchDuration);
+    this.interpolateHitboxHeight(
+      this.currentCrouchHeight,
+      this.ORIGINAL_PLAYER_HEIGHT,
+      this.crouchDuration,
+    );
   }
 
   /** Actual body's height modification over a duration to smooth the operation */
-  private interpolateHitboxHeight(startHeight: number, targetHeight: number, duration: number): void {
+  private interpolateHitboxHeight(
+    startHeight: number,
+    targetHeight: number,
+    duration: number,
+  ): void {
     const startTime = this.crouchStartTime || performance.now();
     const initialCameraY = this.camera.position.y;
 
@@ -316,8 +334,8 @@ export class Player implements IDamageable {
       this.hitbox.position.y = newHeight / 2;
       this.camera.position.y = initialCameraY - (startHeight - newHeight) / 2;
 
-      this.currentCrouchHeight = newHeight; 
-      // Store the current height, in case the player cancels the crouch then 
+      this.currentCrouchHeight = newHeight;
+      // Store the current height, in case the player cancels the crouch then
       // instantly crouches again, we need to know the current height to interpolate from
 
       if (progress < 1) {

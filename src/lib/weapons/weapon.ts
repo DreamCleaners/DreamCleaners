@@ -37,6 +37,9 @@ export class Weapon implements WeaponData {
   public currentAmmoRemaining!: number;
   private isReloading = false;
 
+  public justShot = false;
+  // Used for preventing automatic shooting
+
   constructor(player: Player, name: string, rarity: WeaponRarity) {
     this.player = player;
     this.currentRarity = rarity;
@@ -68,6 +71,11 @@ export class Weapon implements WeaponData {
         this.mesh.rotation = new Vector3(0, Math.PI, -Math.PI / 2);
         this.mesh.scaling = new Vector3(1.3, 1.3, 1.3);
         break;
+      case 'ak':
+        this.mesh.rotation = new Vector3(0, -Math.PI / 2, 0);
+        this.mesh.scaling = new Vector3(0.4, 0.4, 0.4);
+        this.mesh.position = new Vector3(0.5, -0.5, 0.7);
+        break;
       default:
         console.log(
           'Weapon ' +
@@ -81,7 +89,7 @@ export class Weapon implements WeaponData {
 
     // TODO! Remove this, only present until the stages are implemented as it will be gameScene's (or sceneManager)
     // role to show the weapon at stage entrance.
-    if (this.weaponName === 'glock') {
+    if (this.weaponName === 'ak') {
       this.showInScene();
     }
   }
@@ -194,6 +202,11 @@ export class Weapon implements WeaponData {
       return;
     }
 
+    if (!this.staticStats.get(StaticWeaponStatistic.IS_AUTOMATIC) && this.justShot) {
+      console.log('Non automatic weapon, cannot hold the trigger');
+      return;
+    }
+
     this.lastWeaponFire = currentTime;
 
     const isBurst = this.getStaticStat(StaticWeaponStatistic.IS_BURST) || false;
@@ -223,6 +236,10 @@ export class Weapon implements WeaponData {
     } else {
       this.shootBullets(bulletsPerShot, projectionCone);
       this.currentAmmoRemaining--;
+    }
+
+    if (!this.staticStats.get(StaticWeaponStatistic.IS_AUTOMATIC)) {
+      this.justShot = true;
     }
   }
 
