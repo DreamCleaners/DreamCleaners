@@ -69,7 +69,7 @@ export class InputManager {
             keyboardEvent.type === 'keydown',
           );
         }
-        
+
         // Crouching / Sliding
         if (keyboardEvent.code === 'ShiftLeft') {
           this.inputState.actions.set(
@@ -77,7 +77,6 @@ export class InputManager {
             keyboardEvent.type === 'keydown',
           );
         }
-      
 
         // RELOADING
         if (keyboardEvent.code === 'KeyR') {

@@ -44,6 +44,11 @@ export class Player implements IDamageable {
   // Crouching / sliding
   private isCrouching = false;
   private isSliding = false;
+  private currentSlideVector: Vector3 = Vector3.Zero();
+  // This vector is used to store the player's velocity before sliding as only this velocity will be used during the slide
+  private currentSlidingSpeedFactor = 1.02;
+  // By how much we multiply the player's velocity during the current slide
+  private readonly INITIAL_SLIDING_SPEED_FACTOR = 1.02; // The initial factor
 
   constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
@@ -181,9 +186,21 @@ export class Player implements IDamageable {
     direction.normalize(); // Prevents faster diagonal movement
 
     // Slower movement when crouching
-    if(this.isCrouching) {
+    if(this.isCrouching && !this.isSliding){
       this.velocity.x = direction.x * (this.SPEED/2);
       this.velocity.z = direction.y * (this.SPEED/2);
+    }
+    else if(this.isCrouching && this.isSliding){
+      console.log("HELL YEAH SLIDING");
+      // Sliding movement
+      this.velocity = this.currentSlideVector; 
+      // Overwrite the velocity with the one before sliding, the player is not able to change direction during a slide
+      // Actually we make the slide slightly faster than the player's normal speed
+      this.currentSlidingSpeedFactor = Math.max(0, this.currentSlidingSpeedFactor - 0.0005);
+      // We reduce this factor over time during slide to make the slide stop eventually
+      this.velocity.x = this.velocity.x * this.currentSlidingSpeedFactor;
+      this.velocity.z = this.velocity.z * this.currentSlidingSpeedFactor;
+
     }
     else{
       this.velocity.x = direction.x * this.SPEED;
@@ -256,15 +273,28 @@ export class Player implements IDamageable {
       console.log("Already crouching !");
       return;
     }
+
+    if(this.isMoving() && this.isGrounded){
+      // We try to crouch while moving, we initiate a slide
+      this.isSliding = true;
+      this.currentSlidingSpeedFactor = this.INITIAL_SLIDING_SPEED_FACTOR;
+      this.currentSlideVector = this.velocity;
+      console.log("Initiating slide !");
+    }
   
     this.isCrouching = true;
     this.interpolateHitboxHeight(2, 1, 350);
   }
-  
+  /** Whether the player is in movement, used to detect sliding initiation */
+  private isMoving(): boolean {
+    return this.inputs.directions.x !== 0 || this.inputs.directions.y !== 0;
+  }
+
   /** Restore player's body height at original value */
   private restoreHitboxHeight(): void {
-    this.isCrouching = false;
     this.interpolateHitboxHeight(1, 2, 350);
+    this.isCrouching = false;
+    this.isSliding = false;
   }
   
   /** Actual body's height modification over a duration to smooth the operation */
