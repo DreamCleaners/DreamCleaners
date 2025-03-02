@@ -24,8 +24,15 @@ export class Player implements IDamageable {
   public camera!: UniversalCamera;
   private hitbox!: Mesh;
   private readonly SPEED = 7;
-  private readonly healthController = new HealthController(1000);
   public onDamageTakenObservable = new Observable<number>();
+
+  // health
+  private readonly healthController = new HealthController(1000);
+  private timeSinceLastDamage = 0; // ms
+  private regenDelay = 3; // seconds
+  private regenAmount = 5;
+  private regenInterval = 2; // seconds
+  private lastRegenTick = 0; // ms
 
   // jump
   private readonly JUMP_FORCE = 6;
@@ -168,7 +175,10 @@ export class Player implements IDamageable {
   }
 
   public fixedUpdate(): void {
+    this.handleRegen();
+
     if (!this.game.isPointerLocked) return;
+
     this.updateVelocity();
   }
 
@@ -177,11 +187,35 @@ export class Player implements IDamageable {
   }
 
   public takeDamage(damage: number): void {
+    this.timeSinceLastDamage = 0;
     this.onDamageTakenObservable.notifyObservers(damage);
     this.healthController.removeHealth(damage);
     console.log(
       `Player took ${damage} damage, current health: ${this.healthController.getHealth()}`,
     );
+  }
+
+  private handleRegen(): void {
+    this.timeSinceLastDamage += this.game.engine.getDeltaTime();
+
+    if (this.timeSinceLastDamage > this.regenDelay * 1000) {
+      this.lastRegenTick += this.game.engine.getDeltaTime();
+
+      if (
+        this.lastRegenTick > this.regenInterval * 1000 &&
+        this.healthController.getHealth() < this.healthController.getMaxHealth()
+      ) {
+        this.healthController.addHealth(this.regenAmount);
+        console.log(
+          `Player regenerated ${this.regenAmount} health, current health: ${this.healthController.getHealth()}`,
+        );
+        this.lastRegenTick = 0;
+      }
+    }
+  }
+
+  public resetHealth(): void {
+    this.healthController.addHealth(this.healthController.getMaxHealth());
   }
 
   // --------------------- Physics --------------------------

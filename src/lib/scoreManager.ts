@@ -24,7 +24,7 @@ export class ScoreManager {
     console.log(`=> Time bonus: +${this.totalTimeBonus}, Score: ${this.score}`);
 
     // malus
-    this.score -= this.totalDamageTakenMalus;
+    this.score = Math.max(this.score - this.totalDamageTakenMalus, 0);
     console.log(
       `=> Damage taken malus: -${this.totalDamageTakenMalus}, Score: ${this.score}`,
     );

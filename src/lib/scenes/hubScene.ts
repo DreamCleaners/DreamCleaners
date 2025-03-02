@@ -36,6 +36,8 @@ export class HubScene extends GameScene {
     this.physicsAggregates.push(groundPhysicsAggregate);
 
     await this.createBed(new Vector3(0, 0, -10));
+
+    this.game.player.resetHealth();
   }
 
   private async createBed(position: Vector3): Promise<void> {
