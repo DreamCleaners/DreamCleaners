@@ -19,6 +19,7 @@ export class HealthController {
   public removeHealth(value: number): void {
     this.health -= value;
     if (this.health <= 0) {
+      this.health = 0;
       this.onDeath.notifyObservers();
     }
   }

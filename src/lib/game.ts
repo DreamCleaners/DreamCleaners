@@ -1,7 +1,7 @@
 import { Engine, HavokPlugin, Scene, Vector3 } from '@babylonjs/core';
 import HavokPhysics from '@babylonjs/havok';
 import { Inspector } from '@babylonjs/inspector';
-import { SceneManager } from './sceneManager';
+import { SceneManager } from './scenes/sceneManager';
 import { InputManager } from './inputs/inputManager';
 import { Player } from './player';
 import { InputAction } from './inputs/inputAction';
@@ -12,8 +12,8 @@ export class Game {
   public inputManager!: InputManager;
   public isPointerLocked = false;
 
-  private engine!: Engine;
-  private sceneManager!: SceneManager;
+  public engine!: Engine;
+  public sceneManager!: SceneManager;
   private canvas!: HTMLCanvasElement;
   public player!: Player;
   public assetManager!: AssetManager;

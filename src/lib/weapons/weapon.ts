@@ -55,7 +55,7 @@ export class Weapon implements WeaponData {
     });
   }
 
-  // ----------------- Container related (babylon) -----------------
+  // ----------------- Asset container related (babylon) -----------------
   // ---------------------------------------------------------------
 
   private async initMesh(): Promise<void> {
@@ -63,7 +63,6 @@ export class Weapon implements WeaponData {
       this.weaponName,
       AssetType.WEAPON,
     );
-    console.log('Init mesh for weapon ' + this.weaponName);
     this.mesh = entries.rootNodes[0] as Mesh;
     this.mesh.parent = this.player.camera;
 
@@ -83,14 +82,8 @@ export class Weapon implements WeaponData {
         meshRotationArray[2],
       );
       const meshScale = meshScaleArray[0];
-      console.log('mesh scale array: ' + meshScaleArray);
-      console.log('Mesh scale: ' + meshScale);
-
-      console.log('Adding in place at ' + meshPosition);
       this.mesh.position.addInPlace(meshPosition);
-      console.log('Setting rotation to ' + meshRotation);
       this.mesh.rotation = meshRotation;
-      console.log('Setting scaling to ' + meshScale);
       this.mesh.scaling = new Vector3(meshScale, meshScale, meshScale);
     } else {
       console.error('Mesh parameters not found for weapon ' + this.weaponName);
@@ -101,7 +94,6 @@ export class Weapon implements WeaponData {
     // TODO! Remove this, only present until the stages are implemented as it will be gameScene's (or sceneManager)
     // role to show the weapon at stage entrance.
     if (this.weaponName === 'ak') {
-      console.log('Showing the ak');
       this.showInScene();
     }
   }
@@ -129,46 +121,41 @@ export class Weapon implements WeaponData {
     try {
       const data = await this.player.game.assetManager.loadWeaponJson(this.weaponName);
 
-      if (data) {
-        // Load global stats
-        for (const [key, values] of Object.entries(data.globalStats)) {
-          this.globalStats.set(
-            WeaponStatistic[key as keyof typeof WeaponStatistic],
-            values as Array<number>,
-          );
-        }
+      // Load global stats
+      for (const [key, values] of Object.entries(data.globalStats)) {
+        this.globalStats.set(
+          WeaponStatistic[key as keyof typeof WeaponStatistic],
+          values as Array<number>,
+        );
+      }
 
-        // Load static stats
-        for (const [key, value] of Object.entries(data.staticStats)) {
-          this.staticStats.set(
-            StaticWeaponStatistic[key as keyof typeof StaticWeaponStatistic],
-            value as number,
-          );
-        }
+      // Load static stats
+      for (const [key, value] of Object.entries(data.staticStats)) {
+        this.staticStats.set(
+          StaticWeaponStatistic[key as keyof typeof StaticWeaponStatistic],
+          value as number,
+        );
+      }
 
-        // Load mesh parameters
-        for (const [key, values] of Object.entries(data.meshParameters)) {
-          const enumKey = WeaponMeshParameter[key as keyof typeof WeaponMeshParameter];
-          console.log(`Key: ${key}, Enum Key: ${enumKey}, Values: ${values}`);
-          if (enumKey === undefined) {
-            console.error(`Invalid key: ${key}`);
-            continue;
-          }
-          if (key === 'ROTATION') {
-            // Convert string values to numbers
-            const rotationValues = (values as Array<string>).map((value) => {
-              return eval(value.replace('PI', 'Math.PI'));
-            });
-            this.meshParameters.set(enumKey, rotationValues);
-          } else if (key === 'SCALE') {
-            // Convert single number to array
-            this.meshParameters.set(enumKey, [values as number]);
-          } else {
-            this.meshParameters.set(enumKey, values as Array<number>);
-          }
+      // Load mesh parameters
+      for (const [key, values] of Object.entries(data.meshParameters)) {
+        const enumKey = WeaponMeshParameter[key as keyof typeof WeaponMeshParameter];
+        if (enumKey === undefined) {
+          console.error(`Invalid key: ${key}`);
+          continue;
         }
-      } else {
-        console.error(`No data found for weapon ${this.weaponName}`);
+        if (key === 'ROTATION') {
+          // Convert string values to numbers
+          const rotationValues = (values as Array<string>).map((value) => {
+            return eval(value.replace('PI', 'Math.PI'));
+          });
+          this.meshParameters.set(enumKey, rotationValues);
+        } else if (key === 'SCALE') {
+          // Convert single number to array
+          this.meshParameters.set(enumKey, [values as number]);
+        } else {
+          this.meshParameters.set(enumKey, values as Array<number>);
+        }
       }
     } catch (error) {
       console.error(

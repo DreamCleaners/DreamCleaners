@@ -52,20 +52,18 @@ export class AssetManager {
   /**
    * Load a weapon JSON file
    */
-  public async loadWeaponJson(weaponName: string): Promise<WeaponData | null> {
-    console.log('Loading weapon JSON:', weaponName);
+  public async loadWeaponJson(weaponName: string): Promise<WeaponData> {
     // Check if the weapon JSON is already loaded in map, if not we fetch it from public folder
     const lowerCasedWeaponName = weaponName.toLowerCase();
     let weaponJson = this.loadedWeaponJsons.get(lowerCasedWeaponName);
     if (!weaponJson) {
-      console.log(`${weaponName} was never fetched before, fetching now`);
       try {
         const response = await fetch(`./data/stats/${lowerCasedWeaponName}.json`);
         weaponJson = (await response.json()) as WeaponData;
         this.loadedWeaponJsons.set(lowerCasedWeaponName, weaponJson);
       } catch (error) {
         console.error(`Failed to load weapon JSON: ${weaponName} ` + error);
-        return null;
+        throw error;
       }
     }
     return weaponJson;

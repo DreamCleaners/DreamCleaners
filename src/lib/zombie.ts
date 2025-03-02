@@ -163,6 +163,10 @@ export class Zombie implements IDamageable {
 
   public onDeath(): void {
     this.state = ZombieState.DEAD;
+    this.dispose();
+  }
+
+  public dispose(): void {
     this.physicsAggregate.dispose();
     this.mesh.dispose();
   }
