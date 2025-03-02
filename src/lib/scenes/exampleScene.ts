@@ -17,8 +17,14 @@ export class ExampleScene extends GameScene {
   private physicsAggregates: PhysicsAggregate[] = [];
 
   private zombies: Zombie[] = [];
+  private zombieCount = 0;
 
   public async load(): Promise<void> {
+    this.game.scoreManager.reset();
+    this.game.player.onDamageTakenObservable.add(
+      this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
+    );
+
     const light = new HemisphericLight('light', new Vector3(0, 1, 0), this.scene);
     light.intensity = 0.7;
     this.assetContainer.lights.push(light);
@@ -34,16 +40,13 @@ export class ExampleScene extends GameScene {
     });
     this.physicsAggregates.push(groundPhysicsAggregate);
 
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 2; i++) {
       const zombie = new Zombie(this.game);
       await zombie.init(new Vector3(Math.random() * 0.15, 0, Math.random() * 0.15));
+      zombie.onDeathObservable.add(this.onZombieDeath.bind(this));
       this.zombies.push(zombie);
+      this.zombieCount++;
     }
-
-    // Simultate end of the stage
-    setTimeout(() => {
-      this.game.sceneManager.changeScene(SceneType.HUB);
-    }, 10000);
   }
 
   public update(): void {
@@ -70,5 +73,15 @@ export class ExampleScene extends GameScene {
     this.physicsAggregates = [];
 
     this.assetContainer.dispose();
+  }
+
+  private onZombieDeath(): void {
+    this.game.scoreManager.onEnemyDeath();
+
+    this.zombieCount--;
+    if (this.zombieCount === 0) {
+      this.game.scoreManager.endStage();
+      this.game.sceneManager.changeScene(SceneType.HUB);
+    }
   }
 }

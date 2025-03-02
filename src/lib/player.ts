@@ -2,6 +2,7 @@ import {
   IPhysicsCollisionEvent,
   Mesh,
   MeshBuilder,
+  Observable,
   PhysicsAggregate,
   PhysicsEventType,
   PhysicsShapeType,
@@ -24,6 +25,7 @@ export class Player implements IDamageable {
   private hitbox!: Mesh;
   private readonly SPEED = 7;
   private readonly healthController = new HealthController(1000);
+  public onDamageTakenObservable = new Observable<number>();
 
   // jump
   private readonly JUMP_FORCE = 6;
@@ -175,6 +177,7 @@ export class Player implements IDamageable {
   }
 
   public takeDamage(damage: number): void {
+    this.onDamageTakenObservable.notifyObservers(damage);
     this.healthController.removeHealth(damage);
     console.log(
       `Player took ${damage} damage, current health: ${this.healthController.getHealth()}`,

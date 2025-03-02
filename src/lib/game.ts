@@ -6,6 +6,7 @@ import { InputManager } from './inputs/inputManager';
 import { Player } from './player';
 import { InputAction } from './inputs/inputAction';
 import { AssetManager } from './assetManager';
+import { ScoreManager } from './scoreManager';
 
 export class Game {
   public scene!: Scene;
@@ -17,6 +18,7 @@ export class Game {
   private canvas!: HTMLCanvasElement;
   public player!: Player;
   public assetManager!: AssetManager;
+  public scoreManager = new ScoreManager();
 
   private lastFixedUpdate = 0;
   private fixedUpdateInterval = 1000 / 60;
