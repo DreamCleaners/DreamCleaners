@@ -1,11 +1,14 @@
 import { Scene } from '@babylonjs/core';
 import { Game } from '../game';
+import { EnemyFactory } from '../enemies/enemyFactory';
 
 export abstract class GameScene {
   protected scene: Scene;
+  protected enemyManager!: EnemyFactory;
 
   constructor(protected game: Game) {
     this.scene = game.scene;
+    this.enemyManager = EnemyFactory.getInstance();
   }
 
   public abstract load(): Promise<void>;

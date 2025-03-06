@@ -5,7 +5,7 @@ export class HealthController {
 
   public onDeath: Observable<void> = new Observable();
 
-  constructor(private maxHealth: number) {
+  constructor(public maxHealth: number = -1) {
     this.health = maxHealth;
   }
 
@@ -22,6 +22,10 @@ export class HealthController {
       this.health = 0;
       this.onDeath.notifyObservers();
     }
+  }
+
+  public setHealth(value: number): void {
+    this.health = value;
   }
 
   public getHealth(): number {
