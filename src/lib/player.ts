@@ -21,7 +21,7 @@ import { CameraManager } from './cameraManager';
 
 export class Player implements IDamageable {
   private inputs: InputState;
-  public cameraManager !: CameraManager;
+  public cameraManager!: CameraManager;
   public hitbox!: Mesh;
   private readonly SPEED = 7;
   public onDamageTakenObservable = new Observable<number>();
@@ -52,7 +52,7 @@ export class Player implements IDamageable {
 
   // Crouching / sliding
   private isCrouching = false;
-  private isSliding = false;
+  public isSliding = false;
   private currentSlideVector: Vector3 = Vector3.Zero();
   // This vector is used to store the player's velocity before sliding as only this velocity will be used during the slide
   private currentSlidingSpeedFactor = 1.02;
@@ -72,7 +72,7 @@ export class Player implements IDamageable {
 
     this.initPhysicsAggregate();
     this.cameraManager = new CameraManager(this);
-    
+
     this.weapons = new Array<Weapon>();
 
     /* const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
@@ -146,7 +146,7 @@ export class Player implements IDamageable {
       }
     }
 
-    this.cameraManager.updateCamera();
+    this.cameraManager.updateCamera(this.velocity);
   }
 
   public fixedUpdate(): void {
@@ -205,12 +205,8 @@ export class Player implements IDamageable {
 
     const direction = Vector2.Zero();
     const rotationY = this.cameraManager.getRotationY();
-    direction.x =
-      directionZ * Math.sin(rotationY) +
-      directionX * Math.cos(rotationY);
-    direction.y =
-      directionZ * Math.cos(rotationY) -
-      directionX * Math.sin(rotationY);
+    direction.x = directionZ * Math.sin(rotationY) + directionX * Math.cos(rotationY);
+    direction.y = directionZ * Math.cos(rotationY) - directionX * Math.sin(rotationY);
 
     direction.normalize(); // Prevents faster diagonal movement
 
@@ -346,7 +342,7 @@ export class Player implements IDamageable {
 
       this.hitbox.scaling.y = 1;
       this.hitbox.position.y = newHeight / 2;
-      this.cameraManager.setCameraHeight( initialCameraY - (startHeight - newHeight) / 2);
+      this.cameraManager.setCameraHeight(initialCameraY - (startHeight - newHeight) / 2);
 
       this.currentCrouchHeight = newHeight;
       // Store the current height, in case the player cancels the crouch then

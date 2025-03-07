@@ -272,7 +272,9 @@ export class Weapon implements WeaponData {
     if (projectionCone === 0) {
       // Not a "cone" weapon, just shoot straight in the direction of the camera
       for (let i = 0; i < bulletsPerShot; i++) {
-        this.performRaycast(this.player.cameraManager.getCamera().getForwardRay().direction);
+        this.performRaycast(
+          this.player.cameraManager.getCamera().getForwardRay().direction,
+        );
       }
     } else {
       // Based on the projection cone, we must determine a direction for each bullet (raycast)
@@ -312,7 +314,9 @@ export class Weapon implements WeaponData {
     // The raycasts stars at the player's camera position and not at the weapon's position
     // Thus, we need to add a small offset to the start position in order not to hit the player
     const start = this.player.cameraManager.getCamera().globalPosition.clone();
-    start.addInPlace(this.player.cameraManager.getCamera().getForwardRay().direction.scale(0.5));
+    start.addInPlace(
+      this.player.cameraManager.getCamera().getForwardRay().direction.scale(0.5),
+    );
 
     const end = start.add(direction.scale(this.getStat(WeaponStatistic.RANGE)));
 
