@@ -395,6 +395,10 @@ export class Weapon implements WeaponData {
       // Player stopped moving
       this.stopAnimation();
     }
+
+    if (this.player.isSliding) {
+      this.stopAnimation();
+    }
   }
 
   /** Continuously moves the weapon up and down to match the player's movements */

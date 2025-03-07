@@ -4,6 +4,8 @@ import { Player } from './player';
 export class CameraManager {
   private camera!: UniversalCamera;
   private isAnimating: boolean = false; // Add a flag to track if the animation is running
+  private WALK_CAMERA_ANIMATION_AMPLITUDE = 1;
+  private WALK_CAMERA_ANIMATION_SPEED = 0.003;
 
   constructor(private player: Player) {
     this.initCamera(player);
@@ -51,22 +53,23 @@ export class CameraManager {
     }
   }
 
+  /** Continuously inclines the camera to give a sense of speed */
   private animateCameraPlayerWalking(): void {
-    const amplitude = 1.8; // The camera inclination
-    const frequency = 0.003; // Adjust the frequency for the desired speed
-    this.isAnimating = true; // Set the flag to indicate the animation is running
-    const initialRotationZ = this.camera.rotation.z; // Store the initial camera rotation
-    const startTime = performance.now(); // Store the start time of the animation
+    const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE; // The camera inclination
+    const frequency = this.WALK_CAMERA_ANIMATION_SPEED; // The speed of the animation
+    this.isAnimating = true;
+    const initialRotationZ = this.camera.rotation.z; 
+    const startTime = performance.now(); 
 
     const animate = () => {
       if (!this.isAnimating) {
         return;
       }
 
-      const elapsedTime = performance.now() - startTime; // Calculate elapsed time
+      const elapsedTime = performance.now() - startTime; 
       const time = elapsedTime * frequency;
       const offsetZ = Math.sin(time) * amplitude * (Math.PI / 180);
-      this.camera.rotation.z = initialRotationZ + offsetZ; // Start from the initial rotation
+      this.camera.rotation.z = initialRotationZ + offsetZ; // Update the camera inclination
 
       requestAnimationFrame(animate);
     };
@@ -74,6 +77,7 @@ export class CameraManager {
     requestAnimationFrame(animate);
   }
 
+  /** Stops the camera animation by smoothly returning its inclination to original */
   private stopAnimation(): void {
     if (this.isAnimating) {
       this.isAnimating = false;
