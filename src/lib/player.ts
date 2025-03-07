@@ -278,6 +278,7 @@ export class Player implements IDamageable {
     ) {
       this.isGrounded = true;
       this.canJump = true;
+      this.velocity.y = 0;
     }
   }
 
