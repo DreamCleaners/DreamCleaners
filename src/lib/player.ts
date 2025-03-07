@@ -6,7 +6,6 @@ import {
   PhysicsAggregate,
   PhysicsEventType,
   PhysicsShapeType,
-  UniversalCamera,
   Vector2,
   Vector3,
 } from '@babylonjs/core';
@@ -18,11 +17,12 @@ import { InputAction } from './inputs/inputAction';
 import { IDamageable } from './damageable';
 import { HealthController } from './healthController';
 import { GameEntityType } from './gameEntityType';
+import { CameraManager } from './cameraManager';
 
 export class Player implements IDamageable {
   private inputs: InputState;
-  public camera!: UniversalCamera;
-  private hitbox!: Mesh;
+  public cameraManager !: CameraManager;
+  public hitbox!: Mesh;
   private readonly SPEED = 7;
   public onDamageTakenObservable = new Observable<number>();
 
@@ -71,7 +71,8 @@ export class Player implements IDamageable {
     this.healthController.onDeath.add(this.onGameOver.bind(this));
 
     this.initPhysicsAggregate();
-    this.initPlayerCamera();
+    this.cameraManager = new CameraManager(this);
+    
     this.weapons = new Array<Weapon>();
 
     /* const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
@@ -112,31 +113,6 @@ export class Player implements IDamageable {
     observable.add(this.onCollision.bind(this));
   }
 
-  private initPlayerCamera(): void {
-    this.camera = new UniversalCamera(
-      'playerCamera',
-      new Vector3(0, 1, 0),
-      this.game.scene,
-    );
-
-    this.camera.parent = this.hitbox;
-    this.camera.setTarget(new Vector3(0, 1, 1));
-    this.camera.attachControl(this.game.scene.getEngine().getRenderingCanvas(), true); // Enable mouse control
-
-    // Attach control binds the camera to mouse and keyboard inputs, we want to use only mouse inputs
-    // So we remove all unwelcomed inputs
-    this.camera.inputs.removeByType('FreeCameraKeyboardMoveInput');
-    this.camera.inputs.removeByType('FreeCameraGamepadInput');
-    this.camera.inputs.removeByType('FreeCameraTouchInput');
-
-    // No deceleration
-    this.camera.inertia = 0;
-    // Cam sensitivity
-    this.camera.angularSensibility = 1000;
-    // Allows no "near clipping" of meshes when close to the camera
-    this.camera.minZ = 0.01;
-  }
-
   public update(): void {
     if (!this.game.isPointerLocked) return;
 
@@ -170,8 +146,7 @@ export class Player implements IDamageable {
       }
     }
 
-    // debugging display players hitbox stats
-    //console.log("Player's hitbox stats: ", this.physicsAggregate.body.getBoundingBox());
+    this.cameraManager.updateCamera();
   }
 
   public fixedUpdate(): void {
@@ -229,12 +204,13 @@ export class Player implements IDamageable {
     const directionZ = this.inputs.directions.y;
 
     const direction = Vector2.Zero();
+    const rotationY = this.cameraManager.getRotationY();
     direction.x =
-      directionZ * Math.sin(this.camera.rotation.y) +
-      directionX * Math.cos(this.camera.rotation.y);
+      directionZ * Math.sin(rotationY) +
+      directionX * Math.cos(rotationY);
     direction.y =
-      directionZ * Math.cos(this.camera.rotation.y) -
-      directionX * Math.sin(this.camera.rotation.y);
+      directionZ * Math.cos(rotationY) -
+      directionX * Math.sin(rotationY);
 
     direction.normalize(); // Prevents faster diagonal movement
 
@@ -361,7 +337,7 @@ export class Player implements IDamageable {
     duration: number,
   ): void {
     const startTime = this.crouchStartTime || performance.now();
-    const initialCameraY = this.camera.position.y;
+    const initialCameraY = this.cameraManager.getCameraPositionY();
 
     const animate = (currentTime: number) => {
       const elapsedTime = currentTime - startTime;
@@ -370,7 +346,7 @@ export class Player implements IDamageable {
 
       this.hitbox.scaling.y = 1;
       this.hitbox.position.y = newHeight / 2;
-      this.camera.position.y = initialCameraY - (startHeight - newHeight) / 2;
+      this.cameraManager.setCameraHeight( initialCameraY - (startHeight - newHeight) / 2);
 
       this.currentCrouchHeight = newHeight;
       // Store the current height, in case the player cancels the crouch then

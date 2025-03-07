@@ -49,7 +49,7 @@ export abstract class Enemy {
     this.onDeathObservable = this.healthController.onDeath;
     this.healthController.onDeath.add(this.onDeath.bind(this));
     this.initStats(difficultyFactor);
-    this.target = this.game.player.camera.globalPosition;
+    this.target = this.game.player.hitbox.position;
   }
 
   public async initAt(position: Vector3): Promise<void> {
@@ -89,7 +89,7 @@ export abstract class Enemy {
   }
 
   protected initStats(difficultyFactor: number): void {
-    console.log("Initalizing stats with factor: ", difficultyFactor);
+    console.log('Initalizing stats with factor: ', difficultyFactor);
   }
 
   public dispose(): void {

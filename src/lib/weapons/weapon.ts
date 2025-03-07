@@ -64,7 +64,7 @@ export class Weapon implements WeaponData {
       AssetType.WEAPON,
     );
     this.mesh = entries.rootNodes[0] as Mesh;
-    this.mesh.parent = this.player.camera;
+    this.mesh.parent = this.player.cameraManager.getCamera();
 
     const meshPositionArray = this.meshParameters.get(WeaponMeshParameter.POSITION);
     const meshRotationArray = this.meshParameters.get(WeaponMeshParameter.ROTATION);
@@ -272,7 +272,7 @@ export class Weapon implements WeaponData {
     if (projectionCone === 0) {
       // Not a "cone" weapon, just shoot straight in the direction of the camera
       for (let i = 0; i < bulletsPerShot; i++) {
-        this.performRaycast(this.player.camera.getForwardRay().direction);
+        this.performRaycast(this.player.cameraManager.getCamera().getForwardRay().direction);
       }
     } else {
       // Based on the projection cone, we must determine a direction for each bullet (raycast)
@@ -285,7 +285,7 @@ export class Weapon implements WeaponData {
 
   /** Calculates a random direction within the projection cone */
   private calculateRandomDirection(projectionCone: number): Vector3 {
-    const forward = this.player.camera.getForwardRay().direction;
+    const forward = this.player.cameraManager.getCamera().getForwardRay().direction;
 
     // Random angles within the cone for both X and Y directions
     const angleX = (Math.random() - 0.5) * projectionCone;
@@ -311,8 +311,8 @@ export class Weapon implements WeaponData {
   private performRaycast(direction: Vector3): void {
     // The raycasts stars at the player's camera position and not at the weapon's position
     // Thus, we need to add a small offset to the start position in order not to hit the player
-    const start = this.player.camera.globalPosition.clone();
-    start.addInPlace(this.player.camera.getForwardRay().direction.scale(0.5));
+    const start = this.player.cameraManager.getCamera().globalPosition.clone();
+    start.addInPlace(this.player.cameraManager.getCamera().getForwardRay().direction.scale(0.5));
 
     const end = start.add(direction.scale(this.getStat(WeaponStatistic.RANGE)));
 

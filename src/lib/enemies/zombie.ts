@@ -1,7 +1,4 @@
-import {
-  Quaternion,
-  Vector3,
-} from '@babylonjs/core';
+import { Quaternion, Vector3 } from '@babylonjs/core';
 import { Game } from '../game';
 import { IDamageable } from '../damageable';
 import { Enemy } from './enemy';
