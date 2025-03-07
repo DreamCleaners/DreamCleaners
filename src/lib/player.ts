@@ -155,6 +155,7 @@ export class Player implements IDamageable {
     if (!this.game.isPointerLocked) return;
 
     this.updateVelocity();
+    this.equippedWeapon.updatePosition(this.velocity);
   }
 
   public onGameOver(): void {

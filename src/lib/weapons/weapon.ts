@@ -44,6 +44,14 @@ export class Weapon implements WeaponData {
   // Values for the weapon's mesh
   public meshParameters!: Map<WeaponMeshParameter, Array<number>>;
 
+  // Weapon's mesh moving related
+  private initialYPosition: number | null = null;
+  private isPlayingMovingAnimating: boolean = false; 
+  private readonly MOVING_ANIMATION_SPEED: number = 6;
+  // The speed at which the weapon moves up and down
+  private readonly MOVING_ANIMATION_AMPLITUDE: number = 0.04;
+  // The height at which the weapon moves up and down
+
   constructor(player: Player, name: string, rarity: WeaponRarity) {
     this.player = player;
     this.currentRarity = rarity;
@@ -371,5 +379,72 @@ export class Weapon implements WeaponData {
       },
       this.getStat(WeaponStatistic.RELOAD_TIME) * 1000,
     );
+  }
+
+  // --------------------- Moving effect related ---------------------------
+  // ---------------------------------------------------------------
+
+  /** Moves up and down the weapon's mesh when the player is moving to produce a speed and moving effect */
+  public updatePosition(playerVelocity: Vector3): void {
+    if (playerVelocity.length() > 0) {
+      // Player is moving
+      if (!this.isPlayingMovingAnimating) {
+        this.animateWeaponMovement();
+      }
+    } else {
+      // Player stopped moving
+      this.stopAnimation();
+    }
+  }
+
+  /** Continuously moves the weapon up and down to match the player's movements */
+  private animateWeaponMovement(): void {
+    if(this.initialYPosition === null) {
+      this.initialYPosition = this.mesh.position.y; 
+    }
+    const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
+    const frequency = this.MOVING_ANIMATION_SPEED;
+    this.isPlayingMovingAnimating = true; 
+    const initialYPosition = this.mesh.position.y; 
+    const startTime = performance.now(); 
+
+    const animate = () => {
+      if (!this.isPlayingMovingAnimating) {
+        return;
+      }
+
+      const elapsedTime = performance.now() - startTime;
+      const time = elapsedTime / 1000 * frequency;
+      const offsetY = Math.sin(time) * amplitude;
+      this.mesh.position.y = initialYPosition + offsetY; 
+      requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  /** Stops the mesh moving animation by smoothly returning its position to original */
+  private stopAnimation(): void {
+    if (this.isPlayingMovingAnimating) {
+      this.isPlayingMovingAnimating = false;
+      const currentYPosition = this.mesh.position.y;
+      const targetYPosition = this.initialYPosition!;
+      const duration = 300;
+      const startTime = performance.now();
+
+      const smoothReset = (time: number) => {
+        const elapsed = time - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        this.mesh.position.y = currentYPosition + t * (targetYPosition - currentYPosition);
+
+        if (t < 1) {
+          requestAnimationFrame(smoothReset);
+        } else {
+          this.mesh.position.y = targetYPosition;
+        }
+      };
+
+      requestAnimationFrame(smoothReset);
+    }
   }
 }
