@@ -3,9 +3,13 @@ import { Player } from './player';
 
 export class CameraManager {
   private camera!: UniversalCamera;
-  private isAnimating: boolean = false; // Add a flag to track if the animation is running
+  private isCameraInclining: boolean = false; // Add a flag to track if the animation is running
   private WALK_CAMERA_ANIMATION_AMPLITUDE = 1;
   private WALK_CAMERA_ANIMATION_SPEED = 0.003;
+
+  private FOV_ANIMATION_SPEED = 0.05;
+  private MAX_FOV = 1.4;
+  private NORMAL_FOV = 0.8;
 
   constructor(private player: Player) {
     this.initCamera(player);
@@ -34,34 +38,44 @@ export class CameraManager {
     this.camera.angularSensibility = 1000;
     // Allows no "near clipping" of meshes when close to the camera
     this.camera.minZ = 0.01;
+    this.camera.fov = this.NORMAL_FOV;
   }
 
   public updateCamera(playerVelocity: Vector3): void {
     // Based on the player's velocity, we are going to move the camera around a bit to give a sense of speed
+    console.log("Player velocity: ", playerVelocity.length());
+    console.log("FOV: ", this.camera.fov);
 
     if (playerVelocity.length() > 0) {
       // Player is moving
-      if (!this.isAnimating) {
-        this.animateCameraPlayerWalking();
+      if (!this.isCameraInclining) {
+        this.animateCameraInclinationPlayerWalking();
       }
+      this.animateFOV(playerVelocity.length());
     } else {
       // Player stopped moving
-      this.stopAnimation();
+      this.stopInclinationAnimation();
+      this.resetFOV();
     }
     if (this.player.isSliding) {
-      this.stopAnimation();
+      this.stopInclinationAnimation();
+      this.resetFOV();
     }
   }
 
+  // ----------------------------------
+  // INCLINATION RELATED
+  // ----------------------------------
+
   /** Continuously inclines the camera to give a sense of speed */
-  private animateCameraPlayerWalking(): void {
+  private animateCameraInclinationPlayerWalking(): void {
     const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE; // The camera inclination
     const frequency = this.WALK_CAMERA_ANIMATION_SPEED; // The speed of the animation
     const initialRotationZ = this.camera.rotation.z; 
     const startTime = performance.now(); 
 
     const animate = () => {
-      if (!this.isAnimating) {
+      if (!this.isCameraInclining) {
         return;
       }
       
@@ -73,13 +87,13 @@ export class CameraManager {
       requestAnimationFrame(animate);
     };
 
-    this.isAnimating = true;
+    this.isCameraInclining = true;
     requestAnimationFrame(animate);
   }
 
   /** Stops the camera animation by smoothly returning its inclination to original */
-  private stopAnimation(): void {
-    this.isAnimating = false;
+  private stopInclinationAnimation(): void {
+    this.isCameraInclining = false;
     const currentRotation = this.camera.rotation.z;
     const targetRotation = 0;
     const duration = 300;
@@ -98,6 +112,52 @@ export class CameraManager {
     requestAnimationFrame(smoothReset);
   
   }
+
+  // ----------------------------------
+  // FOV RELATED
+  // ----------------------------------
+
+  /** Animates the FOV based on the player's velocity */
+  private animateFOV(velocity: number): void {
+    const targetFOV = Math.min(this.NORMAL_FOV + velocity * this.FOV_ANIMATION_SPEED, this.MAX_FOV);
+    const currentFOV = this.camera.fov;
+    const duration = 300;
+    const startTime = performance.now();
+
+    const animate = (time: number) => {
+      const elapsed = time - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      this.camera.fov = currentFOV + t * (targetFOV - currentFOV);
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  /** Resets the FOV to normal smoothly */
+  private resetFOV(): void {
+    const currentFOV = this.camera.fov;
+    const targetFOV = this.NORMAL_FOV;
+    const duration = 300;
+    const startTime = performance.now();
+
+    const animate = (time: number) => {
+      const elapsed = time - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      this.camera.fov = currentFOV + t * (targetFOV - currentFOV);
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  // Getters and setters
 
   public getRotationY(): number {
     return this.camera.rotation.y;
