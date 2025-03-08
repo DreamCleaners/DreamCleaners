@@ -358,4 +358,8 @@ export class Player implements IDamageable {
 
     requestAnimationFrame(animate);
   }
+
+  public getVelocity(): Vector3 {
+    return this.velocity;
+  }
 }

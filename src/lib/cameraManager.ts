@@ -57,7 +57,6 @@ export class CameraManager {
   private animateCameraPlayerWalking(): void {
     const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE; // The camera inclination
     const frequency = this.WALK_CAMERA_ANIMATION_SPEED; // The speed of the animation
-    this.isAnimating = true;
     const initialRotationZ = this.camera.rotation.z; 
     const startTime = performance.now(); 
 
@@ -65,7 +64,7 @@ export class CameraManager {
       if (!this.isAnimating) {
         return;
       }
-
+      
       const elapsedTime = performance.now() - startTime; 
       const time = elapsedTime * frequency;
       const offsetZ = Math.sin(time) * amplitude * (Math.PI / 180);
@@ -74,30 +73,30 @@ export class CameraManager {
       requestAnimationFrame(animate);
     };
 
+    this.isAnimating = true;
     requestAnimationFrame(animate);
   }
 
   /** Stops the camera animation by smoothly returning its inclination to original */
   private stopAnimation(): void {
-    if (this.isAnimating) {
-      this.isAnimating = false;
-      const currentRotation = this.camera.rotation.z;
-      const targetRotation = 0;
-      const duration = 300;
-      const startTime = performance.now();
+    this.isAnimating = false;
+    const currentRotation = this.camera.rotation.z;
+    const targetRotation = 0;
+    const duration = 300;
+    const startTime = performance.now();
 
-      const smoothReset = (time: number) => {
-        const elapsed = time - startTime;
-        const t = Math.min(elapsed / duration, 1);
-        this.camera.rotation.z = currentRotation + t * (targetRotation - currentRotation);
+    const smoothReset = (time: number) => {
+      const elapsed = time - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      this.camera.rotation.z = currentRotation + t * (targetRotation - currentRotation);
 
-        if (t < 1) {
-          requestAnimationFrame(smoothReset);
-        }
-      };
+      if (t < 1) {
+        requestAnimationFrame(smoothReset);
+      }
+    };
 
-      requestAnimationFrame(smoothReset);
-    }
+    requestAnimationFrame(smoothReset);
+  
   }
 
   public getRotationY(): number {
