@@ -4,12 +4,14 @@ import { Player } from './player';
 export class CameraManager {
   private camera!: UniversalCamera;
   private isCameraInclining: boolean = false; // Add a flag to track if the animation is running
-  private WALK_CAMERA_ANIMATION_AMPLITUDE = 1;
+  private WALK_CAMERA_ANIMATION_AMPLITUDE = 0.8;
   private WALK_CAMERA_ANIMATION_SPEED = 0.003;
 
   private FOV_ANIMATION_SPEED = 0.05;
   private MAX_FOV = 1.4;
   private NORMAL_FOV = 0.8;
+
+  private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.1;
 
   constructor(private player: Player) {
     this.initCamera(player);
@@ -43,13 +45,11 @@ export class CameraManager {
 
   public updateCamera(playerVelocity: Vector3): void {
     // Based on the player's velocity, we are going to move the camera around a bit to give a sense of speed
-    console.log("Player velocity: ", playerVelocity.length());
-    console.log("FOV: ", this.camera.fov);
 
     if (playerVelocity.length() > 0) {
       // Player is moving
       if (!this.isCameraInclining) {
-        this.animateCameraInclinationPlayerWalking();
+        this.animateCameraInclinationPlayerWalking(playerVelocity);
       }
       this.animateFOV(playerVelocity.length());
     } else {
@@ -68,18 +68,21 @@ export class CameraManager {
   // ----------------------------------
 
   /** Continuously inclines the camera to give a sense of speed */
-  private animateCameraInclinationPlayerWalking(): void {
-    const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE; // The camera inclination
-    const frequency = this.WALK_CAMERA_ANIMATION_SPEED; // The speed of the animation
-    const initialRotationZ = this.camera.rotation.z; 
-    const startTime = performance.now(); 
+  private animateCameraInclinationPlayerWalking(velocity : Vector3): void {
+    const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE; 
+    // The camera inclination
+    const frequency = this.WALK_CAMERA_ANIMATION_SPEED * 
+      (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length()); 
+    // The speed of the animation, depends on the player's velocity
+    const initialRotationZ = this.camera.rotation.z;
+    const startTime = performance.now();
 
     const animate = () => {
       if (!this.isCameraInclining) {
         return;
       }
-      
-      const elapsedTime = performance.now() - startTime; 
+
+      const elapsedTime = performance.now() - startTime;
       const time = elapsedTime * frequency;
       const offsetZ = Math.sin(time) * amplitude * (Math.PI / 180);
       this.camera.rotation.z = initialRotationZ + offsetZ; // Update the camera inclination
@@ -110,7 +113,6 @@ export class CameraManager {
     };
 
     requestAnimationFrame(smoothReset);
-  
   }
 
   // ----------------------------------
@@ -119,7 +121,10 @@ export class CameraManager {
 
   /** Animates the FOV based on the player's velocity */
   private animateFOV(velocity: number): void {
-    const targetFOV = Math.min(this.NORMAL_FOV + velocity * this.FOV_ANIMATION_SPEED, this.MAX_FOV);
+    const targetFOV = Math.min(
+      this.NORMAL_FOV + velocity * this.FOV_ANIMATION_SPEED,
+      this.MAX_FOV,
+    );
     const currentFOV = this.camera.fov;
     const duration = 300;
     const startTime = performance.now();

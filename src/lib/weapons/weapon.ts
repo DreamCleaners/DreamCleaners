@@ -46,11 +46,12 @@ export class Weapon implements WeaponData {
 
   // Weapon's mesh moving related
   private initialYPosition: number | null = null;
-  private isPlayingMovingAnimating: boolean = false; 
-  private readonly MOVING_ANIMATION_SPEED: number = 6;
+  private isPlayingMovingAnimating: boolean = false;
+  private readonly MOVING_ANIMATION_SPEED = 6;
   // The speed at which the weapon moves up and down
-  private readonly MOVING_ANIMATION_AMPLITUDE: number = 0.04;
+  private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   // The height at which the weapon moves up and down
+  private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
 
   constructor(player: Player, name: string, rarity: WeaponRarity) {
     this.player = player;
@@ -389,7 +390,7 @@ export class Weapon implements WeaponData {
     if (playerVelocity.length() > 0) {
       // Player is moving
       if (!this.isPlayingMovingAnimating) {
-        this.animateWeaponMovement();
+        this.animateWeaponMovement(playerVelocity);
       }
     } else {
       // Player stopped moving
@@ -402,15 +403,16 @@ export class Weapon implements WeaponData {
   }
 
   /** Continuously moves the weapon up and down to match the player's movements */
-  private animateWeaponMovement(): void {
-    if(this.initialYPosition === null) {
-      this.initialYPosition = this.mesh.position.y; 
+  private animateWeaponMovement(velocity: Vector3): void {
+    if (this.initialYPosition === null) {
+      this.initialYPosition = this.mesh.position.y;
     }
     const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
-    const frequency = this.MOVING_ANIMATION_SPEED;
-    this.isPlayingMovingAnimating = true; 
-    const initialYPosition = this.mesh.position.y; 
-    const startTime = performance.now(); 
+    const frequency = this.MOVING_ANIMATION_SPEED  * 
+      (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
+    this.isPlayingMovingAnimating = true;
+    const initialYPosition = this.mesh.position.y;
+    const startTime = performance.now();
 
     const animate = () => {
       if (!this.isPlayingMovingAnimating) {
@@ -418,9 +420,9 @@ export class Weapon implements WeaponData {
       }
 
       const elapsedTime = performance.now() - startTime;
-      const time = elapsedTime / 1000 * frequency;
+      const time = (elapsedTime / 1000) * frequency;
       const offsetY = Math.sin(time) * amplitude;
-      this.mesh.position.y = initialYPosition + offsetY; 
+      this.mesh.position.y = initialYPosition + offsetY;
       requestAnimationFrame(animate);
     };
 
@@ -439,7 +441,8 @@ export class Weapon implements WeaponData {
       const smoothReset = (time: number) => {
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1);
-        this.mesh.position.y = currentYPosition + t * (targetYPosition - currentYPosition);
+        this.mesh.position.y =
+          currentYPosition + t * (targetYPosition - currentYPosition);
 
         if (t < 1) {
           requestAnimationFrame(smoothReset);
