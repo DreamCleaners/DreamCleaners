@@ -1,4 +1,4 @@
 export enum FixedStageLayout {
-  HUB = 'HUB',
+  HUB = 'hub',
   SAMPLESCENE = 'SampleScene',
 }

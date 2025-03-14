@@ -3,7 +3,7 @@ import { Game } from '../game';
 import { EnemyFactory } from '../enemies/enemyFactory';
 
 export abstract class GameScene {
-  protected scene: Scene;
+  public scene: Scene;
   protected enemyManager!: EnemyFactory;
 
   constructor(protected game: Game) {

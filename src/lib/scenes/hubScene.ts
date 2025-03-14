@@ -3,7 +3,6 @@ import {
   HemisphericLight,
   IPhysicsCollisionEvent,
   Mesh,
-  MeshBuilder,
   PhysicsAggregate,
   PhysicsEventType,
   PhysicsShapeType,
@@ -13,6 +12,7 @@ import { GameScene } from './gameScene';
 import { GameEntityType } from '../gameEntityType';
 import { AssetType } from '../assetType';
 import { FixedStageLayout } from './fixedStageLayout';
+import { FixedStageScene } from './fixedStageScene';
 
 export class HubScene extends GameScene {
   // used to store all the assets in the scene for easy disposal
@@ -20,24 +20,17 @@ export class HubScene extends GameScene {
   private physicsAggregates: PhysicsAggregate[] = [];
 
   public async load(): Promise<void> {
+    // We use an intermediary scene to avoid having to load the scene from scratch
+    const intermediaryScene = new FixedStageScene(this.game, FixedStageLayout.HUB);
+    await intermediaryScene.load();
+    this.scene = intermediaryScene.scene;
+
+    // We will then apply all the specificities of the hub scene
     const light = new HemisphericLight('light', new Vector3(0, 1, 0), this.scene);
     light.intensity = 0.7;
     this.assetContainer.lights.push(light);
 
-    const ground = MeshBuilder.CreateGround(
-      GameEntityType.GROUND,
-      { width: 50, height: 50 },
-      this.scene,
-    );
-    this.assetContainer.meshes.push(ground);
-    const groundPhysicsAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, {
-      mass: 0,
-    });
-    this.physicsAggregates.push(groundPhysicsAggregate);
-
     await this.createBed(new Vector3(0, 0, -10));
-
-    this.game.player.resetHealth();
   }
 
   private async createBed(position: Vector3): Promise<void> {
