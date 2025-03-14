@@ -68,11 +68,12 @@ export class CameraManager {
   // ----------------------------------
 
   /** Continuously inclines the camera to give a sense of speed */
-  private animateCameraInclinationPlayerWalking(velocity : Vector3): void {
-    const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE; 
+  private animateCameraInclinationPlayerWalking(velocity: Vector3): void {
+    const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE;
     // The camera inclination
-    const frequency = this.WALK_CAMERA_ANIMATION_SPEED * 
-      (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length()); 
+    const frequency =
+      this.WALK_CAMERA_ANIMATION_SPEED *
+      (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
     // The speed of the animation, depends on the player's velocity
     const initialRotationZ = this.camera.rotation.z;
     const startTime = performance.now();

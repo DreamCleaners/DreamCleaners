@@ -1,18 +1,21 @@
 import { Game } from '../game';
 import { GameScene } from './gameScene';
-import { ExampleScene } from './exampleScene';
 import { HubScene } from './hubScene';
-import { SceneType } from './sceneType';
+import { FixedStageLayout } from './fixedStageLayout';
+import { FixedStageScene } from './fixedStageScene';
 
 export class SceneFactory {
-  public static createScene(sceneType: SceneType, game: Game): GameScene {
-    switch (sceneType) {
-      case SceneType.HUB:
-        return new HubScene(game);
-      case SceneType.EXAMPLE:
-        return new ExampleScene(game);
-      default:
-        throw new Error('Invalid scene type');
+  public static createFixedStageScene(layout: FixedStageLayout, game: Game): GameScene {
+    if (layout === FixedStageLayout.HUB) {
+      // HUB is a particular case of fixed scene and needs its own class
+      return new HubScene(game);
+    } else {
+      return new FixedStageScene(game, layout);
     }
+  }
+
+  public static createProceduralStageScene(game: Game): GameScene {
+    console.log('PROCEDURAL SCENES ARE NOT YET IMPLEMENTED');
+    return new HubScene(game);
   }
 }

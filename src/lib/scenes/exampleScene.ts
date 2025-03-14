@@ -8,9 +8,9 @@ import {
 } from '@babylonjs/core';
 import { GameScene } from './gameScene';
 import { GameEntityType } from '../gameEntityType';
-import { SceneType } from './sceneType';
 import { Enemy } from '../enemies/enemy';
 import { EnemyType } from '../enemies/enemyType';
+import { FixedStageLayout } from './fixedStageLayout';
 
 export class ExampleScene extends GameScene {
   // used to store all the assets in the scene for easy disposal
@@ -44,7 +44,7 @@ export class ExampleScene extends GameScene {
     for (let i = 0; i < 2; i++) {
       const zombie = this.enemyManager.createEnemy(EnemyType.ZOMBIE, this.game);
       await zombie.initAt(new Vector3(Math.random() * 0.15, 0, Math.random() * 0.15));
-      zombie.onDeathObservable.add(this.onZombieDeath.bind(this));
+      zombie.onDeathObservable.add(this.onEnemyDeath.bind(this));
       this.enemies.push(zombie);
       this.enemyCount++;
     }
@@ -76,13 +76,14 @@ export class ExampleScene extends GameScene {
     this.assetContainer.dispose();
   }
 
-  private onZombieDeath(): void {
+  private onEnemyDeath(): void {
     this.game.scoreManager.onEnemyDeath();
 
     this.enemyCount--;
     if (this.enemyCount === 0) {
+      // End of stage
       this.game.scoreManager.endStage();
-      this.game.sceneManager.changeScene(SceneType.HUB);
+      this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
     }
   }
 }

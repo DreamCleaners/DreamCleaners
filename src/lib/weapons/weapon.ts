@@ -331,18 +331,21 @@ export class Weapon implements WeaponData {
 
     this.physicsEngine.raycastToRef(start, end, this.raycastResult);
 
-    if (this.raycastResult.hasHit && this.raycastResult.body?.transformNode.metadata) {
-      const damageableEntity = this.raycastResult.body?.transformNode
-        .metadata as IDamageable;
+    if (this.raycastResult.hasHit) {
+      const metadata = this.raycastResult.body?.transformNode.metadata;
+      if (metadata && metadata.isDamageable) {
+        const damageableEntity = this.raycastResult.body?.transformNode
+          .metadata as IDamageable;
 
-      // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
-      const damagePerBullet =
-        this.getStat(WeaponStatistic.DAMAGE) /
-        this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT);
+        // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
+        const damagePerBullet =
+          this.getStat(WeaponStatistic.DAMAGE) /
+          this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT);
 
-      damageableEntity.takeDamage(damagePerBullet);
+        damageableEntity.takeDamage(damagePerBullet);
 
-      console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
+        console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
+      }
     }
 
     // Debug shooting line
@@ -408,7 +411,8 @@ export class Weapon implements WeaponData {
       this.initialYPosition = this.mesh.position.y;
     }
     const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
-    const frequency = this.MOVING_ANIMATION_SPEED  * 
+    const frequency =
+      this.MOVING_ANIMATION_SPEED *
       (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
     this.isPlayingMovingAnimating = true;
     const initialYPosition = this.mesh.position.y;

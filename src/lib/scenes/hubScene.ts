@@ -12,7 +12,7 @@ import {
 import { GameScene } from './gameScene';
 import { GameEntityType } from '../gameEntityType';
 import { AssetType } from '../assetType';
-import { SceneType } from './sceneType';
+import { FixedStageLayout } from './fixedStageLayout';
 
 export class HubScene extends GameScene {
   // used to store all the assets in the scene for easy disposal
@@ -35,43 +35,9 @@ export class HubScene extends GameScene {
     });
     this.physicsAggregates.push(groundPhysicsAggregate);
 
-    //await this.createBed(new Vector3(0, 0, -10));
-    this.importScene();
-    this.game.player.resetHealth();
-  }
+    await this.createBed(new Vector3(0, 0, -10));
 
-  private async importScene(): Promise<void> {
-    const entries = await this.game.assetManager.loadAsset('SampleScene', AssetType.SCENE);
-    const scene = entries.rootNodes[0] as Mesh;
-    this.assetContainer.meshes.push(scene);
-    scene.position = new Vector3(0, 0, 0);
-    //scene.scaling.scaleInPlace(0.1);
-    // apply physics
-  
-    const scenePhysicsAggregate = new PhysicsAggregate(scene, PhysicsShapeType.BOX, {
-      mass: 0,
-    });
-    this.physicsAggregates.push(scenePhysicsAggregate);
-  
-    // Iterate through child meshes, log their properties, and apply physics to pillars
-    scene.getChildMeshes().forEach((mesh) => {
-      console.log(`Mesh Name: ${mesh.name}`);
-      console.log(`Mesh ID: ${mesh.id}`);
-      console.log(`Mesh Position: ${mesh.position}`);
-      console.log(`Mesh Scaling: ${mesh.scaling}`);
-      console.log(`Mesh Rotation: ${mesh.rotation}`);
-      console.log(`Mesh Metadata: ${JSON.stringify(mesh.metadata)}`);
-      console.log('-----------------------------------');
-  
-      // Apply physics to pillars
-      if (mesh.name.includes('Test')) {
-        console.log("Pillar found adding physics");
-        const pillarPhysicsAggregate = new PhysicsAggregate(mesh, PhysicsShapeType.BOX, {
-          mass: 0,
-        });
-        this.physicsAggregates.push(pillarPhysicsAggregate);
-      }
-    });
+    this.game.player.resetHealth();
   }
 
   private async createBed(position: Vector3): Promise<void> {
@@ -102,7 +68,7 @@ export class HubScene extends GameScene {
       collider.transformNode.name === GameEntityType.BED &&
       collidedAgainst.transformNode.name === GameEntityType.PLAYER
     ) {
-      this.game.sceneManager.changeScene(SceneType.EXAMPLE);
+      this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.SAMPLESCENE);
       return;
     }
   }

@@ -63,6 +63,7 @@ export abstract class Enemy {
     this.mesh.metadata = this;
     this.mesh.scaling.scaleInPlace(0.35);
     this.mesh.position = position;
+    this.mesh.metadata.isDamageable = true;
 
     this.physicsAggregate = new PhysicsAggregate(
       this.mesh,
