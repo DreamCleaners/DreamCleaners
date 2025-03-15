@@ -3,10 +3,12 @@ import HavokPhysics from '@babylonjs/havok';
 import { Inspector } from '@babylonjs/inspector';
 import { SceneManager } from './scenes/sceneManager';
 import { InputManager } from './inputs/inputManager';
-import { Player } from './player';
+import { Player } from './player/player';
 import { InputAction } from './inputs/inputAction';
-import { AssetManager } from './assetManager';
+import { AssetManager } from './assets/assetManager';
 import { ScoreManager } from './scoreManager';
+import { UIManager } from './uiManager';
+import { MoneyManager } from './moneyManager';
 
 export class Game {
   public scene!: Scene;
@@ -19,6 +21,8 @@ export class Game {
   public player!: Player;
   public assetManager!: AssetManager;
   public scoreManager = new ScoreManager();
+  public moneyManager = new MoneyManager();
+  public uiManager = new UIManager(this);
 
   private lastFixedUpdate = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -38,6 +42,8 @@ export class Game {
     this.sceneManager = new SceneManager(this);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
+
+    this.lockPointer();
 
     if (process.env.NODE_ENV === 'development') this.listenToDebugInputs();
 
@@ -81,8 +87,9 @@ export class Game {
     return new HavokPlugin(true, havokInstance);
   }
 
-  private async lockPointer(): Promise<void> {
+  public async lockPointer(): Promise<void> {
     this.isPointerLocked = true;
+    this.canvas.focus();
 
     // the request will throw an error if the user exits pointer lock to fast
     // so we need to catch it
@@ -92,6 +99,11 @@ export class Game {
     } catch (/*eslint-disable-line*/ err) {
       this.isPointerLocked = false;
     }
+  }
+
+  public unlockPointer(): void {
+    this.isPointerLocked = false;
+    document.exitPointerLock();
   }
 
   private onPointerLockChange = (): void => {

@@ -21,7 +21,6 @@ export class ExampleScene extends GameScene {
   private enemyCount = 0;
 
   public async load(): Promise<void> {
-    this.game.scoreManager.reset();
     this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );

@@ -1,18 +1,19 @@
 import { WeaponRarity } from './weaponRarity';
 import { WeaponStatistic } from './weaponStatistic';
 import { StaticWeaponStatistic } from './staticWeaponStatistic';
-import { Player } from '../player';
+import { Player } from '../player/player';
 import {
   AbstractMesh,
   Matrix,
   Mesh,
   MeshBuilder,
+  Observable,
   PhysicsEngineV2,
   PhysicsRaycastResult,
   Quaternion,
   Vector3,
 } from '@babylonjs/core';
-import { AssetType } from '../assetType';
+import { AssetType } from '../assets/assetType';
 import { IDamageable } from '../damageable';
 import { WeaponData } from './weaponData';
 import { WeaponMeshParameter } from './weaponMeshParameters';
@@ -25,6 +26,9 @@ export class Weapon implements WeaponData {
   private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
   private physicsEngine!: PhysicsEngineV2;
 
+  public onReload: Observable<boolean> = new Observable<boolean>();
+  public onAmmoChange: Observable<number> = new Observable<number>();
+
   // Array containing all non static stats for the weapon, for every rarity tier
   public globalStats!: Map<WeaponStatistic, Array<number>>;
 
@@ -36,10 +40,10 @@ export class Weapon implements WeaponData {
   private lastWeaponFire = 0;
 
   public currentAmmoRemaining!: number;
-  private isReloading = false;
+  public isReloading = false;
 
-  public justShot = false;
   // Used for preventing automatic shooting
+  public justShot = false;
 
   // Values for the weapon's mesh
   public meshParameters!: Map<WeaponMeshParameter, Array<number>>;
@@ -47,10 +51,10 @@ export class Weapon implements WeaponData {
   // Weapon's mesh moving related
   private initialYPosition: number | null = null;
   private isPlayingMovingAnimating: boolean = false;
-  private readonly MOVING_ANIMATION_SPEED = 6;
   // The speed at which the weapon moves up and down
-  private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
+  private readonly MOVING_ANIMATION_SPEED = 6;
   // The height at which the weapon moves up and down
+  private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
 
   constructor(player: Player, name: string, rarity: WeaponRarity) {
@@ -224,12 +228,10 @@ export class Weapon implements WeaponData {
     }
 
     if (this.isReloading) {
-      console.log('Cannot shoot while reloading');
       return;
     }
 
     if (this.currentAmmoRemaining <= 0) {
-      console.log('Out of ammo!');
       return;
     }
 
@@ -268,6 +270,8 @@ export class Weapon implements WeaponData {
       this.shootBullets(bulletsPerShot, projectionCone);
       this.currentAmmoRemaining--;
     }
+
+    this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
 
     if (!this.staticStats.get(StaticWeaponStatistic.IS_AUTOMATIC)) {
       this.justShot = true;
@@ -362,7 +366,6 @@ export class Weapon implements WeaponData {
 
   public reload(): void {
     if (this.isReloading) {
-      console.log('Already reloading');
       return;
     }
 
@@ -372,11 +375,13 @@ export class Weapon implements WeaponData {
     }
 
     this.isReloading = true;
+    this.onReload.notifyObservers(true);
     setTimeout(
       () => {
         this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
+        this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
         this.isReloading = false;
-        console.log('Done reloading');
+        this.onReload.notifyObservers(false);
       },
       this.getStat(WeaponStatistic.RELOAD_TIME) * 1000,
     );
@@ -408,7 +413,8 @@ export class Weapon implements WeaponData {
       this.initialYPosition = this.mesh.position.y;
     }
     const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
-    const frequency = this.MOVING_ANIMATION_SPEED  * 
+    const frequency =
+      this.MOVING_ANIMATION_SPEED *
       (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
     this.isPlayingMovingAnimating = true;
     const initialYPosition = this.mesh.position.y;

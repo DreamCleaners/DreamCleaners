@@ -13,7 +13,7 @@ import { HealthController } from '../healthController';
 import { AnimationController } from '../animations/animationController';
 import { ZombieState } from './zombie';
 import { GameEntityType } from '../gameEntityType';
-import { AssetType } from '../assetType';
+import { AssetType } from '../assets/assetType';
 
 export abstract class Enemy {
   public mesh!: Mesh;

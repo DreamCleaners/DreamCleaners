@@ -1,11 +1,15 @@
 import { Observable } from '@babylonjs/core';
 
 export class HealthController {
-  private health: number;
+  private maxHealth: number = 0;
+  private health: number = 0;
 
   public onDeath: Observable<void> = new Observable();
+  public onHealthChange: Observable<number> = new Observable();
+  public onMaxHealthChange: Observable<number> = new Observable();
 
-  constructor(public maxHealth: number = -1) {
+  public init(maxHealth: number): void {
+    this.maxHealth = maxHealth;
     this.health = maxHealth;
   }
 
@@ -14,6 +18,7 @@ export class HealthController {
     if (this.health > this.maxHealth) {
       this.health = this.maxHealth;
     }
+    this.onHealthChange.notifyObservers(this.health);
   }
 
   public removeHealth(value: number): void {
@@ -22,17 +27,19 @@ export class HealthController {
       this.health = 0;
       this.onDeath.notifyObservers();
     }
-  }
-
-  public setHealth(value: number): void {
-    this.health = value;
-  }
-
-  public getHealth(): number {
-    return this.health;
+    this.onHealthChange.notifyObservers(this.health);
   }
 
   public getMaxHealth(): number {
     return this.maxHealth;
+  }
+
+  public setMaxHealth(value: number): void {
+    this.maxHealth = value;
+    this.onMaxHealthChange.notifyObservers(this.maxHealth);
+  }
+
+  public getHealth(): number {
+    return this.health;
   }
 }

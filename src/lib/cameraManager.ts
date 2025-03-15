@@ -1,5 +1,5 @@
 import { Camera, UniversalCamera, Vector3 } from '@babylonjs/core';
-import { Player } from './player';
+import { Player } from './player/player';
 
 export class CameraManager {
   private camera!: UniversalCamera;
@@ -49,17 +49,17 @@ export class CameraManager {
     if (playerVelocity.length() > 0) {
       // Player is moving
       if (!this.isCameraInclining) {
-        this.animateCameraInclinationPlayerWalking(playerVelocity);
+        // this.animateCameraInclinationPlayerWalking(playerVelocity);
       }
-      this.animateFOV(playerVelocity.length());
+      // this.animateFOV(playerVelocity.length());
     } else {
       // Player stopped moving
-      this.stopInclinationAnimation();
-      this.resetFOV();
+      // this.stopInclinationAnimation();
+      // this.resetFOV();
     }
     if (this.player.isSliding) {
-      this.stopInclinationAnimation();
-      this.resetFOV();
+      // this.stopInclinationAnimation();
+      // this.resetFOV();
     }
   }
 
@@ -68,11 +68,12 @@ export class CameraManager {
   // ----------------------------------
 
   /** Continuously inclines the camera to give a sense of speed */
-  private animateCameraInclinationPlayerWalking(velocity : Vector3): void {
-    const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE; 
+  private animateCameraInclinationPlayerWalking(velocity: Vector3): void {
+    const amplitude = this.WALK_CAMERA_ANIMATION_AMPLITUDE;
     // The camera inclination
-    const frequency = this.WALK_CAMERA_ANIMATION_SPEED * 
-      (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length()); 
+    const frequency =
+      this.WALK_CAMERA_ANIMATION_SPEED *
+      (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
     // The speed of the animation, depends on the player's velocity
     const initialRotationZ = this.camera.rotation.z;
     const startTime = performance.now();

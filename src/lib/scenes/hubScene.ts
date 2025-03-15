@@ -11,8 +11,9 @@ import {
 } from '@babylonjs/core';
 import { GameScene } from './gameScene';
 import { GameEntityType } from '../gameEntityType';
-import { AssetType } from '../assetType';
+import { AssetType } from '../assets/assetType';
 import { SceneType } from './sceneType';
+import { UIType } from '../uiManager';
 
 export class HubScene extends GameScene {
   // used to store all the assets in the scene for easy disposal
@@ -36,7 +37,10 @@ export class HubScene extends GameScene {
     this.physicsAggregates.push(groundPhysicsAggregate);
 
     await this.createBed(new Vector3(0, 0, -10));
+    await this.createPC(new Vector3(0, 1, 10));
 
+    this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
+    this.game.scoreManager.reset();
     this.game.player.resetHealth();
   }
 
@@ -59,6 +63,25 @@ export class HubScene extends GameScene {
     observable.add(this.onCollision.bind(this));
   }
 
+  private async createPC(position: Vector3): Promise<void> {
+    const entries = await this.game.assetManager.loadAsset('scifi_pc', AssetType.OBJECT);
+    const pc = entries.rootNodes[0] as Mesh;
+    this.assetContainer.meshes.push(pc);
+    pc.position = position;
+    pc.scaling.scaleInPlace(2);
+    const pcHitbox = pc.getChildMeshes()[2] as Mesh;
+    pcHitbox.metadata = undefined;
+    pcHitbox.name = GameEntityType.PC;
+    const physicsAggregate = new PhysicsAggregate(pcHitbox, PhysicsShapeType.BOX, {
+      mass: 0,
+    });
+    this.physicsAggregates.push(physicsAggregate);
+
+    physicsAggregate.body.setCollisionCallbackEnabled(true);
+    const observable = physicsAggregate.body.getCollisionObservable();
+    observable.add(this.onCollision.bind(this));
+  }
+
   private onCollision(collisionEvent: IPhysicsCollisionEvent): void {
     const collider = collisionEvent.collider;
     const collidedAgainst = collisionEvent.collidedAgainst;
@@ -69,6 +92,13 @@ export class HubScene extends GameScene {
       collidedAgainst.transformNode.name === GameEntityType.PLAYER
     ) {
       this.game.sceneManager.changeScene(SceneType.EXAMPLE);
+      return;
+    } else if (
+      collisionEvent.type === PhysicsEventType.COLLISION_STARTED &&
+      collider.transformNode.name === GameEntityType.PC &&
+      collidedAgainst.transformNode.name === GameEntityType.PLAYER
+    ) {
+      this.game.uiManager.displayUI(UIType.PLAYER_UPGRADES);
       return;
     }
   }

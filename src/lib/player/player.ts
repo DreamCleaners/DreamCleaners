@@ -9,30 +9,35 @@ import {
   Vector2,
   Vector3,
 } from '@babylonjs/core';
-import { InputState } from './inputs/inputState';
-import { Game } from './game';
-import { Weapon } from './weapons/weapon';
-import { WeaponRarity } from './weapons/weaponRarity';
-import { InputAction } from './inputs/inputAction';
-import { IDamageable } from './damageable';
-import { HealthController } from './healthController';
-import { GameEntityType } from './gameEntityType';
-import { CameraManager } from './cameraManager';
+import { InputState } from '../inputs/inputState';
+import { Game } from '../game';
+import { Weapon } from '../weapons/weapon';
+import { WeaponRarity } from '../weapons/weaponRarity';
+import { InputAction } from '../inputs/inputAction';
+import { IDamageable } from '../damageable';
+import { HealthController } from '../healthController';
+import { GameEntityType } from '../gameEntityType';
+import { PlayerUpgradeManager } from './playerUpgradeManager';
+import { CameraManager } from '../cameraManager';
+import { PlayerUpgradeType } from './playerUpgradeType';
 
 export class Player implements IDamageable {
   private inputs: InputState;
   public cameraManager!: CameraManager;
   public hitbox!: Mesh;
-  private readonly SPEED = 7;
+  public playerUpgradeManager!: PlayerUpgradeManager;
+  private movementSpeed = 0;
   public onDamageTakenObservable = new Observable<number>();
+  public onWeaponChange = new Observable<Weapon>();
 
   // health
-  private readonly healthController = new HealthController(1000);
+  public readonly healthController = new HealthController();
   private timeSinceLastDamage = 0; // ms
   private regenDelay = 3; // seconds
   private regenAmount = 5;
-  private regenInterval = 2; // seconds
+  private regenSpeed = 0; // seconds
   private lastRegenTick = 0; // ms
+  private isRegenUnlocked = false;
 
   // jump
   private readonly JUMP_FORCE = 6;
@@ -47,32 +52,49 @@ export class Player implements IDamageable {
   // weapons
   private weapons!: Array<Weapon>;
   public equippedWeapon!: Weapon;
+  private currentWeaponIndex = 0;
   private weaponSwitchDelay = 500;
   private lastWeaponSwitch = 0;
 
   // Crouching / sliding
   private isCrouching = false;
   public isSliding = false;
-  private currentSlideVector: Vector3 = Vector3.Zero();
   // This vector is used to store the player's velocity before sliding as only this velocity will be used during the slide
-  private currentSlidingSpeedFactor = 1.02;
+  private currentSlideVector: Vector3 = Vector3.Zero();
   // By how much we multiply the player's velocity during the current slide
+  private currentSlidingSpeedFactor = 1.02;
   private readonly INITIAL_SLIDING_SPEED_FACTOR = 1.02; // The initial factor
 
   private crouchStartTime: number | null = null;
-  private crouchDuration = 350;
   // Duration of the crouch (lowering the camera and player's body)
   // animation in milliseconds
+  private crouchDuration = 350;
   private readonly ORIGINAL_PLAYER_HEIGHT = 2;
   private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT;
 
   constructor(public game: Game) {
     this.inputs = game.inputManager.inputState;
     this.healthController.onDeath.add(this.onGameOver.bind(this));
-
     this.initPhysicsAggregate();
     this.cameraManager = new CameraManager(this);
 
+    // player upgrades
+    this.playerUpgradeManager = new PlayerUpgradeManager(game);
+    this.playerUpgradeManager.onPlayerUpgradeChange.add(
+      this.onPlayerUpgradeChange.bind(this),
+    );
+    this.playerUpgradeManager.onPlayerUpgradeUnlock.add(
+      this.onPlayerUpgradeUnlock.bind(this),
+    );
+
+    this.healthController.init(
+      this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
+    );
+    this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+      PlayerUpgradeType.MOVEMENT_SPEED,
+    );
+
+    // weapons
     this.weapons = new Array<Weapon>();
 
     /* const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
@@ -150,10 +172,9 @@ export class Player implements IDamageable {
   }
 
   public fixedUpdate(): void {
-    this.handleRegen();
-
     if (!this.game.isPointerLocked) return;
 
+    if (this.isRegenUnlocked) this.handleRegen();
     this.updateVelocity();
     this.equippedWeapon.updatePosition(this.velocity);
   }
@@ -166,9 +187,6 @@ export class Player implements IDamageable {
     this.timeSinceLastDamage = 0;
     this.onDamageTakenObservable.notifyObservers(damage);
     this.healthController.removeHealth(damage);
-    console.log(
-      `Player took ${damage} damage, current health: ${this.healthController.getHealth()}`,
-    );
   }
 
   private handleRegen(): void {
@@ -178,13 +196,10 @@ export class Player implements IDamageable {
       this.lastRegenTick += this.game.engine.getDeltaTime();
 
       if (
-        this.lastRegenTick > this.regenInterval * 1000 &&
+        this.lastRegenTick > this.regenSpeed * 1000 &&
         this.healthController.getHealth() < this.healthController.getMaxHealth()
       ) {
         this.healthController.addHealth(this.regenAmount);
-        console.log(
-          `Player regenerated ${this.regenAmount} health, current health: ${this.healthController.getHealth()}`,
-        );
         this.lastRegenTick = 0;
       }
     }
@@ -192,6 +207,35 @@ export class Player implements IDamageable {
 
   public resetHealth(): void {
     this.healthController.addHealth(this.healthController.getMaxHealth());
+  }
+
+  // ------------------- Player Upgrades ---------------------
+  // ---------------------------------------------------------
+
+  private onPlayerUpgradeChange(upgradeType: PlayerUpgradeType): void {
+    if (upgradeType === PlayerUpgradeType.MOVEMENT_SPEED) {
+      this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+        PlayerUpgradeType.MOVEMENT_SPEED,
+      );
+    } else if (upgradeType === PlayerUpgradeType.MAX_HEALTH) {
+      this.healthController.setMaxHealth(
+        this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
+      );
+      this.healthController.addHealth(this.healthController.getMaxHealth());
+    } else if (upgradeType === PlayerUpgradeType.REGEN_SPEED) {
+      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+        PlayerUpgradeType.REGEN_SPEED,
+      );
+    }
+  }
+
+  private onPlayerUpgradeUnlock(upgradeType: PlayerUpgradeType): void {
+    if (upgradeType === PlayerUpgradeType.REGEN_SPEED) {
+      this.isRegenUnlocked = true;
+      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+        PlayerUpgradeType.REGEN_SPEED,
+      );
+    }
   }
 
   // --------------------- Physics --------------------------
@@ -213,8 +257,8 @@ export class Player implements IDamageable {
 
     // Slower movement when crouching
     if (this.isCrouching && !this.isSliding) {
-      this.velocity.x = direction.x * (this.SPEED / 2);
-      this.velocity.z = direction.y * (this.SPEED / 2);
+      this.velocity.x = direction.x * (this.movementSpeed / 2);
+      this.velocity.z = direction.y * (this.movementSpeed / 2);
     } else if (this.isCrouching && this.isSliding) {
       // Sliding movement
       this.velocity = this.currentSlideVector;
@@ -228,8 +272,8 @@ export class Player implements IDamageable {
       this.velocity.x = this.velocity.x * this.currentSlidingSpeedFactor;
       this.velocity.z = this.velocity.z * this.currentSlidingSpeedFactor;
     } else {
-      this.velocity.x = direction.x * this.SPEED;
-      this.velocity.z = direction.y * this.SPEED;
+      this.velocity.x = direction.x * this.movementSpeed;
+      this.velocity.z = direction.y * this.movementSpeed;
     }
 
     if (this.isGrounded && this.inputs.actions.get(InputAction.JUMP) && this.canJump) {
@@ -272,6 +316,8 @@ export class Player implements IDamageable {
    * And we replace the equippedWeapon field with the new weapon, to correctly handle shooting
    */
   public equipWeapon(index: number): void {
+    if (index === this.currentWeaponIndex) return;
+
     // Only update the desired weapon index if the key was not pressed recently
     if (Date.now() - this.lastWeaponSwitch > this.weaponSwitchDelay) {
       this.lastWeaponSwitch = Date.now();
@@ -282,8 +328,10 @@ export class Player implements IDamageable {
       return;
     }
 
+    this.currentWeaponIndex = index;
     this.equippedWeapon.hideInScene();
-    this.equippedWeapon = this.weapons[index];
+    this.equippedWeapon = this.weapons[this.currentWeaponIndex];
+    this.onWeaponChange.notifyObservers(this.equippedWeapon);
     this.equippedWeapon.showInScene();
   }
 
@@ -294,7 +342,6 @@ export class Player implements IDamageable {
    */
   private crouch(): void {
     if (this.isCrouching) {
-      console.log('Already crouching !');
       return;
     }
 

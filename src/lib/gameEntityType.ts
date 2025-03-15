@@ -3,4 +3,5 @@ export enum GameEntityType {
   ENEMY = 'enemy',
   GROUND = 'ground',
   BED = 'bed',
+  PC = 'pc',
 }

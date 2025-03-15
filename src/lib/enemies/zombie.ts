@@ -28,7 +28,7 @@ export class Zombie extends Enemy implements IDamageable {
 
   override initStats(difficultyFactor: number): void {
     super.initStats(difficultyFactor);
-    this.healthController.setHealth(200 + 15 * difficultyFactor);
+    this.healthController.init(200 + 15 * difficultyFactor);
     this.SPEED = 1 * difficultyFactor;
     this.ATTACK_RANGE = 100;
   }
