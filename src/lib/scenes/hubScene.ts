@@ -15,7 +15,6 @@ import { FixedStageScene } from './fixedStageScene';
 import { EnemyType } from '../enemies/enemyType';
 
 export class HubScene extends GameScene {
-
   public async load(): Promise<void> {
     // We use an intermediary scene to avoid having to load the scene from scratch
     const intermediaryScene = new FixedStageScene(this.game, FixedStageLayout.HUB);
@@ -24,7 +23,6 @@ export class HubScene extends GameScene {
     // We copy all the assets and physics aggregates from the intermediary scene
     this.assetContainer = intermediaryScene.assetContainer;
     this.physicsAggregates = intermediaryScene.physicsAggregates;
-
 
     // We will then apply all the specificities of the hub scene
     const light = new HemisphericLight('light', new Vector3(0, 1, 0), this.scene);
@@ -68,6 +66,4 @@ export class HubScene extends GameScene {
       return;
     }
   }
-
-  
 }

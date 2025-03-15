@@ -1,4 +1,11 @@
-import { AssetContainer, InstancedMesh, Light, Mesh, PhysicsAggregate, Scene } from '@babylonjs/core';
+import {
+  AssetContainer,
+  InstancedMesh,
+  Light,
+  Mesh,
+  PhysicsAggregate,
+  Scene,
+} from '@babylonjs/core';
 import { Game } from '../game';
 import { EnemyFactory } from '../enemies/enemyFactory';
 import { EnemyType } from '../enemies/enemyType';
@@ -7,9 +14,8 @@ export abstract class GameScene {
   public scene: Scene;
   protected enemyManager!: EnemyFactory;
 
-  public assetContainer !: AssetContainer;
+  public assetContainer!: AssetContainer;
   public physicsAggregates: PhysicsAggregate[] = [];
-  
 
   // Difficulty factor, used to scale enemies stats and spawning
   public difficultyFactor = 1;
@@ -17,7 +23,7 @@ export abstract class GameScene {
   public enemyTypesToSpawn: EnemyType[] = [];
 
   constructor(protected game: Game) {
-    this.assetContainer = new AssetContainer(this.game.scene)
+    this.assetContainer = new AssetContainer(this.game.scene);
     this.scene = game.scene;
     this.enemyManager = EnemyFactory.getInstance();
   }
@@ -29,39 +35,32 @@ export abstract class GameScene {
    */
   public async dispose(): Promise<void> {
     console.log('Disposing of scene: ', this.constructor.name);
-  
-    // Dispose of all physics aggregates
-    console.log("Disposing of physics qggregqte count : ", this.physicsAggregates.length);
-    console.log("Physics aggregates reference in GameScene: ", Object.getOwnPropertyNames(this.physicsAggregates));
 
+    // Dispose of all physics aggregates
     this.physicsAggregates.forEach((aggregate) => {
       aggregate.dispose();
     });
     this.physicsAggregates = [];
-  
+
     // Dispose of all meshes
     for (const mesh of this.assetContainer.meshes) {
-      console.log("Disposing of mesh: ", mesh.name);
       mesh.dispose();
     }
     this.assetContainer.meshes = [];
-  
+
     // Dispose of all lights
-    for (const light of this.scene.lights) {
-      console.log("Disposing of light: ", light.name);
+    for (const light of this.assetContainer.lights) {
       light.dispose();
     }
-    //this.assetContainer.lights = [];
-  
+    this.assetContainer.lights = [];
+
     // Dispose of the asset container itself
     this.assetContainer.dispose();
-  
+
     console.log('Scene disposed: ', this.constructor.name);
   }
 
-  public update(): void {
-    console.log("Amount of physics aggregates: ", this.physicsAggregates.length);
-  }
+  public update(): void {}
 
   public fixedUpdate(): void {}
 
@@ -78,8 +77,6 @@ export abstract class GameScene {
 
   protected pushToPhysicsAggregates(physicsAggregate: PhysicsAggregate): void {
     this.physicsAggregates.push(physicsAggregate);
-    console.log("GameScene level, pushed to physics aggregates: ", physicsAggregate);
-    console.log("New physics aggregates count: ", this.physicsAggregates.length);
   }
 
   protected pushToMeshes(mesh: Mesh | InstancedMesh): void {

@@ -15,7 +15,6 @@ import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
 
 export class FixedStageScene extends GameScene {
-
   private enemies: Enemy[] = [];
   private enemyCount = 0;
 
@@ -75,17 +74,17 @@ export class FixedStageScene extends GameScene {
     let spawnPointCount = 0;
 
     scene.getDescendants().forEach((node) => {
-      name = node.name;
+      name = node.name.toLowerCase();
       if (
         name.includes('physical_object') &&
         (node instanceof Mesh || node instanceof InstancedMesh)
       ) {
         physicObjectsCount++;
         this.handlePhysicalObject(node);
-      } else if (name.includes('Light') && node instanceof Light) {
+      } else if (name.includes('light') && node instanceof Light) {
         lightCount++;
         // No need for particular operations to the light as it is directly exported from Unity
-        this.scene.lights.push(node);
+        this.pushToLights(node);
       } else if (name.includes('spawn_point')) {
         spawnPointCount++;
         this.handleSpawnPoint(node as Mesh);
@@ -125,27 +124,6 @@ export class FixedStageScene extends GameScene {
    * ways of spawn: via proximity, or waves etc
    */
   private async loadEnemies(): Promise<void> {
-
-    const enemy = this.enemyManager.createEnemy(
-      // The spawned enemy is randomly picked from the list of enemy types
-      this.enemyTypesToSpawn[Math.floor(Math.random() * this.enemyTypesToSpawn.length)],
-      this.difficultyFactor,
-      this.game,
-    );
-
-    // Re-scale the spawn point to fit the game world
-    const destinationSpawnPoint = new Vector3(
-      0,
-      0,
-      0,
-    );
-    console.log('Spawning enemy at: ', destinationSpawnPoint);
-
-    await enemy.initAt(destinationSpawnPoint);
-    enemy.onDeathObservable.add(this.onEnemyDeath.bind(this));
-    this.enemies.push(enemy);
-    this.enemyCount++;
-
     // Based on the coordinates we stored previously while parsing the glb
     // We will create enemies, according to the stage particularities
     if (this.spawnPoints.length <= 0) {
@@ -155,7 +133,6 @@ export class FixedStageScene extends GameScene {
     // For now we will spawn all enemies at once
     console.log('Spawning ' + this.spawnPoints.length + ' enemies');
 
-
     for (const spawnPoint of this.spawnPoints) {
       const enemy = this.enemyManager.createEnemy(
         // The spawned enemy is randomly picked from the list of enemy types
@@ -164,15 +141,7 @@ export class FixedStageScene extends GameScene {
         this.game,
       );
 
-      // Re-scale the spawn point to fit the game world
-      const destinationSpawnPoint = new Vector3(
-        spawnPoint.x * 0.05,
-        spawnPoint._y,
-        spawnPoint.z * 0.05,
-      );
-      console.log('Spawning enemy at: ', destinationSpawnPoint);
-
-      await enemy.initAt(destinationSpawnPoint);
+      await enemy.initAt(spawnPoint);
       enemy.onDeathObservable.add(this.onEnemyDeath.bind(this));
       this.enemies.push(enemy);
       this.enemyCount++;
@@ -215,5 +184,4 @@ export class FixedStageScene extends GameScene {
       this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
     }
   }
-
 }

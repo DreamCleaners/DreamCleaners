@@ -61,8 +61,12 @@ export abstract class Enemy {
     this.mesh = children[0] as Mesh;
     this.mesh.name = GameEntityType.ENEMY;
     this.mesh.metadata = this;
-    this.mesh.scaling.scaleInPlace(0.35);
     this.mesh.position = position;
+
+    this.mesh.scaling.scaleInPlace(0.35);
+    // WARNING This is not a wanted solution, but the enemy keeps appearing at
+    // the wrong absolute position. This is a temporary fix.
+    this.mesh.setAbsolutePosition(position);
     this.mesh.metadata.isDamageable = true;
 
     this.physicsAggregate = new PhysicsAggregate(
@@ -89,9 +93,7 @@ export abstract class Enemy {
     this.healthController.removeHealth(damage);
   }
 
-  protected initStats(difficultyFactor: number): void {
-    console.debug('Initalizing stats with factor: ', difficultyFactor);
-  }
+  protected abstract initStats(difficultyFactor: number): void;
 
   public dispose(): void {
     this.physicsAggregate.dispose();
