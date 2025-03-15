@@ -13,7 +13,7 @@ import { AssetType } from '../assets/assetType';
 import { FixedStageLayout } from './fixedStageLayout';
 import { FixedStageScene } from './fixedStageScene';
 import { EnemyType } from '../enemies/enemyType';
-import { UIType } from '../uiManager';
+import { UIType } from '../ui/uiType';
 
 export class HubScene extends GameScene {
   public async load(): Promise<void> {
@@ -34,7 +34,6 @@ export class HubScene extends GameScene {
     await this.createPC(new Vector3(0, 1, 10));
 
     this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
-    this.game.scoreManager.reset();
     this.game.player.resetHealth();
   }
 

@@ -1,10 +1,6 @@
 import { Observable } from '@babylonjs/core';
-import { Game } from './game';
-
-export enum UIType {
-  PLAYER_UPGRADES,
-  PLAYER_HUD,
-}
+import { Game } from '../game';
+import { UIType } from './uiType';
 
 export class UIManager {
   private currentUI: UIType = UIType.PLAYER_HUD;
@@ -20,6 +16,11 @@ export class UIManager {
 
     if (uiType !== UIType.PLAYER_HUD) {
       this.game.unlockPointer();
+      this.game.player.freezePlayer();
+
+      // prevent player from locking pointer when UI is displayed
+      this.game.canPlayerLockPointer = false;
+
       this.toggleCrosshairVisibility(false);
     }
   }
@@ -28,6 +29,7 @@ export class UIManager {
     this.currentUI = UIType.PLAYER_HUD;
     this.onUIChange.notifyObservers(UIType.PLAYER_HUD);
     this.toggleCrosshairVisibility(true);
+    this.game.canPlayerLockPointer = true;
     this.game.lockPointer();
   }
 

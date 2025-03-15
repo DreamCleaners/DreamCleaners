@@ -14,6 +14,7 @@ import { GameEntityType } from '../gameEntityType';
 import { GameScene } from './gameScene';
 import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
+import { UIType } from '../ui/uiType';
 
 export class FixedStageScene extends GameScene {
   private enemies: Enemy[] = [];
@@ -45,7 +46,7 @@ export class FixedStageScene extends GameScene {
     if (this.fixedStageName === FixedStageLayout.HUB) return;
 
     this.loadEnemies();
-
+    this.game.scoreManager.reset();
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
@@ -196,7 +197,15 @@ export class FixedStageScene extends GameScene {
     // We might add in the future more complex conditions, for example time limit and so on
     if (this.enemyCount === 0) {
       this.game.scoreManager.endStage();
-      this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
+
+      setTimeout(() => {
+        this.game.uiManager.displayUI(UIType.SCORE);
+        this.game.uiManager.onUIChange.addOnce(this.onScoreInterfaceClosed.bind(this));
+      }, 2000);
     }
+  }
+
+  private onScoreInterfaceClosed(): void {
+    this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
   }
 }

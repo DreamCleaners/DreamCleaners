@@ -3,7 +3,8 @@ import '../styles/userInterface.css';
 import PlayerHUD from './PlayerHUD';
 import { GameContext } from '../contexts/GameContext';
 import PlayerUpgradeInterface from './PlayerUpgradeInterface';
-import { UIType } from '../lib/uiManager';
+import { UIType } from '../lib/ui/uiType';
+import ScoreInterface from './ScoreInterface';
 
 const UserInterface = () => {
   const game = useContext(GameContext);
@@ -22,6 +23,7 @@ const UserInterface = () => {
     <div className="uiContainer">
       {uiType === UIType.PLAYER_HUD && <PlayerHUD />}
       {uiType === UIType.PLAYER_UPGRADES && <PlayerUpgradeInterface />}
+      {uiType === UIType.SCORE && <ScoreInterface />}
     </div>
   );
 };

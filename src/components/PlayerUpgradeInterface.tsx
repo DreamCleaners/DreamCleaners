@@ -13,19 +13,18 @@ const PlayerUpgradeInterface = () => {
   >(new Map());
 
   useEffect(() => {
+    if (!game) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Backspace') {
-        game?.uiManager.hideUI();
+        game.uiManager.hideUI();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
 
     const onPlayerUpgradeChange = () => {
-      if (!game) return;
       setPlayerUpgrades(game.player.playerUpgradeManager.getAllPlayerUpgrades());
     };
-
-    if (!game) return;
 
     // set initial values
     setPlayerMoney(game.moneyManager.getPlayerMoney());

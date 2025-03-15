@@ -287,6 +287,10 @@ export class Player implements IDamageable {
     this.physicsAggregate.body.setLinearVelocity(this.velocity);
   }
 
+  public freezePlayer(): void {
+    this.physicsAggregate.body.setLinearVelocity(Vector3.Zero());
+  }
+
   private onCollision(collisionEvent: IPhysicsCollisionEvent): void {
     const other = collisionEvent.collidedAgainst;
     if (

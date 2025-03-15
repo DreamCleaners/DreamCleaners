@@ -7,13 +7,15 @@ import { Player } from './player/player';
 import { InputAction } from './inputs/inputAction';
 import { AssetManager } from './assets/assetManager';
 import { ScoreManager } from './scoreManager';
-import { UIManager } from './uiManager';
+import { UIManager } from './ui/uiManager';
 import { MoneyManager } from './moneyManager';
 
 export class Game {
   public scene!: Scene;
   public inputManager!: InputManager;
+
   public isPointerLocked = false;
+  public canPlayerLockPointer = true;
 
   public engine!: Engine;
   public sceneManager!: SceneManager;
@@ -55,7 +57,8 @@ export class Game {
 
     if (
       this.inputManager.inputState.actions.get(InputAction.SHOOT) &&
-      !this.isPointerLocked
+      !this.isPointerLocked &&
+      this.canPlayerLockPointer
     ) {
       this.lockPointer();
     }
