@@ -18,8 +18,8 @@ enum ZombieAnimation {
 export class Zombie extends Enemy implements IDamageable {
   public onDeathObservable = this.healthController.onDeath;
 
-  constructor(game: Game) {
-    super(game, 'zombie', 1);
+  constructor(game: Game, difficultyFactor: number) {
+    super(game, 'zombie', difficultyFactor);
 
     this.deadState = ZombieState.DEAD;
     this.attackingState = ZombieState.ATTACK;

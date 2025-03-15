@@ -42,7 +42,7 @@ export class ExampleScene extends GameScene {
     this.physicsAggregates.push(groundPhysicsAggregate);
 
     for (let i = 0; i < 2; i++) {
-      const zombie = this.enemyManager.createEnemy(EnemyType.ZOMBIE, this.game);
+      const zombie = this.enemyManager.createEnemy(EnemyType.ZOMBIE, 1, this.game);
       await zombie.initAt(new Vector3(Math.random() * 0.15, 0, Math.random() * 0.15));
       zombie.onDeathObservable.add(this.onEnemyDeath.bind(this));
       this.enemies.push(zombie);

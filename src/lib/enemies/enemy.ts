@@ -90,7 +90,7 @@ export abstract class Enemy {
   }
 
   protected initStats(difficultyFactor: number): void {
-    console.log('Initalizing stats with factor: ', difficultyFactor);
+    console.debug('Initalizing stats with factor: ', difficultyFactor);
   }
 
   public dispose(): void {

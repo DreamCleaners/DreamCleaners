@@ -1,3 +1,4 @@
+import { EnemyType } from '../enemies/enemyType';
 import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
 import { GameScene } from './gameScene';
@@ -13,7 +14,11 @@ export class SceneManager {
   /**
    * Dispose of the current scene and load the new scene.
    */
-  public async changeSceneToFixedStage(layout: FixedStageLayout): Promise<void> {
+  public async changeSceneToFixedStage(
+    layout: FixedStageLayout,
+    difficultyFactor: number = 1,
+    enemyTypes: EnemyType[] = [],
+  ): Promise<void> {
     this.game.engine.displayLoadingUI();
     if (this.currentScene !== null) {
       this.currentScene.dispose();
@@ -21,6 +26,7 @@ export class SceneManager {
     }
 
     const scene = SceneFactory.createFixedStageScene(layout, this.game);
+    scene.setStageParameters(difficultyFactor, enemyTypes);
 
     await scene.load();
     this.game.engine.hideLoadingUI();

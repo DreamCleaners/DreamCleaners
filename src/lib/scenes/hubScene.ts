@@ -13,6 +13,7 @@ import { GameEntityType } from '../gameEntityType';
 import { AssetType } from '../assetType';
 import { FixedStageLayout } from './fixedStageLayout';
 import { FixedStageScene } from './fixedStageScene';
+import { EnemyType } from '../enemies/enemyType';
 
 export class HubScene extends GameScene {
   // used to store all the assets in the scene for easy disposal
@@ -61,7 +62,9 @@ export class HubScene extends GameScene {
       collider.transformNode.name === GameEntityType.BED &&
       collidedAgainst.transformNode.name === GameEntityType.PLAYER
     ) {
-      this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.SAMPLESCENE);
+      this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.SAMPLESCENE, 1, [
+        EnemyType.ZOMBIE,
+      ]);
       return;
     }
   }
