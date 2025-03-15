@@ -1,37 +1,40 @@
+import { EnemyType } from '../enemies/enemyType';
 import { Game } from '../game';
+import { FixedStageLayout } from './fixedStageLayout';
 import { GameScene } from './gameScene';
 import { SceneFactory } from './sceneFactory';
-import { SceneType } from './sceneType';
 
 export class SceneManager {
   private currentScene: GameScene | null = null;
-  private sceneCache: Map<SceneType, GameScene> = new Map();
 
   constructor(private game: Game) {
-    this.changeScene(SceneType.HUB);
+    this.changeSceneToFixedStage(FixedStageLayout.HUB);
   }
 
   /**
    * Dispose of the current scene and load the new scene.
    */
-  public async changeScene(sceneType: SceneType): Promise<void> {
-    console.log(`Changing scene to ${sceneType}`);
+  public async changeSceneToFixedStage(
+    layout: FixedStageLayout,
+    difficultyFactor: number = 1,
+    enemyTypes: EnemyType[] = [],
+  ): Promise<void> {
     this.game.engine.displayLoadingUI();
-
     if (this.currentScene !== null) {
       this.currentScene.dispose();
       this.currentScene = null;
     }
 
-    let scene = this.sceneCache.get(sceneType);
-    if (scene === undefined) {
-      scene = SceneFactory.createScene(sceneType, this.game);
-      this.sceneCache.set(sceneType, scene);
-    }
+    const scene = SceneFactory.createFixedStageScene(layout, this.game);
+    scene.setStageParameters(difficultyFactor, enemyTypes);
 
     await scene.load();
     this.game.engine.hideLoadingUI();
     this.currentScene = scene;
+  }
+
+  public async changeSceneToProceduralStage(): Promise<void> {
+    // TODO!
   }
 
   public update(): void {

@@ -18,10 +18,10 @@ export class EnemyFactory {
     return EnemyFactory.instance;
   }
 
-  public createEnemy(enemyType: EnemyType, game: Game): Enemy {
+  public createEnemy(enemyType: EnemyType, difficultyFactor: number, game: Game): Enemy {
     switch (enemyType) {
       case EnemyType.ZOMBIE:
-        return new Zombie(game);
+        return new Zombie(game, difficultyFactor);
       default:
         throw new Error('Unknown enemy type');
     }
