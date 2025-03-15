@@ -21,6 +21,7 @@ export class SceneManager {
   ): Promise<void> {
     this.game.engine.displayLoadingUI();
     if (this.currentScene !== null) {
+      console.log("Disposing of current scene : ", this.currentScene);
       this.currentScene.dispose();
       this.currentScene = null;
     }

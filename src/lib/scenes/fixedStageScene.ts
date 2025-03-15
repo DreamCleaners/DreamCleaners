@@ -1,7 +1,5 @@
 import {
-  AssetContainer,
   PhysicsAggregate,
-  PointLight,
   Vector3,
   MeshBuilder,
   PhysicsShapeType,
@@ -17,8 +15,6 @@ import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
 
 export class FixedStageScene extends GameScene {
-  private assetContainer: AssetContainer = new AssetContainer(this.game.scene);
-  private physicsAggregates: PhysicsAggregate[] = [];
 
   private enemies: Enemy[] = [];
   private enemyCount = 0;
@@ -65,7 +61,7 @@ export class FixedStageScene extends GameScene {
     );
 
     const scene = entries.rootNodes[0] as Mesh;
-    this.assetContainer.meshes.push(scene);
+    this.pushToMeshes(scene);
     scene.position = new Vector3(0, 0, 0);
 
     // Iterate through all descendants, we will discriminate each object per its name
@@ -86,9 +82,10 @@ export class FixedStageScene extends GameScene {
       ) {
         physicObjectsCount++;
         this.handlePhysicalObject(node);
-      } else if (name.includes('light') && node instanceof Light) {
+      } else if (name.includes('Light') && node instanceof Light) {
         lightCount++;
-        this.handleLight(node, name);
+        // No need for particular operations to the light as it is directly exported from Unity
+        this.scene.lights.push(node);
       } else if (name.includes('spawn_point')) {
         spawnPointCount++;
         this.handleSpawnPoint(node as Mesh);
@@ -111,24 +108,11 @@ export class FixedStageScene extends GameScene {
   }
 
   private handlePhysicalObject(node: Mesh | InstancedMesh): void {
-    this.assetContainer.meshes.push(node);
+    this.pushToMeshes(node);
     const physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.BOX, {
       mass: 0,
     });
-    this.physicsAggregates.push(physicsAggregate);
-  }
-
-  private handleLight(node: Light, name: string): void {
-    if (name.includes('point')) {
-      this.handlePointLight(node);
-    } else {
-      console.log('Unknown light type: ', name);
-    }
-  }
-
-  private handlePointLight(node: Light): void {
-    const pointLight = node as PointLight;
-    this.assetContainer.lights.push(pointLight);
+    this.pushToPhysicsAggregates(physicsAggregate);
   }
 
   private handleSpawnPoint(node: Mesh): void {
@@ -141,6 +125,27 @@ export class FixedStageScene extends GameScene {
    * ways of spawn: via proximity, or waves etc
    */
   private async loadEnemies(): Promise<void> {
+
+    const enemy = this.enemyManager.createEnemy(
+      // The spawned enemy is randomly picked from the list of enemy types
+      this.enemyTypesToSpawn[Math.floor(Math.random() * this.enemyTypesToSpawn.length)],
+      this.difficultyFactor,
+      this.game,
+    );
+
+    // Re-scale the spawn point to fit the game world
+    const destinationSpawnPoint = new Vector3(
+      0,
+      0,
+      0,
+    );
+    console.log('Spawning enemy at: ', destinationSpawnPoint);
+
+    await enemy.initAt(destinationSpawnPoint);
+    enemy.onDeathObservable.add(this.onEnemyDeath.bind(this));
+    this.enemies.push(enemy);
+    this.enemyCount++;
+
     // Based on the coordinates we stored previously while parsing the glb
     // We will create enemies, according to the stage particularities
     if (this.spawnPoints.length <= 0) {
@@ -149,6 +154,7 @@ export class FixedStageScene extends GameScene {
 
     // For now we will spawn all enemies at once
     console.log('Spawning ' + this.spawnPoints.length + ' enemies');
+
 
     for (const spawnPoint of this.spawnPoints) {
       const enemy = this.enemyManager.createEnemy(
@@ -179,20 +185,11 @@ export class FixedStageScene extends GameScene {
       { width: 50, height: 50 },
       this.scene,
     );
-    this.assetContainer.meshes.push(ground);
+    this.pushToMeshes(ground);
     const groundPhysicsAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, {
       mass: 0,
     });
-    this.physicsAggregates.push(groundPhysicsAggregate);
-  }
-
-  public async dispose(): Promise<void> {
-    this.physicsAggregates.forEach((physicsAggregate) => {
-      physicsAggregate.dispose();
-    });
-    this.physicsAggregates = [];
-
-    this.assetContainer.dispose();
+    this.pushToPhysicsAggregates(groundPhysicsAggregate);
   }
 
   public update(): void {
@@ -218,4 +215,5 @@ export class FixedStageScene extends GameScene {
       this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
     }
   }
+
 }
