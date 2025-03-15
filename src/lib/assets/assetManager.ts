@@ -6,7 +6,7 @@ import {
 } from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { AssetType } from './assetType';
-import { WeaponData } from './weapons/weaponData';
+import { WeaponData } from '../weapons/weaponData';
 
 export class AssetManager {
   private loadedContainers: Map<string, AssetContainer> = new Map();
