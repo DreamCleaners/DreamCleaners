@@ -6,6 +6,7 @@ import {
   Mesh,
   Light,
   InstancedMesh,
+  Observer,
 } from '@babylonjs/core';
 import { AssetType } from '../assets/assetType';
 import { Enemy } from '../enemies/enemy';
@@ -23,31 +24,44 @@ export class FixedStageScene extends GameScene {
   // The stage name, used to import the correct scene
   public fixedStageName!: FixedStageLayout;
 
+  private onPlayerDamageTakenObserver!: Observer<number>;
+
   constructor(game: Game, fixedStageName: FixedStageLayout) {
     super(game);
     this.fixedStageName = fixedStageName;
   }
 
   public async load(): Promise<void> {
-    // We clear background color
-    //this.scene.clearColor = new Color4(0, 0, 0, 255);
-
     // Simple ground initialization
     this.initGround();
 
-    this.game.scoreManager.reset();
-    this.game.player.onDamageTakenObservable.add(
+    if (this.fixedStageName === undefined || this.fixedStageName === null) {
+      throw new Error('Fixed stage name is not defined');
+    }
+
+    // We import the stage scene based on the name
+    await this.importScene();
+
+    if (this.fixedStageName === FixedStageLayout.HUB) return;
+
+    this.loadEnemies();
+
+    this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
+  }
 
-    if (this.fixedStageName === undefined || this.fixedStageName === null) {
-      console.error('Fixed stage name is not defined');
-    } else {
-      // We import the stage scene based on the name
-      await this.importScene();
-      this.loadEnemies();
-      this.game.player.resetHealth();
-    }
+  public async dispose(): Promise<void> {
+    super.dispose();
+
+    this.enemies.forEach((enemy) => {
+      enemy.dispose();
+    });
+    this.enemies = [];
+
+    this.spawnPoints = [];
+
+    this.onPlayerDamageTakenObserver.remove();
   }
 
   /** Based on a fixed stage name, imports the GLB exported from Unity and correctly loads it
@@ -118,7 +132,8 @@ export class FixedStageScene extends GameScene {
     this.spawnPoints.push(node.position);
   }
 
-  /** Based on the difficulty factor, the enemyTypes and the spawn point coordinates,
+  /**
+   * Based on the difficulty factor, the enemyTypes and the spawn point coordinates,
    *  creates enemies and adds them to the enemies array
    * WARNING: Currently we are spawning enemies all at once, however we might want to make different
    * ways of spawn: via proximity, or waves etc

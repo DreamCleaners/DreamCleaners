@@ -34,30 +34,14 @@ export abstract class GameScene {
    * Dispose of any resources used by the scene.
    */
   public async dispose(): Promise<void> {
-    console.log('Disposing of scene: ', this.constructor.name);
-
     // Dispose of all physics aggregates
     this.physicsAggregates.forEach((aggregate) => {
       aggregate.dispose();
     });
     this.physicsAggregates = [];
 
-    // Dispose of all meshes
-    for (const mesh of this.assetContainer.meshes) {
-      mesh.dispose();
-    }
-    this.assetContainer.meshes = [];
-
-    // Dispose of all lights
-    for (const light of this.assetContainer.lights) {
-      light.dispose();
-    }
-    this.assetContainer.lights = [];
-
-    // Dispose of the asset container itself
+    // Dispose all assets in the asset container
     this.assetContainer.dispose();
-
-    console.log('Scene disposed: ', this.constructor.name);
   }
 
   public update(): void {}

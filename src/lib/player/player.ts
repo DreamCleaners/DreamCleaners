@@ -324,8 +324,7 @@ export class Player implements IDamageable {
       return;
     }
     if (index >= this.weapons.length) {
-      console.error('Trying to equip a weapon that does not exist');
-      return;
+      throw new Error('Trying to equip a weapon that does not exist');
     }
 
     this.currentWeaponIndex = index;

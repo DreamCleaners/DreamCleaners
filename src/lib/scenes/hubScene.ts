@@ -60,7 +60,7 @@ export class HubScene extends GameScene {
   private async createPC(position: Vector3): Promise<void> {
     const entries = await this.game.assetManager.loadAsset('scifi_pc', AssetType.OBJECT);
     const pc = entries.rootNodes[0] as Mesh;
-    this.assetContainer.meshes.push(pc);
+    this.pushToMeshes(pc);
     pc.position = position;
     pc.scaling.scaleInPlace(2);
     const pcHitbox = pc.getChildMeshes()[2] as Mesh;
