@@ -409,8 +409,9 @@ export class Player implements IDamageable {
       const progress = Math.min(elapsedTime / duration, 1);
       const newHeight = startHeight + (targetHeight - startHeight) * progress;
 
-      this.hitbox.scaling.y = 1;
-      this.hitbox.position.y = newHeight / 2;
+      // WARNING: This is a temporary fix, the hitbox is not scaling properly
+      // this.hitbox.scaling.y = 1;
+      // this.hitbox.position.y = newHeight / 2;
       this.cameraManager.setCameraHeight(initialCameraY - (startHeight - newHeight) / 2);
 
       this.currentCrouchHeight = newHeight;
