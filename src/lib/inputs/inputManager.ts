@@ -2,7 +2,6 @@ import {
   DeviceSourceManager,
   DeviceType,
   Engine,
-  IKeyboardEvent,
   IMouseEvent,
   PointerInput,
 } from '@babylonjs/core';
@@ -16,6 +15,10 @@ export class InputManager {
   constructor(engine: Engine) {
     const deviceSourceManager = new DeviceSourceManager(engine);
     deviceSourceManager.onDeviceConnectedObservable.add(this.listenDevice.bind(this));
+
+    // keyboard events
+    window.addEventListener('keydown', this.onKeyboardEvent.bind(this, true));
+    window.addEventListener('keyup', this.onKeyboardEvent.bind(this, false));
   }
 
   /**
@@ -33,87 +36,66 @@ export class InputManager {
         }
       });
     }
-    // KEYBOARD
-    if (device.deviceType === DeviceType.Keyboard) {
-      device.onInputChangedObservable.add((keyboardEvent: IKeyboardEvent) => {
-        if (keyboardEvent.code === 'KeyW') {
-          this.inputState.actions.set(
-            InputAction.FORWARD,
-            keyboardEvent.type === 'keydown',
-          );
-        } else if (keyboardEvent.code === 'KeyS') {
-          this.inputState.actions.set(
-            InputAction.BACKWARD,
-            keyboardEvent.type === 'keydown',
-          );
-        } else if (keyboardEvent.code === 'KeyA') {
-          this.inputState.actions.set(InputAction.LEFT, keyboardEvent.type === 'keydown');
-        } else if (keyboardEvent.code === 'KeyD') {
-          this.inputState.actions.set(
-            InputAction.RIGHT,
-            keyboardEvent.type === 'keydown',
-          );
-        } else if (keyboardEvent.code === 'Space') {
-          this.inputState.actions.set(InputAction.JUMP, keyboardEvent.type === 'keydown');
-        }
+  }
 
-        // Switching weapons
-        else if (keyboardEvent.code === 'Digit1') {
-          this.inputState.actions.set(
-            InputAction.PRESS_ONE,
-            keyboardEvent.type === 'keydown',
-          );
-        } else if (keyboardEvent.code === 'Digit2') {
-          this.inputState.actions.set(
-            InputAction.PRESS_TWO,
-            keyboardEvent.type === 'keydown',
-          );
-        }
+  private onKeyboardEvent(isKeydown: boolean, event: KeyboardEvent): void {
+    if (event.code === 'KeyW') {
+      this.inputState.actions.set(InputAction.FORWARD, isKeydown);
+    } else if (event.code === 'KeyS') {
+      this.inputState.actions.set(InputAction.BACKWARD, isKeydown);
+    } else if (event.code === 'KeyA') {
+      this.inputState.actions.set(InputAction.LEFT, isKeydown);
+    } else if (event.code === 'KeyD') {
+      this.inputState.actions.set(InputAction.RIGHT, isKeydown);
+    } else if (event.code === 'Space') {
+      this.inputState.actions.set(InputAction.JUMP, isKeydown);
+    } else if (event.code === 'Escape') {
+      this.inputState.actions.set(InputAction.ESCAPE, isKeydown);
+    }
 
-        // Crouching / Sliding
-        if (keyboardEvent.code === 'ShiftLeft') {
-          this.inputState.actions.set(
-            InputAction.CROUCH,
-            keyboardEvent.type === 'keydown',
-          );
-        }
+    // Switching weapons
+    else if (event.code === 'Digit1') {
+      this.inputState.actions.set(InputAction.PRESS_ONE, isKeydown);
+    } else if (event.code === 'Digit2') {
+      this.inputState.actions.set(InputAction.PRESS_TWO, isKeydown);
+    }
 
-        // RELOADING
-        if (keyboardEvent.code === 'KeyR') {
-          this.inputState.actions.set(
-            InputAction.RELOAD,
-            keyboardEvent.type === 'keydown',
-          );
-        }
+    // Crouching / Sliding
+    else if (event.code === 'ShiftLeft') {
+      this.inputState.actions.set(InputAction.CROUCH, isKeydown);
+    }
 
-        // Update the direction
-        this.inputState.directions.x = 0;
-        this.inputState.directions.y = 0;
-        if (
-          this.inputState.actions.get(InputAction.FORWARD) &&
-          !this.inputState.actions.get(InputAction.BACKWARD)
-        ) {
-          this.inputState.directions.y = 1;
-        }
-        if (
-          !this.inputState.actions.get(InputAction.FORWARD) &&
-          this.inputState.actions.get(InputAction.BACKWARD)
-        ) {
-          this.inputState.directions.y = -1;
-        }
-        if (
-          this.inputState.actions.get(InputAction.LEFT) &&
-          !this.inputState.actions.get(InputAction.RIGHT)
-        ) {
-          this.inputState.directions.x = -1;
-        }
-        if (
-          !this.inputState.actions.get(InputAction.LEFT) &&
-          this.inputState.actions.get(InputAction.RIGHT)
-        ) {
-          this.inputState.directions.x = 1;
-        }
-      });
+    // RELOADING
+    else if (event.code === 'KeyR') {
+      this.inputState.actions.set(InputAction.RELOAD, isKeydown);
+    }
+
+    // Update the direction
+    this.inputState.directions.x = 0;
+    this.inputState.directions.y = 0;
+    if (
+      this.inputState.actions.get(InputAction.FORWARD) &&
+      !this.inputState.actions.get(InputAction.BACKWARD)
+    ) {
+      this.inputState.directions.y = 1;
+    }
+    if (
+      !this.inputState.actions.get(InputAction.FORWARD) &&
+      this.inputState.actions.get(InputAction.BACKWARD)
+    ) {
+      this.inputState.directions.y = -1;
+    }
+    if (
+      this.inputState.actions.get(InputAction.LEFT) &&
+      !this.inputState.actions.get(InputAction.RIGHT)
+    ) {
+      this.inputState.directions.x = -1;
+    }
+    if (
+      !this.inputState.actions.get(InputAction.LEFT) &&
+      this.inputState.actions.get(InputAction.RIGHT)
+    ) {
+      this.inputState.directions.x = 1;
     }
   }
 }

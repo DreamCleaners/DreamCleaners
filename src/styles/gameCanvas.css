@@ -1,4 +1,4 @@
-.playerCrosshair {
+.player-crosshair {
   position: absolute;
   background-color: white;
   z-index: 1;
@@ -8,12 +8,12 @@
   pointer-events: none;
 }
 
-.verticalLine {
+.vertical-line {
   width: 2px;
   height: 15px;
 }
 
-.horizontalLine {
+.horizontal-line {
   width: 15px;
   height: 2px;
 }

@@ -27,6 +27,8 @@ export class FixedStageScene extends GameScene {
 
   private onPlayerDamageTakenObserver!: Observer<number>;
 
+  private onUIChangeObserver!: Observer<UIType>;
+
   constructor(game: Game, fixedStageName: FixedStageLayout) {
     super(game);
     this.fixedStageName = fixedStageName;
@@ -200,12 +202,22 @@ export class FixedStageScene extends GameScene {
 
       setTimeout(() => {
         this.game.uiManager.displayUI(UIType.SCORE);
-        this.game.uiManager.onUIChange.addOnce(this.onScoreInterfaceClosed.bind(this));
+        this.onUIChangeObserver = this.game.uiManager.onUIChange.add(
+          this.onUIChange.bind(this),
+        );
       }, 2000);
     }
   }
 
-  private onScoreInterfaceClosed(): void {
+  private onUIChange(uiType: UIType): void {
+    if (uiType === UIType.MAIN_MENU) {
+      this.onUIChangeObserver.remove();
+      return;
+    }
+
+    if (uiType !== UIType.PLAYER_HUD) return;
+
+    this.onUIChangeObserver.remove();
     this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
   }
 }

@@ -9,7 +9,7 @@ const GameCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const gameRef = useRef<Game | null>(null);
-  const [isCrosshairVisible, setIsCrosshairVisible] = useState<boolean>(true);
+  const [isCrosshairVisible, setIsCrosshairVisible] = useState<boolean>(false);
   const onCrosshairChangeObserverRef = useRef<Observer<boolean> | null>(null);
 
   const initGame = async () => {
@@ -37,8 +37,8 @@ const GameCanvas = () => {
     <GameContext.Provider value={game}>
       {isCrosshairVisible && (
         <>
-          <div className="playerCrosshair verticalLine"></div>
-          <div className="playerCrosshair horizontalLine"></div>
+          <div className="player-crosshair vertical-line"></div>
+          <div className="player-crosshair horizontal-line"></div>
         </>
       )}
       <UserInterface />

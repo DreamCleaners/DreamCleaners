@@ -11,6 +11,13 @@ export class SceneManager {
     this.changeSceneToFixedStage(FixedStageLayout.HUB);
   }
 
+  public stop(): void {
+    if (this.currentScene !== null) {
+      this.currentScene.dispose();
+      this.currentScene = null;
+    }
+  }
+
   /**
    * Dispose of the current scene and load the new scene.
    */

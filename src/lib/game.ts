@@ -9,6 +9,7 @@ import { AssetManager } from './assets/assetManager';
 import { ScoreManager } from './scoreManager';
 import { UIManager } from './ui/uiManager';
 import { MoneyManager } from './moneyManager';
+import { UIType } from './ui/uiType';
 
 export class Game {
   public scene!: Scene;
@@ -16,6 +17,10 @@ export class Game {
 
   public isPointerLocked = false;
   public canPlayerLockPointer = true;
+
+  // tells if the game forced the pointer to be unlocked
+  // if false, the game will pause when the pointer is unlocked
+  private isPointerUnlockForced = false;
 
   public engine!: Engine;
   public sceneManager!: SceneManager;
@@ -52,6 +57,24 @@ export class Game {
     this.engine.runRenderLoop(this.update.bind(this));
   }
 
+  public stop(): void {
+    this.sceneManager.stop();
+    this.uiManager.displayUI(UIType.MAIN_MENU);
+  }
+
+  public pause(): void {
+    this.engine.stopRenderLoop();
+    this.uiManager.displayPauseMenu();
+  }
+
+  /**
+   * Resume the game from the pause menu
+   */
+  public resume(): void {
+    this.engine.runRenderLoop(this.update.bind(this));
+    this.uiManager.hidePauseMenu();
+  }
+
   private update(): void {
     this.scene.render();
 
@@ -61,6 +84,14 @@ export class Game {
       this.canPlayerLockPointer
     ) {
       this.lockPointer();
+    }
+
+    if (
+      this.inputManager.inputState.actions.get(InputAction.ESCAPE) &&
+      this.uiManager.getCurrentUI() !== UIType.MAIN_MENU
+    ) {
+      this.pause();
+      return;
     }
 
     this.player.update();
@@ -92,6 +123,7 @@ export class Game {
 
   public async lockPointer(): Promise<void> {
     this.isPointerLocked = true;
+    this.isPointerUnlockForced = false;
     this.canvas.focus();
 
     // the request will throw an error if the user exits pointer lock to fast
@@ -105,12 +137,19 @@ export class Game {
   }
 
   public unlockPointer(): void {
+    if (!this.isPointerLocked) return;
+
     this.isPointerLocked = false;
+    this.isPointerUnlockForced = true;
     document.exitPointerLock();
   }
 
   private onPointerLockChange = (): void => {
     this.isPointerLocked = document.pointerLockElement === this.canvas;
+
+    if (!this.isPointerLocked && !this.isPointerUnlockForced) {
+      this.pause();
+    }
   };
 
   private listenToDebugInputs(): void {
