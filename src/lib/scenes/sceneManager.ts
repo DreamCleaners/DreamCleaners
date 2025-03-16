@@ -7,7 +7,9 @@ import { SceneFactory } from './sceneFactory';
 export class SceneManager {
   private currentScene: GameScene | null = null;
 
-  constructor(private game: Game) {
+  constructor(private game: Game) {}
+
+  public start(): void {
     this.changeSceneToFixedStage(FixedStageLayout.HUB);
   }
 

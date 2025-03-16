@@ -34,7 +34,12 @@ export class HubScene extends GameScene {
     await this.createPC(new Vector3(0, 1, 10));
 
     this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
+    this.game.scoreManager.reset();
+
+    this.game.player.setPosition(new Vector3(0, 1, 0));
     this.game.player.resetHealth();
+
+    this.game.saveManager.save();
   }
 
   private async createBed(position: Vector3): Promise<void> {

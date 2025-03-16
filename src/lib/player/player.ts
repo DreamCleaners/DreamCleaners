@@ -33,8 +33,8 @@ export class Player implements IDamageable {
   // health
   public readonly healthController = new HealthController();
   private timeSinceLastDamage = 0; // ms
-  private regenDelay = 3; // seconds
-  private regenAmount = 5;
+  private readonly REGEN_DELAY = 3; // seconds
+  private readonly REGEN_AMOUNT = 5;
   private regenSpeed = 0; // seconds
   private lastRegenTick = 0; // ms
   private isRegenUnlocked = false;
@@ -53,7 +53,7 @@ export class Player implements IDamageable {
   private weapons!: Array<Weapon>;
   public equippedWeapon!: Weapon;
   private currentWeaponIndex = 0;
-  private weaponSwitchDelay = 500;
+  private readonly WEAPON_SWITCH_DELAY = 500;
   private lastWeaponSwitch = 0;
 
   // Crouching / sliding
@@ -68,7 +68,7 @@ export class Player implements IDamageable {
   private crouchStartTime: number | null = null;
   // Duration of the crouch (lowering the camera and player's body)
   // animation in milliseconds
-  private crouchDuration = 350;
+  private readonly CROUCH_DURATION = 350;
   private readonly ORIGINAL_PLAYER_HEIGHT = 2;
   private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT;
 
@@ -87,13 +87,6 @@ export class Player implements IDamageable {
       this.onPlayerUpgradeUnlock.bind(this),
     );
 
-    this.healthController.init(
-      this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
-    );
-    this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-      PlayerUpgradeType.MOVEMENT_SPEED,
-    );
-
     // weapons
     this.weapons = new Array<Weapon>();
 
@@ -107,6 +100,30 @@ export class Player implements IDamageable {
 
     const shotgun = new Weapon(this, 'shotgun', WeaponRarity.LEGENDARY);
     this.weapons.push(shotgun);
+  }
+
+  public start(): void {
+    this.setPosition(new Vector3(0, 1, 0));
+
+    // set player upgrades
+    this.healthController.init(
+      this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
+    );
+
+    this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+      PlayerUpgradeType.MOVEMENT_SPEED,
+    );
+
+    if (this.playerUpgradeManager.isUpgradeUnlocked(PlayerUpgradeType.REGEN_SPEED)) {
+      this.isRegenUnlocked = true;
+      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+        PlayerUpgradeType.REGEN_SPEED,
+      );
+    }
+  }
+
+  public setPosition(position: Vector3): void {
+    this.hitbox.position = position;
   }
 
   private initPhysicsAggregate(): void {
@@ -128,6 +145,7 @@ export class Player implements IDamageable {
       { mass: 1 },
       this.game.scene,
     );
+    this.physicsAggregate.body.disablePreStep = false;
     this.physicsAggregate.body.setMassProperties({ inertia: new Vector3(0, 0, 0) });
 
     this.physicsAggregate.body.setCollisionCallbackEnabled(true);
@@ -192,14 +210,14 @@ export class Player implements IDamageable {
   private handleRegen(): void {
     this.timeSinceLastDamage += this.game.engine.getDeltaTime();
 
-    if (this.timeSinceLastDamage > this.regenDelay * 1000) {
+    if (this.timeSinceLastDamage > this.REGEN_DELAY * 1000) {
       this.lastRegenTick += this.game.engine.getDeltaTime();
 
       if (
         this.lastRegenTick > this.regenSpeed * 1000 &&
         this.healthController.getHealth() < this.healthController.getMaxHealth()
       ) {
-        this.healthController.addHealth(this.regenAmount);
+        this.healthController.addHealth(this.REGEN_AMOUNT);
         this.lastRegenTick = 0;
       }
     }
@@ -323,7 +341,7 @@ export class Player implements IDamageable {
     if (index === this.currentWeaponIndex) return;
 
     // Only update the desired weapon index if the key was not pressed recently
-    if (Date.now() - this.lastWeaponSwitch > this.weaponSwitchDelay) {
+    if (Date.now() - this.lastWeaponSwitch > this.WEAPON_SWITCH_DELAY) {
       this.lastWeaponSwitch = Date.now();
       return;
     }
@@ -357,7 +375,7 @@ export class Player implements IDamageable {
 
     this.isCrouching = true;
     this.crouchStartTime = performance.now();
-    this.interpolateHitboxHeight(this.currentCrouchHeight, 1, this.crouchDuration);
+    this.interpolateHitboxHeight(this.currentCrouchHeight, 1, this.CROUCH_DURATION);
   }
 
   /** Whether the player is in movement, used to detect sliding initiation */
@@ -373,7 +391,7 @@ export class Player implements IDamageable {
     this.interpolateHitboxHeight(
       this.currentCrouchHeight,
       this.ORIGINAL_PLAYER_HEIGHT,
-      this.crouchDuration,
+      this.CROUCH_DURATION,
     );
   }
 

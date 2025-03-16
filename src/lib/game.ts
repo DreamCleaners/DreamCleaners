@@ -9,6 +9,7 @@ import { AssetManager } from './assets/assetManager';
 import { ScoreManager } from './scoreManager';
 import { UIManager } from './ui/uiManager';
 import { MoneyManager } from './moneyManager';
+import { SaveManager } from './saveManager';
 import { UIType } from './ui/uiType';
 
 export class Game {
@@ -30,11 +31,15 @@ export class Game {
   public scoreManager = new ScoreManager();
   public moneyManager = new MoneyManager();
   public uiManager = new UIManager(this);
+  public saveManager = new SaveManager();
 
   private lastFixedUpdate = 0;
   private fixedUpdateInterval = 1000 / 60;
 
-  public async start(canvas: HTMLCanvasElement): Promise<void> {
+  /**
+   * Called one time when the canvas is initialized
+   */
+  public async init(canvas: HTMLCanvasElement): Promise<void> {
     this.canvas = canvas;
     this.engine = new Engine(this.canvas);
     this.scene = new Scene(this.engine);
@@ -48,12 +53,27 @@ export class Game {
     this.player = new Player(this);
     this.sceneManager = new SceneManager(this);
 
+    this.saveManager.addSaveable(this.moneyManager);
+    this.saveManager.addSaveable(this.player.playerUpgradeManager);
+
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
 
-    this.lockPointer();
-
     if (process.env.NODE_ENV === 'development') this.listenToDebugInputs();
+  }
 
+  /**
+   * Called each time we start a new game or resume a game
+   */
+  public start(isNewGame: boolean): void {
+    if (isNewGame) {
+      this.saveManager.reset();
+    } else {
+      this.saveManager.restore();
+    }
+
+    this.player.start();
+    this.sceneManager.start();
+    this.uiManager.hideUI();
     this.engine.runRenderLoop(this.update.bind(this));
   }
 

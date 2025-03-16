@@ -3,8 +3,9 @@ import { Game } from '../game';
 import { PlayerUpgrade } from './playerUpgrade';
 import { PlayerUpgradeType } from './playerUpgradeType';
 import { playerUpgrades } from '../../data/playerUpgrades';
+import { ISaveable } from '../saveable';
 
-export class PlayerUpgradeManager {
+export class PlayerUpgradeManager implements ISaveable {
   public onPlayerUpgradeChange = new Observable<PlayerUpgradeType>();
   public onPlayerUpgradeUnlock = new Observable<PlayerUpgradeType>();
 
@@ -61,6 +62,8 @@ export class PlayerUpgradeManager {
     this.game.moneyManager.removePlayerMoney(upgradeCost);
     playerUpgrade.currentUpgradeIndex++;
 
+    this.game.saveManager.save();
+
     this.onPlayerUpgradeChange.notifyObservers(statType);
   }
 
@@ -84,5 +87,41 @@ export class PlayerUpgradeManager {
   public isMaxUpgrade(statType: PlayerUpgradeType): boolean {
     const playerUpgrade = this.getUpgrade(statType);
     return playerUpgrade.currentUpgradeIndex === playerUpgrade.upgradesValue.length - 1;
+  }
+
+  public save(): string {
+    const data: { [key: string]: number } = {};
+
+    for (const [key, value] of playerUpgrades) {
+      data[`upgrade${key}`] = value.currentUpgradeIndex;
+    }
+
+    return JSON.stringify(data);
+  }
+
+  public restoreSave(data: string): void {
+    const parsedData = JSON.parse(data);
+
+    for (const [key, value] of playerUpgrades) {
+      value.currentUpgradeIndex = parsedData[`upgrade${key}`];
+      if (
+        value.currentUpgradeIndex === undefined ||
+        value.currentUpgradeIndex === null ||
+        value.currentUpgradeIndex < -1 ||
+        value.currentUpgradeIndex >= value.upgradesValue.length
+      ) {
+        throw new Error(`Invalid upgrade index for upgrade ${key}`);
+      }
+    }
+  }
+
+  public resetSave(): void {
+    for (const [key, value] of playerUpgrades) {
+      if (key === PlayerUpgradeType.REGEN_SPEED) {
+        value.currentUpgradeIndex = -1;
+      } else {
+        value.currentUpgradeIndex = 0;
+      }
+    }
   }
 }

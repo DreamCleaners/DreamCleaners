@@ -14,7 +14,7 @@ const GameCanvas = () => {
 
   const initGame = async () => {
     gameRef.current = new Game();
-    await gameRef.current.start(canvasRef.current!);
+    await gameRef.current.init(canvasRef.current!);
     setGame(gameRef.current);
 
     onCrosshairChangeObserverRef.current =

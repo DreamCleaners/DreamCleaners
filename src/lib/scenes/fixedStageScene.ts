@@ -48,7 +48,7 @@ export class FixedStageScene extends GameScene {
     if (this.fixedStageName === FixedStageLayout.HUB) return;
 
     this.loadEnemies();
-    this.game.scoreManager.reset();
+    this.game.scoreManager.startStage();
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
@@ -86,9 +86,6 @@ export class FixedStageScene extends GameScene {
     // If we meet a "point_light" we will create a point light for it and add it to the lights array
     // And so on
     let name = '';
-    let physicObjectsCount = 0;
-    let lightCount = 0;
-    let spawnPointCount = 0;
 
     scene.getDescendants().forEach((node) => {
       name = node.name.toLowerCase();
@@ -96,31 +93,16 @@ export class FixedStageScene extends GameScene {
         name.includes('physical_object') &&
         (node instanceof Mesh || node instanceof InstancedMesh)
       ) {
-        physicObjectsCount++;
         this.handlePhysicalObject(node);
       } else if (name.includes('light') && node instanceof Light) {
-        lightCount++;
         // No need for particular operations to the light as it is directly exported from Unity
         this.pushToLights(node);
       } else if (name.includes('spawn_point')) {
-        spawnPointCount++;
         this.handleSpawnPoint(node as Mesh);
       } else {
         // These objects do not require any action from us
       }
     });
-
-    console.log(
-      'Successfully imported scene: ',
-      this.fixedStageName,
-      ' found ',
-      physicObjectsCount,
-      ' objects with physics, ',
-      lightCount,
-      ' lights and ',
-      spawnPointCount,
-      ' enemy spawn points',
-    );
   }
 
   private handlePhysicalObject(node: Mesh | InstancedMesh): void {
@@ -147,9 +129,6 @@ export class FixedStageScene extends GameScene {
     if (this.spawnPoints.length <= 0) {
       return;
     }
-
-    // For now we will spawn all enemies at once
-    console.log('Spawning ' + this.spawnPoints.length + ' enemies');
 
     for (const spawnPoint of this.spawnPoints) {
       const enemy = this.enemyManager.createEnemy(

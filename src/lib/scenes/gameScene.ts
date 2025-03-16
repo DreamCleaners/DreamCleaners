@@ -51,12 +51,6 @@ export abstract class GameScene {
   public setStageParameters(difficultyFactor: number, enemyTypes: EnemyType[]): void {
     this.difficultyFactor = difficultyFactor;
     this.enemyTypesToSpawn = enemyTypes;
-    console.log(
-      'Stage will be of difficulty: ' +
-        difficultyFactor +
-        ' and will spawn enemies of types: ',
-      enemyTypes,
-    );
   }
 
   protected pushToPhysicsAggregates(physicsAggregate: PhysicsAggregate): void {

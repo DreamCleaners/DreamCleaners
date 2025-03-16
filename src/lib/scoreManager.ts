@@ -15,6 +15,10 @@ export class ScoreManager {
   private readonly KILL_SCORE_MULTIPLIER = 10;
   private readonly DAMAGE_TAKEN_MALUS_MULTIPLIER = 0.5;
 
+  public startStage(): void {
+    this.startTimestamp = Date.now();
+  }
+
   /**
    * Set the final score for the stage.
    */
@@ -55,7 +59,6 @@ export class ScoreManager {
     this.totalKill = 0;
     this.totalKillScore = 0;
 
-    this.startTimestamp = Date.now();
     this.timeElapsed = 0;
     this.totalTimeBonus = 0;
 
