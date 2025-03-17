@@ -57,6 +57,7 @@ export class Game {
     this.saveManager.addSaveable(this.player.playerUpgradeManager);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
+    window.addEventListener('resize', this.onResize);
 
     if (process.env.NODE_ENV === 'development') this.listenToDebugInputs();
   }
@@ -171,6 +172,10 @@ export class Game {
     if (!this.isPointerLocked && !this.isPointerUnlockForced) {
       this.pause();
     }
+  };
+
+  private onResize = (): void => {
+    this.engine.resize();
   };
 
   private listenToDebugInputs(): void {
