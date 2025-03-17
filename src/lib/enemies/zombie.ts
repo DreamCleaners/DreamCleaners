@@ -1,6 +1,5 @@
 import { Quaternion, Vector3 } from '@babylonjs/core';
 import { Game } from '../game';
-import { IDamageable } from '../damageable';
 import { Enemy } from './enemy';
 
 export enum ZombieState {
@@ -15,7 +14,7 @@ enum ZombieAnimation {
   BITE = 'bite',
 }
 
-export class Zombie extends Enemy implements IDamageable {
+export class Zombie extends Enemy {
   public onDeathObservable = this.healthController.onDeath;
 
   constructor(game: Game, difficultyFactor: number) {

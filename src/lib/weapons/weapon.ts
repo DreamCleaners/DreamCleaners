@@ -61,7 +61,7 @@ export class Weapon implements WeaponData {
     this.player = player;
     this.currentRarity = rarity;
     this.weaponName = name;
-    this.physicsEngine = player.game.scene.getPhysicsEngine() as PhysicsEngineV2;
+    this.physicsEngine = player.physicsEngine;
     this.initArrays();
     this.loadJSONIntoArrays().then(() => {
       this.initMesh();

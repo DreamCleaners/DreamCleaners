@@ -4,7 +4,9 @@ import {
   MeshBuilder,
   Observable,
   PhysicsAggregate,
+  PhysicsEngineV2,
   PhysicsEventType,
+  PhysicsRaycastResult,
   PhysicsShapeType,
   Vector2,
   Vector3,
@@ -20,6 +22,7 @@ import { GameEntityType } from '../gameEntityType';
 import { PlayerUpgradeManager } from './playerUpgradeManager';
 import { CameraManager } from '../cameraManager';
 import { PlayerUpgradeType } from './playerUpgradeType';
+import { InteractiveElement } from '../interactiveElements/interactiveElement';
 
 export class Player implements IDamageable {
   private inputs: InputState;
@@ -72,7 +75,12 @@ export class Player implements IDamageable {
   private readonly ORIGINAL_PLAYER_HEIGHT = 2;
   private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT;
 
+  // Interaction related
+  public physicsEngine!: PhysicsEngineV2;
+  private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
+
   constructor(public game: Game) {
+    this.physicsEngine = game.scene.getPhysicsEngine() as PhysicsEngineV2;
     this.inputs = game.inputManager.inputState;
     this.healthController.onDeath.add(this.onGameOver.bind(this));
     this.initPhysicsAggregate();
@@ -184,6 +192,12 @@ export class Player implements IDamageable {
       if (this.isCrouching) {
         this.restoreHitboxHeight();
       }
+    }
+
+    if(this.inputs.actions.get(InputAction.INTERACT)) {
+      // If the player tries to interact, we check if there is an interactive object in front of him
+      // via a raycast, if there is, we call the interact method of the object
+      this.checkForInteractables();
     }
 
     this.cameraManager.updateCamera(this.velocity);
@@ -430,5 +444,28 @@ export class Player implements IDamageable {
 
   public getVelocity(): Vector3 {
     return this.velocity;
+  }
+
+  // Interaction
+  private checkForInteractables(): void {
+    const start = this.cameraManager.getCamera().globalPosition.clone();
+    const direction = this.cameraManager.getCamera().getForwardRay().direction.scale(0.5);
+
+    start.addInPlace(
+      direction,
+    );
+
+    const end = start.add(direction.scale(3)); // For interaction range
+
+    this.physicsEngine.raycastToRef(start, end, this.raycastResult);
+
+    if (this.raycastResult.hasHit) {
+      const metadata = this.raycastResult.body?.transformNode.metadata;      
+      if (metadata && metadata.isInteractive) {
+        const interactiveEntity = this.raycastResult.body?.transformNode
+          .metadata as InteractiveElement;
+        interactiveEntity.interact();
+      }
+    }
   }
 }

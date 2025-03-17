@@ -14,8 +14,9 @@ import { AnimationController } from '../animations/animationController';
 import { ZombieState } from './zombie';
 import { GameEntityType } from '../gameEntityType';
 import { AssetType } from '../assets/assetType';
+import { IDamageable } from '../damageable';
 
-export abstract class Enemy {
+export abstract class Enemy  implements IDamageable{
   public mesh!: Mesh;
   protected healthController!: HealthController;
   protected animationController!: AnimationController;

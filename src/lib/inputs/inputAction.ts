@@ -10,4 +10,5 @@ export enum InputAction {
   PRESS_TWO,
   RELOAD,
   ESCAPE,
+  INTERACT,
 }

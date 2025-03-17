@@ -70,6 +70,11 @@ export class InputManager {
       this.inputState.actions.set(InputAction.RELOAD, isKeydown);
     }
 
+    // INTERACTING
+    else if (event.code === 'KeyE') {
+      this.inputState.actions.set(InputAction.INTERACT, isKeydown);
+    }
+
     // Update the direction
     this.inputState.directions.x = 0;
     this.inputState.directions.y = 0;

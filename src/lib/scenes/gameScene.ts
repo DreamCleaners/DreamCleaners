@@ -22,7 +22,7 @@ export abstract class GameScene {
   // We shall only spawn enemies of these types
   public enemyTypesToSpawn: EnemyType[] = [];
 
-  constructor(protected game: Game) {
+  constructor(public game: Game) {
     this.assetContainer = new AssetContainer(this.game.scene);
     this.scene = game.scene;
     this.enemyManager = EnemyFactory.getInstance();
@@ -53,11 +53,11 @@ export abstract class GameScene {
     this.enemyTypesToSpawn = enemyTypes;
   }
 
-  protected pushToPhysicsAggregates(physicsAggregate: PhysicsAggregate): void {
+  public pushToPhysicsAggregates(physicsAggregate: PhysicsAggregate): void {
     this.physicsAggregates.push(physicsAggregate);
   }
 
-  protected pushToMeshes(mesh: Mesh | InstancedMesh): void {
+  public pushToMeshes(mesh: Mesh | InstancedMesh): void {
     this.assetContainer.meshes.push(mesh);
   }
 
