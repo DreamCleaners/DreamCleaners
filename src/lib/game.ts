@@ -79,6 +79,7 @@ export class Game {
 
   public stop(): void {
     this.sceneManager.stop();
+    this.uiManager.hidePauseMenu();
     this.uiManager.displayUI(UIType.MAIN_MENU);
   }
 

@@ -1,6 +1,5 @@
 export enum UIType {
   MAIN_MENU,
-  PAUSE_MENU,
   PLAYER_UPGRADES,
   PLAYER_HUD,
   SCORE,

@@ -45,6 +45,8 @@ export class FixedStageScene extends GameScene {
     // We import the stage scene based on the name
     await this.importScene();
 
+    this.game.player.setPosition(new Vector3(0, 1, 0));
+
     if (this.fixedStageName === FixedStageLayout.HUB) return;
 
     this.loadEnemies();
@@ -177,15 +179,23 @@ export class FixedStageScene extends GameScene {
     // WARNING: This is the end condition for the basic "no enemy left = end of stage"
     // We might add in the future more complex conditions, for example time limit and so on
     if (this.enemyCount === 0) {
-      this.game.scoreManager.endStage();
-
-      setTimeout(() => {
-        this.game.uiManager.displayUI(UIType.SCORE);
-        this.onUIChangeObserver = this.game.uiManager.onUIChange.add(
-          this.onUIChange.bind(this),
-        );
-      }, 2000);
+      this.onEndStage();
     }
+  }
+
+  private onEndStage(): void {
+    this.game.scoreManager.endStage();
+
+    setTimeout(() => {
+      const currentUI = this.game.uiManager.getCurrentUI();
+
+      if (currentUI === UIType.MAIN_MENU) return;
+
+      this.game.uiManager.displayUI(UIType.SCORE);
+      this.onUIChangeObserver = this.game.uiManager.onUIChange.add(
+        this.onUIChange.bind(this),
+      );
+    }, 2000);
   }
 
   private onUIChange(uiType: UIType): void {

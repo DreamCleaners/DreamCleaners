@@ -6,10 +6,10 @@ export class UIManager {
   private currentUI: UIType = UIType.PLAYER_HUD;
 
   onUIChange: Observable<UIType> = new Observable<UIType>();
+  onPauseMenuChange: Observable<boolean> = new Observable<boolean>();
   onCrosshairChange: Observable<boolean> = new Observable<boolean>();
 
   // used to store last active state to restore it after a pause
-  private lastActiveUI: UIType = UIType.PLAYER_HUD;
   private lastActivePointerLock = false;
 
   constructor(private game: Game) {}
@@ -44,13 +44,12 @@ export class UIManager {
   }
 
   public displayPauseMenu(): void {
-    if (this.currentUI === UIType.PAUSE_MENU) return;
-
-    this.setCurrentUI(UIType.PAUSE_MENU);
+    this.onPauseMenuChange.notifyObservers(true);
     this.setCrosshairVisibility(false);
   }
 
   public hidePauseMenu(): void {
+    this.onPauseMenuChange.notifyObservers(false);
     this.restoreLastActiveUIState();
   }
 
@@ -68,12 +67,10 @@ export class UIManager {
   }
 
   private saveLastActiveUIState(isPointerLocked: boolean): void {
-    this.lastActiveUI = this.currentUI;
     this.lastActivePointerLock = isPointerLocked;
   }
 
   private restoreLastActiveUIState(): void {
-    this.setCurrentUI(this.lastActiveUI);
     this.setCrosshairVisibility(this.lastActivePointerLock);
 
     if (this.lastActivePointerLock) {

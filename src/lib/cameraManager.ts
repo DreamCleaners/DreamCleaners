@@ -9,7 +9,7 @@ export class CameraManager {
 
   private FOV_ANIMATION_SPEED = 0.05;
   private MAX_FOV = 1.4;
-  private NORMAL_FOV = 0.8;
+  private NORMAL_FOV = 0.9;
 
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.1;
 

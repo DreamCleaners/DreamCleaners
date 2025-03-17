@@ -36,7 +36,6 @@ export class HubScene extends GameScene {
     this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
     this.game.scoreManager.reset();
 
-    this.game.player.setPosition(new Vector3(0, 1, 0));
     this.game.player.resetHealth();
 
     this.game.saveManager.save();
