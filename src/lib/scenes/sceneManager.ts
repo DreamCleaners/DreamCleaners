@@ -1,3 +1,4 @@
+import { Vector3 } from '@babylonjs/core';
 import { EnemyType } from '../enemies/enemyType';
 import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
@@ -33,6 +34,10 @@ export class SceneManager {
       this.currentScene.dispose();
       this.currentScene = null;
     }
+
+    // We reset player's position and camera direction
+    this.game.player.setPosition(new Vector3(0, 1, 0));
+    this.game.player.cameraManager.getCamera().setTarget(new Vector3(0, 1, 1));
 
     const scene = SceneFactory.createFixedStageScene(layout, this.game);
     scene.setStageParameters(difficultyFactor, enemyTypes);

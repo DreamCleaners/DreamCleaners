@@ -194,7 +194,7 @@ export class Player implements IDamageable {
       }
     }
 
-    if(this.inputs.actions.get(InputAction.INTERACT)) {
+    if (this.inputs.actions.get(InputAction.INTERACT)) {
       // If the player tries to interact, we check if there is an interactive object in front of him
       // via a raycast, if there is, we call the interact method of the object
       this.checkForInteractables();
@@ -451,16 +451,14 @@ export class Player implements IDamageable {
     const start = this.cameraManager.getCamera().globalPosition.clone();
     const direction = this.cameraManager.getCamera().getForwardRay().direction.scale(0.5);
 
-    start.addInPlace(
-      direction,
-    );
+    start.addInPlace(direction);
 
     const end = start.add(direction.scale(3)); // For interaction range
 
     this.physicsEngine.raycastToRef(start, end, this.raycastResult);
 
     if (this.raycastResult.hasHit) {
-      const metadata = this.raycastResult.body?.transformNode.metadata;      
+      const metadata = this.raycastResult.body?.transformNode.metadata;
       if (metadata && metadata.isInteractive) {
         const interactiveEntity = this.raycastResult.body?.transformNode
           .metadata as InteractiveElement;

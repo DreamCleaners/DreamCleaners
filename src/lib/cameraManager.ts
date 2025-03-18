@@ -1,4 +1,4 @@
-import { Camera, UniversalCamera, Vector3 } from '@babylonjs/core';
+import { UniversalCamera, Vector3 } from '@babylonjs/core';
 import { Player } from './player/player';
 
 export class CameraManager {
@@ -177,7 +177,7 @@ export class CameraManager {
     return this.camera.position.y;
   }
 
-  public getCamera(): Camera {
+  public getCamera(): UniversalCamera {
     return this.camera;
   }
 }

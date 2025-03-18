@@ -36,7 +36,7 @@ export class FixedStageScene extends GameScene {
 
   public async load(): Promise<void> {
     // Simple ground initialization
-    this.initGround();
+    //this.initGround();
 
     if (this.fixedStageName === undefined || this.fixedStageName === null) {
       throw new Error('Fixed stage name is not defined');
@@ -44,8 +44,6 @@ export class FixedStageScene extends GameScene {
 
     // We import the stage scene based on the name
     await this.importScene();
-
-    this.game.player.setPosition(new Vector3(0, 1, 0));
 
     if (this.fixedStageName === FixedStageLayout.HUB) return;
 
