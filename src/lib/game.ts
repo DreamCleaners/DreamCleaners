@@ -89,6 +89,7 @@ export class Game {
   }
 
   public pause(): void {
+    console.log("Pause");
     this.engine.stopRenderLoop();
     this.startPauseTime = performance.now();
     this.uiManager.displayPauseMenu();

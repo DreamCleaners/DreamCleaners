@@ -181,7 +181,7 @@ export class Player implements IDamageable {
       this.equipWeapon(1);
     }
     if (this.inputs.actions.get(InputAction.RELOAD)) {
-      this.equippedWeapon.reload();
+      this.equippedWeapon.initReload();
     }
 
     if (this.inputs.actions.get(InputAction.CROUCH)) {
@@ -208,6 +208,7 @@ export class Player implements IDamageable {
 
     if (this.isRegenUnlocked) this.handleRegen();
     this.updateVelocity();
+    this.equippedWeapon.fixedUpdate();
     this.equippedWeapon.updatePosition(this.velocity);
   }
 

@@ -41,6 +41,9 @@ export class Weapon implements WeaponData {
 
   public currentAmmoRemaining!: number;
   public isReloading = false;
+  private reloadProgress: number = 0;
+  private reloadDuration: number = 0;
+
 
   // Used for preventing automatic shooting
   public justShot = false;
@@ -117,6 +120,10 @@ export class Weapon implements WeaponData {
 
   public showInScene(): void {
     this.mesh.setEnabled(true);
+  }
+
+  public fixedUpdate(): void {
+    this.updateReload();
   }
 
   // --------------------- Stats related ---------------------------
@@ -367,7 +374,7 @@ export class Weapon implements WeaponData {
   // --------------------- Ammo related ---------------------------
   // ---------------------------------------------------------------
 
-  public reload(): void {
+  public initReload(): void {
     if (this.isReloading) {
       return;
     }
@@ -378,16 +385,30 @@ export class Weapon implements WeaponData {
     }
 
     this.isReloading = true;
+    this.reloadProgress = 0;
+    this.reloadDuration = this.getStat(WeaponStatistic.RELOAD_TIME) * 1000;
     this.onReload.notifyObservers(true);
-    setTimeout(
-      () => {
-        this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
-        this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
-        this.isReloading = false;
-        this.onReload.notifyObservers(false);
-      },
-      this.getStat(WeaponStatistic.RELOAD_TIME) * 1000,
-    );
+  }
+
+  public updateReload(): void {
+    if (!this.isReloading) {
+      return;
+    }
+
+    const deltaTime = this.player.game.getDeltaTime();
+    console.log("Delta returned: " + deltaTime);
+    this.reloadProgress += deltaTime;
+
+    console.log("Current reload progress: " + this.reloadProgress);
+
+    if (this.reloadProgress >= this.reloadDuration) {
+      console.log("Reload finished");
+      this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
+      this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
+      this.isReloading = false;
+      this.reloadProgress = 0;
+      this.onReload.notifyObservers(false);
+    }
   }
 
   // --------------------- Moving effect related ---------------------------
