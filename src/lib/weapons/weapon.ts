@@ -44,7 +44,6 @@ export class Weapon implements WeaponData {
   private reloadProgress: number = 0;
   private reloadDuration: number = 0;
 
-
   // Used for preventing automatic shooting
   public justShot = false;
 
@@ -395,14 +394,10 @@ export class Weapon implements WeaponData {
       return;
     }
 
-    const deltaTime = this.player.game.getDeltaTime();
-    console.log("Delta returned: " + deltaTime);
+    const deltaTime = this.player.game.getFixedDeltaTime();
     this.reloadProgress += deltaTime;
 
-    console.log("Current reload progress: " + this.reloadProgress);
-
     if (this.reloadProgress >= this.reloadDuration) {
-      console.log("Reload finished");
       this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
       this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
       this.isReloading = false;
