@@ -36,6 +36,10 @@ export class Game {
   private lastFixedUpdate = 0;
   private fixedUpdateInterval = 1000 / 60;
 
+  private startPauseTime = 0;
+  private endPauseTime = 0;
+  private isFirstFrameAfterPause = false;
+
   /**
    * Called one time when the canvas is initialized
    */
@@ -86,6 +90,7 @@ export class Game {
 
   public pause(): void {
     this.engine.stopRenderLoop();
+    this.startPauseTime = performance.now();
     this.uiManager.displayPauseMenu();
   }
 
@@ -93,8 +98,19 @@ export class Game {
    * Resume the game from the pause menu
    */
   public resume(): void {
+    this.isFirstFrameAfterPause = true;
+    this.endPauseTime = performance.now();
     this.engine.runRenderLoop(this.update.bind(this));
     this.uiManager.hidePauseMenu();
+  }
+
+  public getDeltaTime(): number {
+    if (this.isFirstFrameAfterPause) {
+      this.isFirstFrameAfterPause = false;
+      const pauseDuration = this.endPauseTime - this.startPauseTime;
+      return this.engine.getDeltaTime() - pauseDuration;
+    }
+    return this.engine.getDeltaTime();
   }
 
   private update(): void {
