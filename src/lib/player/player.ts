@@ -181,7 +181,7 @@ export class Player implements IDamageable {
       this.equipWeapon(1);
     }
     if (this.inputs.actions.get(InputAction.RELOAD)) {
-      this.equippedWeapon.reload();
+      this.equippedWeapon.initReload();
     }
 
     if (this.inputs.actions.get(InputAction.CROUCH)) {
@@ -208,6 +208,7 @@ export class Player implements IDamageable {
 
     if (this.isRegenUnlocked) this.handleRegen();
     this.updateVelocity();
+    this.equippedWeapon.fixedUpdate();
     this.equippedWeapon.updatePosition(this.velocity);
   }
 
@@ -222,10 +223,10 @@ export class Player implements IDamageable {
   }
 
   private handleRegen(): void {
-    this.timeSinceLastDamage += this.game.engine.getDeltaTime();
+    this.timeSinceLastDamage += this.game.getDeltaTime();
 
     if (this.timeSinceLastDamage > this.REGEN_DELAY * 1000) {
-      this.lastRegenTick += this.game.engine.getDeltaTime();
+      this.lastRegenTick += this.game.getDeltaTime();
 
       if (
         this.lastRegenTick > this.regenSpeed * 1000 &&

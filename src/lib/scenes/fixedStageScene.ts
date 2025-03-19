@@ -125,6 +125,7 @@ export class FixedStageScene extends GameScene {
   }
 
   private handleSpawnPoint(node: Mesh): void {
+    node.position.x *= -1;
     this.spawnPoints.push(node.position);
   }
 

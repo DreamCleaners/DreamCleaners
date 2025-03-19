@@ -33,8 +33,12 @@ export class Game {
   public uiManager = new UIManager(this);
   public saveManager = new SaveManager();
 
-  private lastFixedUpdate = 0;
+  private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
+
+  private startPauseTime = 0;
+  private endPauseTime = 0;
+  private isFirstFrameAfterPause = false;
 
   /**
    * Called one time when the canvas is initialized
@@ -86,6 +90,7 @@ export class Game {
 
   public pause(): void {
     this.engine.stopRenderLoop();
+    this.startPauseTime = performance.now();
     this.uiManager.displayPauseMenu();
   }
 
@@ -93,10 +98,33 @@ export class Game {
    * Resume the game from the pause menu
    */
   public resume(): void {
+    this.isFirstFrameAfterPause = true;
+    this.endPauseTime = performance.now();
     this.engine.runRenderLoop(this.update.bind(this));
     this.uiManager.hidePauseMenu();
   }
 
+  /**
+   * Delta time between the current update (frame) and the previous update (frame)
+   */
+  public getDeltaTime(): number {
+    if (this.isFirstFrameAfterPause) {
+      const pauseDuration = this.endPauseTime - this.startPauseTime;
+      return this.engine.getDeltaTime() - pauseDuration;
+    }
+    return this.engine.getDeltaTime();
+  }
+
+  /**
+   * Fixed delta time between each fixed update (60 times per second)
+   */
+  public getFixedDeltaTime(): number {
+    return this.fixedUpdateInterval;
+  }
+
+  /**
+   * Update loop called each frame
+   */
   private update(): void {
     this.scene.render();
 
@@ -120,15 +148,21 @@ export class Game {
     this.sceneManager.update();
 
     // fixed update loop
-    const deltaTime = this.engine.getDeltaTime();
-    this.lastFixedUpdate += deltaTime;
+    const deltaTime = this.getDeltaTime();
+    this.fixedUpdateTimer += deltaTime;
 
-    while (this.lastFixedUpdate >= this.fixedUpdateInterval) {
+    while (this.fixedUpdateTimer >= this.fixedUpdateInterval) {
       this.fixedUpdate();
-      this.lastFixedUpdate -= this.fixedUpdateInterval;
+      this.fixedUpdateTimer -= this.fixedUpdateInterval;
     }
+
+    // reset the variable after all objects have been updated in this frame
+    if (this.isFirstFrameAfterPause) this.isFirstFrameAfterPause = false;
   }
 
+  /**
+   * Fixed update loop called 60 times per second (not dependent on frame rate)
+   */
   private fixedUpdate(): void {
     this.player.fixedUpdate();
     this.sceneManager.fixedUpdate();
