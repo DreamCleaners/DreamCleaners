@@ -107,9 +107,21 @@ export class FixedStageScene extends GameScene {
 
   private handlePhysicalObject(node: Mesh | InstancedMesh): void {
     this.pushToMeshes(node);
-    const physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.BOX, {
-      mass: 0,
-    });
+    let physicsAggregate !: PhysicsAggregate;
+
+    if(node.name.includes('convex')) {
+      console.log("Convex object detected, name: " + node.name);
+      // Convex objects require a different physics shape type
+      physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.MESH, {
+        mass: 0,
+      });
+    }
+    else{
+      physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.BOX, {
+        mass: 0,
+      });
+    }
+
     this.pushToPhysicsAggregates(physicsAggregate);
   }
 
