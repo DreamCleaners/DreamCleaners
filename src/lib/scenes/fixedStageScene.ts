@@ -95,8 +95,7 @@ export class FixedStageScene extends GameScene {
       ) {
         this.handlePhysicalObject(node);
       } else if (name.includes('light') && node instanceof Light) {
-        // No need for particular operations to the light as it is directly exported from Unity
-        this.pushToLights(node);
+        this.handleLight(node);
       } else if (name.includes('spawn_point')) {
         this.handleSpawnPoint(node as Mesh);
       } else {
@@ -107,16 +106,16 @@ export class FixedStageScene extends GameScene {
 
   private handlePhysicalObject(node: Mesh | InstancedMesh): void {
     this.pushToMeshes(node);
-    let physicsAggregate !: PhysicsAggregate;
+    let physicsAggregate!: PhysicsAggregate;
 
-    if(node.name.includes('convex')) {
-      console.log("Convex object detected, name: " + node.name);
+    if (node.name.includes('convex')) {
+      console.log('Convex object detected, name: ' + node.name);
       // Convex objects require a different physics shape type
       physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.MESH, {
         mass: 0,
       });
-    }
-    else{
+    } 
+    else {
       physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.BOX, {
         mass: 0,
       });
@@ -127,6 +126,11 @@ export class FixedStageScene extends GameScene {
 
   private handleSpawnPoint(node: Mesh): void {
     this.spawnPoints.push(node.position);
+  }
+
+  private handleLight(node: Light): void {
+    node.intensity *= 10; // Unity -> Babylon conversion (intensity is not the same)
+    this.pushToLights(node);
   }
 
   /**
