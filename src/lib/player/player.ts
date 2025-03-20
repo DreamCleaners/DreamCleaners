@@ -23,6 +23,7 @@ import { PlayerUpgradeManager } from './playerUpgradeManager';
 import { CameraManager } from '../cameraManager';
 import { PlayerUpgradeType } from './playerUpgradeType';
 import { InteractiveElement } from '../interactiveElements/interactiveElement';
+import { WeaponType } from '../weapons/weaponType';
 
 export class Player implements IDamageable {
   private inputs: InputState;
@@ -102,11 +103,11 @@ export class Player implements IDamageable {
     this.weapons.push(simpleGlock);
     this.equippedWeapon = simpleGlock; */
 
-    const ak = new Weapon(this, 'ak', WeaponRarity.COMMON);
+    const ak = new Weapon(this, WeaponType.AK, WeaponRarity.COMMON);
     this.weapons.push(ak);
     this.equippedWeapon = ak;
 
-    const shotgun = new Weapon(this, 'shotgun', WeaponRarity.LEGENDARY);
+    const shotgun = new Weapon(this, WeaponType.SHOTGUN, WeaponRarity.LEGENDARY);
     this.weapons.push(shotgun);
   }
 

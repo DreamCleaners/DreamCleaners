@@ -17,6 +17,7 @@ import { AssetType } from '../assets/assetType';
 import { IDamageable } from '../damageable';
 import { WeaponData } from './weaponData';
 import { WeaponMeshParameter } from './weaponMeshParameters';
+import { WeaponType } from './weaponType';
 
 export class Weapon implements WeaponData {
   private mesh!: AbstractMesh;
@@ -59,10 +60,10 @@ export class Weapon implements WeaponData {
   private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
 
-  constructor(player: Player, name: string, rarity: WeaponRarity) {
+  constructor(player: Player, name: WeaponType, rarity: WeaponRarity) {
     this.player = player;
     this.currentRarity = rarity;
-    this.weaponName = name;
+    this.weaponName = name.toLowerCase();
     this.physicsEngine = player.physicsEngine;
     this.initArrays();
     this.loadJSONIntoArrays().then(() => {
@@ -108,7 +109,7 @@ export class Weapon implements WeaponData {
 
     // TODO! Remove this, only present until the stages are implemented as it will be gameScene's (or sceneManager)
     // role to show the weapon at stage entrance.
-    if (this.weaponName === 'ak') {
+    if (this.weaponName === WeaponType.AK.toLowerCase()) {
       this.showInScene();
     }
   }

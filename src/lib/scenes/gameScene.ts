@@ -9,6 +9,8 @@ import {
 import { Game } from '../game';
 import { EnemyFactory } from '../enemies/enemyFactory';
 import { EnemyType } from '../enemies/enemyType';
+import { FixedStageLayout } from './fixedStageLayout';
+import { StageReward } from '../stages/stageReward';
 
 export abstract class GameScene {
   public scene: Scene;
@@ -17,10 +19,15 @@ export abstract class GameScene {
   public assetContainer!: AssetContainer;
   public physicsAggregates: PhysicsAggregate[] = [];
 
-  // Difficulty factor, used to scale enemies stats and spawning
+  // The specificities of the stage linked to this scene
+
+  public isStageProcedural = false;
+  // The proposed stage layout, null if procedural
+  public proposedFixedStageLayout: FixedStageLayout | null = null;
   public difficultyFactor = 1;
-  // We shall only spawn enemies of these types
   public enemyTypesToSpawn: EnemyType[] = [];
+
+  public stageReward: StageReward | null = null;
 
   constructor(public game: Game) {
     this.assetContainer = new AssetContainer(this.game.scene);

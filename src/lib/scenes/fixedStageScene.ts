@@ -114,8 +114,7 @@ export class FixedStageScene extends GameScene {
       physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.MESH, {
         mass: 0,
       });
-    } 
-    else {
+    } else {
       physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.BOX, {
         mass: 0,
       });

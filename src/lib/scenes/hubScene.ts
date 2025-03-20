@@ -11,8 +11,15 @@ import { FixedStageScene } from './fixedStageScene';
 import { Bed } from '../interactiveElements/bed';
 import { Computer } from '../interactiveElements/computer';
 import { GameEntityType } from '../gameEntityType';
+import { StagesManager } from '../stages/stagesManager';
 
 export class HubScene extends GameScene {
+  // The entity responsible for determining which stages will be proposed to the player
+  private stagesManager = StagesManager.getInstance();
+
+  // Array of the beds in the hub
+  private beds: Bed[] = [];
+
   public async load(): Promise<void> {
     // We use an intermediary scene to avoid having to load the scene from scratch
     const intermediaryScene = new FixedStageScene(this.game, FixedStageLayout.HUB);
@@ -29,8 +36,16 @@ export class HubScene extends GameScene {
     light.intensity = 0.7;
     this.pushToLights(light);
 
-    const bed = new Bed(this);
-    await bed.create(new Vector3(0, 0, -10));
+    // We create multiple beds in the hub by hand
+
+    for (let i = 0; i < 6; i++) {
+      const bed = new Bed(this);
+      await bed.create(new Vector3(0, 0, -i * 4));
+      this.beds.push(bed);
+    }
+
+    // Once beds are created we give them to the stageManager so that it attributes the beds rewards, difficulty and so on
+    this.stagesManager.setProposedStagesForBeds(this.beds);
 
     const computer = new Computer(this);
     await computer.create(new Vector3(0, 1, 10));
