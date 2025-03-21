@@ -208,7 +208,7 @@ export class Player implements IDamageable {
       this.hideInteractionUI();
     }
 
-    this.cameraManager.updateCamera(this.velocity);
+    this.cameraManager.updateCamera(this.inputs);
   }
 
   public fixedUpdate(): void {
