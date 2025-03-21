@@ -16,7 +16,7 @@ import { GameEntityType } from '../gameEntityType';
 import { AssetType } from '../assets/assetType';
 import { IDamageable } from '../damageable';
 
-export abstract class Enemy  implements IDamageable{
+export abstract class Enemy implements IDamageable {
   public mesh!: Mesh;
   protected healthController!: HealthController;
   protected animationController!: AnimationController;
@@ -54,7 +54,7 @@ export abstract class Enemy  implements IDamageable{
   }
 
   public async initAt(position: Vector3): Promise<void> {
-    this.entries = await this.game.assetManager.loadAsset(
+    this.entries = await this.game.assetManager.instantiateAsset(
       this.assetName,
       AssetType.CHARACTER,
     );
@@ -98,7 +98,7 @@ export abstract class Enemy  implements IDamageable{
 
   public dispose(): void {
     this.physicsAggregate.dispose();
-    this.mesh.dispose();
+    this.entries.dispose();
   }
 
   protected onCollision(collisionEvent: IPhysicsCollisionEvent): void {

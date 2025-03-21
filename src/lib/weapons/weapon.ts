@@ -72,7 +72,7 @@ export class Weapon implements WeaponData {
   // ---------------------------------------------------------------
 
   private async initMesh(): Promise<void> {
-    const entries = await this.player.game.assetManager.loadAsset(
+    const entries = await this.player.game.assetManager.instantiateAsset(
       this.weaponName,
       AssetType.WEAPON,
     );
