@@ -15,6 +15,7 @@ import { ZombieState } from './zombie';
 import { GameEntityType } from '../gameEntityType';
 import { AssetType } from '../assets/assetType';
 import { IDamageable } from '../damageable';
+import { MetadataFactory } from '../metadata/metadataFactory';
 
 export abstract class Enemy implements IDamageable {
   public mesh!: Mesh;
@@ -61,14 +62,15 @@ export abstract class Enemy implements IDamageable {
     const children = this.entries.rootNodes[0].getChildMeshes(false);
     this.mesh = children[0] as Mesh;
     this.mesh.name = GameEntityType.ENEMY;
-    this.mesh.metadata = this;
+    this.mesh.metadata = MetadataFactory.createMetadataObject<IDamageable>(this, {
+      isDamageable: true,
+    });
     this.mesh.position = position;
 
     this.mesh.scaling.scaleInPlace(0.35);
     // WARNING This is not a wanted solution, but the enemy keeps appearing at
     // the wrong absolute position. This is a temporary fix.
     this.mesh.setAbsolutePosition(position);
-    this.mesh.metadata.isDamageable = true;
 
     this.physicsAggregate = new PhysicsAggregate(
       this.mesh,

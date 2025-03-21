@@ -23,12 +23,22 @@ import { PlayerUpgradeManager } from './playerUpgradeManager';
 import { CameraManager } from '../cameraManager';
 import { PlayerUpgradeType } from './playerUpgradeType';
 import { InteractiveElement } from '../interactiveElements/interactiveElement';
+import { AdvancedDynamicTexture } from '@babylonjs/gui/2D/advancedDynamicTexture';
+import { Rectangle } from '@babylonjs/gui/2D/controls/rectangle';
+import { Control } from '@babylonjs/gui/2D/controls/control';
+import { TextBlock } from '@babylonjs/gui/2D/controls/textBlock';
 
 export class Player implements IDamageable {
   private inputs: InputState;
   public cameraManager!: CameraManager;
   public hitbox!: Mesh;
   public playerUpgradeManager!: PlayerUpgradeManager;
+
+  // gui
+  private gui: AdvancedDynamicTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+  private container!: Control;
+  private readonly INTERACTION_UI_OFFSET_Y = 250;
+  private isInteractionUIVisible = false;
 
   // observables
   public onDamageTakenObservable = new Observable<number>();
@@ -85,8 +95,10 @@ export class Player implements IDamageable {
   private readonly ORIGINAL_PLAYER_HEIGHT = 2;
   private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT;
 
-  // Interaction related
+  // Interaction
   private interactionRaycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
+  private readonly INTERACTION_RANGE = 3;
+  private interactiveObject: InteractiveElement | null = null;
 
   constructor(public game: Game) {
     this.physicsEngine = game.scene.getPhysicsEngine() as PhysicsEngineV2;
@@ -94,6 +106,8 @@ export class Player implements IDamageable {
     this.healthController.onDeath.add(this.onGameOver.bind(this));
     this.initPhysicsAggregate();
     this.cameraManager = new CameraManager(this);
+
+    this.initInteractionUI();
 
     // player upgrades
     this.playerUpgradeManager = new PlayerUpgradeManager(game);
@@ -184,8 +198,14 @@ export class Player implements IDamageable {
       }
     }
 
-    if (this.inputs.actions.get(InputAction.INTERACT)) {
-      this.checkForInteractables();
+    if (this.interactiveObject !== null) {
+      this.displayInteractionUI(this.interactiveObject);
+
+      if (this.inputs.actions.get(InputAction.INTERACT)) {
+        this.interactiveObject.interact();
+      }
+    } else {
+      this.hideInteractionUI();
     }
 
     this.cameraManager.updateCamera(this.velocity);
@@ -194,8 +214,12 @@ export class Player implements IDamageable {
   public fixedUpdate(): void {
     if (!this.game.isPointerLocked) return;
 
+    this.checkForInteractables();
+
     if (this.isRegenUnlocked) this.handleRegen();
+
     this.updateVelocity();
+
     this.equippedWeapon.fixedUpdate();
     this.equippedWeapon.updatePosition(this.velocity);
   }
@@ -578,17 +602,51 @@ export class Player implements IDamageable {
     start.addInPlace(direction);
     start.addInPlace(direction);
 
-    const end = start.add(direction.scale(3)); // For interaction range
+    const end = start.add(direction.scale(this.INTERACTION_RANGE));
 
     this.physicsEngine.raycastToRef(start, end, this.interactionRaycastResult);
 
     if (this.interactionRaycastResult.hasHit) {
       const metadata = this.interactionRaycastResult.body?.transformNode.metadata;
       if (metadata && metadata.isInteractive) {
-        const interactiveEntity = this.interactionRaycastResult.body?.transformNode
-          .metadata as InteractiveElement;
-        interactiveEntity.interact();
+        this.interactiveObject = metadata.object as InteractiveElement;
+        return;
       }
     }
+
+    this.interactiveObject = null;
+  }
+
+  private initInteractionUI(): void {
+    const rect = new Rectangle();
+    rect.width = '50px';
+    rect.height = '50px';
+    rect.cornerRadius = 10;
+    rect.color = 'white';
+    rect.thickness = 4;
+    rect.background = 'black';
+    this.container = rect;
+
+    const text = new TextBlock();
+    text.text = 'E';
+    text.color = 'white';
+    text.fontSize = 28;
+    rect.addControl(text);
+  }
+
+  private displayInteractionUI(interactiveObject: InteractiveElement): void {
+    if (this.isInteractionUIVisible) return;
+
+    this.isInteractionUIVisible = true;
+    this.gui.addControl(this.container);
+    this.container.linkWithMesh(interactiveObject.mesh);
+    this.container.linkOffsetY = -this.INTERACTION_UI_OFFSET_Y;
+  }
+
+  private hideInteractionUI(): void {
+    if (!this.isInteractionUIVisible) return;
+
+    this.isInteractionUIVisible = false;
+    this.gui.removeControl(this.container);
   }
 }
