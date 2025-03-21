@@ -8,9 +8,11 @@ import { GameEntityType } from '../gameEntityType';
 export class Bed extends InteractiveElement {
   // STAGE SELECTION BED
   override interact(): void {
-    this.scene.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.TEST, 1, [
-      EnemyType.ZOMBIE,
-    ]);
+    this.scene.game.sceneManager.changeSceneToFixedStage(
+      FixedStageLayout.CLOSED_SCENE,
+      1,
+      [EnemyType.ZOMBIE],
+    );
   }
 
   override async create(position: Vector3): Promise<void> {
