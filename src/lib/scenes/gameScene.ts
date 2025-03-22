@@ -1,23 +1,16 @@
-import {
-  AssetContainer,
-  InstancedMesh,
-  Light,
-  Mesh,
-  PhysicsAggregate,
-  Scene,
-} from '@babylonjs/core';
+import { Scene } from '@babylonjs/core';
 import { Game } from '../game';
 import { EnemyFactory } from '../enemies/enemyFactory';
 import { EnemyType } from '../enemies/enemyType';
 import { FixedStageLayout } from './fixedStageLayout';
 import { StageReward } from '../stages/stageReward';
+import { GameAssetContainer } from '../assets/gameAssetContainer';
 
 export abstract class GameScene {
   public scene: Scene;
-  protected enemyManager!: EnemyFactory;
+  protected enemyFactory!: EnemyFactory;
 
-  public assetContainer!: AssetContainer;
-  public physicsAggregates: PhysicsAggregate[] = [];
+  public gameAssetContainer!: GameAssetContainer;
 
   // The specificities of the stage linked to this scene
 
@@ -30,9 +23,8 @@ export abstract class GameScene {
   public stageReward: StageReward | null = null;
 
   constructor(public game: Game) {
-    this.assetContainer = new AssetContainer(this.game.scene);
     this.scene = game.scene;
-    this.enemyManager = EnemyFactory.getInstance();
+    this.enemyFactory = EnemyFactory.getInstance();
   }
 
   public abstract load(): Promise<void>;
@@ -40,15 +32,8 @@ export abstract class GameScene {
   /**
    * Dispose of any resources used by the scene.
    */
-  public async dispose(): Promise<void> {
-    // Dispose of all physics aggregates
-    this.physicsAggregates.forEach((aggregate) => {
-      aggregate.dispose();
-    });
-    this.physicsAggregates = [];
-
-    // Dispose all assets in the asset container
-    this.assetContainer.dispose();
+  public dispose(): void {
+    this.gameAssetContainer.dispose();
   }
 
   public update(): void {}
@@ -62,17 +47,5 @@ export abstract class GameScene {
 
   public setStageReward(stageReward: StageReward | null): void {
     this.stageReward = stageReward;
-  }
-
-  public pushToPhysicsAggregates(physicsAggregate: PhysicsAggregate): void {
-    this.physicsAggregates.push(physicsAggregate);
-  }
-
-  public pushToMeshes(mesh: Mesh | InstancedMesh): void {
-    this.assetContainer.meshes.push(mesh);
-  }
-
-  protected pushToLights(light: Light): void {
-    this.assetContainer.lights.push(light);
   }
 }

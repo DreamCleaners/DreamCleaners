@@ -29,6 +29,7 @@ export class StageReward {
   private rewardContainsWeapon(): boolean {
     // One chance on three to have a weapon
     return Math.random() < 0.34;
+    //return Math.random() < 1.01;
   }
 
   private determineWeaponReward(): RewardWeaponDescription {

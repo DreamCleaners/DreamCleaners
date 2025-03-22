@@ -79,7 +79,7 @@ export class StagesManager {
     // Pick a random layout from the weighted array
     const randomIndex = Math.floor(Math.random() * weightedLayouts.length);
     return weightedLayouts[randomIndex];
-    //return FixedStageLayout.TEST;
+    //return FixedStageLayout.CLOSED_SCENE;
   }
 
   private pickRandomDifficulty(): number {
@@ -90,16 +90,22 @@ export class StagesManager {
 
   /** Picks enemyTypes to spawn in the stage, completely random ! */
   private pickRandomEnemyTypes(): EnemyType[] {
-    const enemyTypesLength = Object.keys(EnemyType).length / 2;
+    const enemyTypesKeys = Object.keys(EnemyType).filter((key) => isNaN(Number(key))); // Get only the string keys of the enum
+    const enemyTypesLength = enemyTypesKeys.length;
     const amountOfTypesToSpawn = Math.floor(Math.random() * enemyTypesLength) + 1;
 
     const enemyTypes: EnemyType[] = [];
 
     for (let i = 0; i < amountOfTypesToSpawn; i++) {
-      let randomType = Math.floor(Math.random() * enemyTypesLength);
+      let randomTypeIndex = Math.floor(Math.random() * enemyTypesLength);
+      let randomType =
+        EnemyType[enemyTypesKeys[randomTypeIndex] as keyof typeof EnemyType];
+
       while (enemyTypes.includes(randomType)) {
-        randomType = Math.floor(Math.random() * enemyTypesLength);
+        randomTypeIndex = Math.floor(Math.random() * enemyTypesLength);
+        randomType = EnemyType[enemyTypesKeys[randomTypeIndex] as keyof typeof EnemyType];
       }
+
       enemyTypes.push(randomType);
     }
 

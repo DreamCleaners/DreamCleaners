@@ -5,7 +5,9 @@ import { FixedStageLayout } from '../scenes/fixedStageLayout';
 import { AssetType } from '../assets/assetType';
 import { GameEntityType } from '../gameEntityType';
 import { StageReward } from '../stages/stageReward';
+import { MetadataFactory } from '../metadata/metadataFactory';
 
+// STAGE SELECTION BED
 export class Bed extends InteractiveElement {
   // Stage specificities
 
@@ -18,7 +20,7 @@ export class Bed extends InteractiveElement {
   public stageReward!: StageReward;
   // STAGE SELECTION BED
   override interact(): void {
-    this.scene.game.sceneManager.changeSceneToFixedStage(
+    this.gameScene.game.sceneManager.changeSceneToFixedStage(
       this.proposedFixedStageLayout as FixedStageLayout,
       this.difficulty,
       this.enemyTypes,
@@ -40,22 +42,26 @@ export class Bed extends InteractiveElement {
   }
 
   override async create(position: Vector3): Promise<void> {
-    const entries = await this.scene.game.assetManager.loadAsset('bed', AssetType.OBJECT);
-    const bed = entries.rootNodes[0] as Mesh;
-    bed.position = position;
-    bed.scaling.scaleInPlace(0.13);
-    this.scene.pushToMeshes(bed);
+    this.gameAssetContainer =
+      await this.gameScene.game.assetManager.loadGameAssetContainer(
+        'bed',
+        AssetType.OBJECT,
+      );
 
-    const bedHitbox = bed.getChildMeshes()[2] as Mesh;
-    bedHitbox.metadata = this;
-    bedHitbox.metadata.isDamageable = false;
-    bedHitbox.metadata.isInteractive = true;
+    this.mesh = this.gameAssetContainer.addAssetsToScene();
+    this.mesh.position = position;
+    this.mesh.scaling.scaleInPlace(0.13);
+
+    const bedHitbox = this.mesh.getChildMeshes()[2] as Mesh;
+    bedHitbox.metadata = MetadataFactory.createMetadataObject<InteractiveElement>(this, {
+      isInteractive: true,
+    });
     bedHitbox.name = GameEntityType.BED;
 
     const physicsAggregate = new PhysicsAggregate(bedHitbox, PhysicsShapeType.BOX, {
       mass: 0,
     });
-    this.scene.pushToPhysicsAggregates(physicsAggregate);
+    this.gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 
   public setFixedStageProperties(properties: {

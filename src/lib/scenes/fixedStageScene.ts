@@ -1,16 +1,5 @@
-import {
-  PhysicsAggregate,
-  Vector3,
-  MeshBuilder,
-  PhysicsShapeType,
-  Mesh,
-  Light,
-  InstancedMesh,
-  Observer,
-} from '@babylonjs/core';
-import { AssetType } from '../assets/assetType';
+import { Vector3, Observer } from '@babylonjs/core';
 import { Enemy } from '../enemies/enemy';
-import { GameEntityType } from '../gameEntityType';
 import { GameScene } from './gameScene';
 import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
@@ -26,7 +15,6 @@ export class FixedStageScene extends GameScene {
   public fixedStageName!: FixedStageLayout;
 
   private onPlayerDamageTakenObserver!: Observer<number>;
-
   private onUIChangeObserver!: Observer<UIType>;
 
   constructor(game: Game, fixedStageName: FixedStageLayout) {
@@ -35,26 +23,26 @@ export class FixedStageScene extends GameScene {
   }
 
   public async load(): Promise<void> {
-    // Simple ground initialization
-    this.initGround();
-
-    if (this.fixedStageName === undefined || this.fixedStageName === null) {
-      throw new Error('Fixed stage name is not defined');
-    }
-
     // We import the stage scene based on the name
-    await this.importScene();
+    const unityScene = await this.game.assetManager.instantiateUnityScene(
+      this.fixedStageName,
+    );
+    this.gameAssetContainer = unityScene.container;
 
-    if (this.fixedStageName === FixedStageLayout.HUB) return;
+    unityScene.rootMesh.position = new Vector3(0, 0, 0);
 
-    this.loadEnemies();
+    this.spawnPoints = unityScene.spawnPoints.map((point) => point.position);
+
+    this.game.player.setPosition(new Vector3(0, 1, 0));
+
+    await this.loadEnemies();
     this.game.scoreManager.startStage();
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
   }
 
-  public async dispose(): Promise<void> {
+  public dispose(): void {
     super.dispose();
 
     this.enemies.forEach((enemy) => {
@@ -65,72 +53,6 @@ export class FixedStageScene extends GameScene {
     this.spawnPoints = [];
 
     this.onPlayerDamageTakenObserver.remove();
-  }
-
-  /** Based on a fixed stage name, imports the GLB exported from Unity and correctly loads it
-   * and its subcomponents into the scene
-   */
-  private async importScene(): Promise<void> {
-    const entries = await this.game.assetManager.loadAsset(
-      this.fixedStageName,
-      AssetType.SCENE,
-    );
-
-    const scene = entries.rootNodes[0] as Mesh;
-    this.pushToMeshes(scene);
-    scene.position = new Vector3(0, 0, 0);
-
-    // Iterate through all descendants, we will discriminate each object per its name
-    // If we meet a "physical_object" we will create a physics aggregate for it and add
-    // it to the physics aggregates array
-    // If we meet a "point_light" we will create a point light for it and add it to the lights array
-    // And so on
-    let name = '';
-
-    scene.getDescendants().forEach((node) => {
-      name = node.name.toLowerCase();
-      if (
-        name.includes('physical_object') &&
-        (node instanceof Mesh || node instanceof InstancedMesh)
-      ) {
-        this.handlePhysicalObject(node);
-      } else if (name.includes('light') && node instanceof Light) {
-        this.handleLight(node);
-      } else if (name.includes('spawn_point')) {
-        this.handleSpawnPoint(node as Mesh);
-      } else {
-        // These objects do not require any action from us
-      }
-    });
-  }
-
-  private handlePhysicalObject(node: Mesh | InstancedMesh): void {
-    this.pushToMeshes(node);
-    let physicsAggregate!: PhysicsAggregate;
-
-    if (node.name.includes('convex')) {
-      console.log('Convex object detected, name: ' + node.name);
-      // Convex objects require a different physics shape type
-      physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.MESH, {
-        mass: 0,
-      });
-    } else {
-      physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.BOX, {
-        mass: 0,
-      });
-    }
-
-    this.pushToPhysicsAggregates(physicsAggregate);
-  }
-
-  private handleSpawnPoint(node: Mesh): void {
-    node.position.x *= -1;
-    this.spawnPoints.push(node.position);
-  }
-
-  private handleLight(node: Light): void {
-    node.intensity *= 10; // Unity -> Babylon conversion (intensity is not the same)
-    this.pushToLights(node);
   }
 
   /**
@@ -147,31 +69,18 @@ export class FixedStageScene extends GameScene {
     }
 
     for (const spawnPoint of this.spawnPoints) {
-      const enemy = this.enemyManager.createEnemy(
+      const enemy = await this.enemyFactory.createEnemy(
         // The spawned enemy is randomly picked from the list of enemy types
         this.enemyTypesToSpawn[Math.floor(Math.random() * this.enemyTypesToSpawn.length)],
         this.difficultyFactor,
         this.game,
+        spawnPoint,
       );
 
-      await enemy.initAt(spawnPoint);
       enemy.onDeathObservable.add(this.onEnemyDeath.bind(this));
       this.enemies.push(enemy);
       this.enemyCount++;
     }
-  }
-
-  private initGround(): void {
-    const ground = MeshBuilder.CreateGround(
-      GameEntityType.GROUND,
-      { width: 50, height: 50 },
-      this.scene,
-    );
-    this.pushToMeshes(ground);
-    const groundPhysicsAggregate = new PhysicsAggregate(ground, PhysicsShapeType.BOX, {
-      mass: 0,
-    });
-    this.pushToPhysicsAggregates(groundPhysicsAggregate);
   }
 
   public update(): void {

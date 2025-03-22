@@ -5,7 +5,6 @@ import { Player } from '../player/player';
 import {
   AbstractMesh,
   Matrix,
-  Mesh,
   MeshBuilder,
   Observable,
   PhysicsEngineV2,
@@ -18,6 +17,8 @@ import { IDamageable } from '../damageable';
 import { WeaponData } from './weaponData';
 import { WeaponMeshParameter } from './weaponMeshParameters';
 import { WeaponType } from './weaponType';
+import { GameAssetContainer } from '../assets/gameAssetContainer';
+import { IMetadataObject } from '../metadata/metadataObject';
 
 export class Weapon implements WeaponData {
   private mesh!: AbstractMesh;
@@ -26,6 +27,8 @@ export class Weapon implements WeaponData {
   public currentRarity!: WeaponRarity;
   private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
   private physicsEngine!: PhysicsEngineV2;
+
+  private gameAssetContainer!: GameAssetContainer;
 
   public onReload: Observable<boolean> = new Observable<boolean>();
   public onAmmoChange: Observable<number> = new Observable<number>();
@@ -55,7 +58,7 @@ export class Weapon implements WeaponData {
   private initialYPosition: number | null = null;
   private isPlayingMovingAnimating: boolean = false;
   // The speed at which the weapon moves up and down
-  private readonly MOVING_ANIMATION_SPEED = 6;
+  private readonly MOVING_ANIMATION_SPEED = 9;
   // The height at which the weapon moves up and down
   private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
@@ -75,11 +78,11 @@ export class Weapon implements WeaponData {
   // ---------------------------------------------------------------
 
   private async initMesh(): Promise<void> {
-    const entries = await this.player.game.assetManager.loadAsset(
+    this.gameAssetContainer = await this.player.game.assetManager.loadGameAssetContainer(
       this.weaponName,
       AssetType.WEAPON,
     );
-    this.mesh = entries.rootNodes[0] as Mesh;
+    this.mesh = this.gameAssetContainer.addAssetsToScene();
     this.mesh.parent = this.player.cameraManager.getCamera();
 
     const meshPositionArray = this.meshParameters.get(WeaponMeshParameter.POSITION);
@@ -337,10 +340,10 @@ export class Weapon implements WeaponData {
     this.physicsEngine.raycastToRef(start, end, this.raycastResult);
 
     if (this.raycastResult.hasHit) {
-      const metadata = this.raycastResult.body?.transformNode.metadata;
+      const metadata = this.raycastResult.body?.transformNode
+        .metadata as IMetadataObject<IDamageable>;
       if (metadata && metadata.isDamageable) {
-        const damageableEntity = this.raycastResult.body?.transformNode
-          .metadata as IDamageable;
+        const damageableEntity = metadata.object;
 
         // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
         const damagePerBullet =

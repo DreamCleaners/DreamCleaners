@@ -25,6 +25,7 @@ export class Game {
 
   public engine!: Engine;
   public sceneManager!: SceneManager;
+  public physicsPlugin!: HavokPlugin;
   private canvas!: HTMLCanvasElement;
   public player!: Player;
   public assetManager!: AssetManager;
@@ -50,9 +51,10 @@ export class Game {
     this.assetManager = new AssetManager(this.scene);
     this.inputManager = new InputManager(this.engine);
 
-    const physicsPlugin = await this.getPhysicsPlugin();
-    const gravity = new Vector3(0, -9.81, 0);
-    this.scene.enablePhysics(gravity, physicsPlugin);
+    this.physicsPlugin = await this.getPhysicsPlugin();
+    // const gravity = new Vector3(0, -9.81, 0);
+    const gravity = Vector3.Zero();
+    this.scene.enablePhysics(gravity, this.physicsPlugin);
 
     this.player = new Player(this);
     this.sceneManager = new SceneManager(this);

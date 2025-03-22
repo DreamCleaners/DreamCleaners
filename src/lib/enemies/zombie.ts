@@ -1,6 +1,16 @@
-import { Quaternion, Vector3 } from '@babylonjs/core';
+import {
+  InstantiatedEntries,
+  Mesh,
+  PhysicsAggregate,
+  PhysicsShapeType,
+  Quaternion,
+  Vector3,
+} from '@babylonjs/core';
 import { Game } from '../game';
 import { Enemy } from './enemy';
+import { GameEntityType } from '../gameEntityType';
+import { MetadataFactory } from '../metadata/metadataFactory';
+import { IDamageable } from '../damageable';
 
 export enum ZombieState {
   START_WALK,
@@ -17,12 +27,19 @@ enum ZombieAnimation {
 export class Zombie extends Enemy {
   public onDeathObservable = this.healthController.onDeath;
 
-  constructor(game: Game, difficultyFactor: number) {
-    super(game, 'zombie', difficultyFactor);
+  constructor(
+    game: Game,
+    difficultyFactor: number,
+    position: Vector3,
+    entries: InstantiatedEntries,
+  ) {
+    super(game, difficultyFactor, entries);
 
     this.deadState = ZombieState.DEAD;
     this.attackingState = ZombieState.ATTACK;
     this.state = ZombieState.START_WALK;
+
+    this.init(position);
   }
 
   override initStats(difficultyFactor: number): void {
@@ -31,17 +48,45 @@ export class Zombie extends Enemy {
     this.ATTACK_RANGE = 100;
   }
 
-  override async initAt(position: Vector3): Promise<void> {
-    super.initAt(position).then(() => {
-      this.entries.animationGroups.forEach((animationGroup) => {
-        if (animationGroup.name === 'Zombie|ZombieWalk') {
-          this.animationController.addAnimation(ZombieAnimation.WALK, animationGroup);
-        } else if (animationGroup.name === 'Zombie|ZombieBite') {
-          this.animationController.addAnimation(ZombieAnimation.BITE, animationGroup);
-        }
-      });
-      this.initialized = true;
+  private async init(position: Vector3): Promise<void> {
+    const children = this.entries.rootNodes[0].getChildMeshes(false);
+    this.mesh = children[0] as Mesh;
+    this.mesh.name = GameEntityType.ENEMY;
+    this.mesh.metadata = MetadataFactory.createMetadataObject<IDamageable>(this, {
+      isDamageable: true,
     });
+    this.mesh.position = position;
+
+    this.mesh.scaling.scaleInPlace(0.35);
+    // WARNING This is not a wanted solution, but the enemy keeps appearing at
+    // the wrong absolute position. This is a temporary fix.
+    this.mesh.setAbsolutePosition(position);
+
+    this.physicsAggregate = new PhysicsAggregate(
+      this.mesh,
+      PhysicsShapeType.BOX,
+      {
+        mass: 1,
+      },
+      this.game.scene,
+    );
+    this.physicsAggregate.body.setMassProperties({ inertia: new Vector3(0, 0, 0) });
+
+    // disablePreStep to false so we can rotate the mesh without affecting the physics body
+    this.physicsAggregate.body.disablePreStep = false;
+    this.physicsAggregate.body.setCollisionCallbackEnabled(true);
+    const observable = this.physicsAggregate.body.getCollisionObservable();
+    observable.add(this.onCollision.bind(this));
+
+    this.entries.animationGroups.forEach((animationGroup) => {
+      if (animationGroup.name === 'Zombie|ZombieWalk') {
+        this.animationController.addAnimation(ZombieAnimation.WALK, animationGroup);
+      } else if (animationGroup.name === 'Zombie|ZombieBite') {
+        this.animationController.addAnimation(ZombieAnimation.BITE, animationGroup);
+      }
+    });
+
+    this.initialized = true;
   }
 
   override update(): void {

@@ -1,52 +1,30 @@
 import {
-  AssetContainer,
-  InstantiatedEntries,
+  InstancedMesh,
   LoadAssetContainerAsync,
+  Mesh,
+  PhysicsAggregate,
+  PhysicsShapeType,
   Scene,
 } from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { AssetType } from './assetType';
 import { WeaponData } from '../weapons/weaponData';
+import { GameAssetContainer } from './gameAssetContainer';
+import { UnityPhysicShapeToken, UnityTypeToken } from './unityTokens';
+import { UnityScene } from './unityScene';
 
 export class AssetManager {
-  private loadedContainers: Map<string, AssetContainer> = new Map();
   private loadedWeaponJsons: Map<string, WeaponData> = new Map();
 
   constructor(private scene: Scene) {}
 
-  /**
-   * Load an asset or clone it from the cache
-   */
-  public async loadAsset(
+  public async loadGameAssetContainer(
     assetName: string,
     assetType: AssetType,
-  ): Promise<InstantiatedEntries> {
+  ): Promise<GameAssetContainer> {
     const assetKey = `meshes/${assetType}/${assetName}`;
-
-    let container = this.loadedContainers.get(assetKey);
-    if (!container) {
-      container = await LoadAssetContainerAsync(`${assetKey}.glb`, this.scene);
-      this.loadedContainers.set(assetKey, container);
-    }
-
-    return container.instantiateModelsToScene(
-      (sourceName: string): string => sourceName,
-      true,
-      { doNotInstantiate: true },
-    );
-  }
-
-  /**
-   * Dispose the asset container associated with the asset name
-   * The container will be removed from the cache
-   */
-  public unloadAsset(assetName: string, assetType: AssetType): void {
-    const assetKey = `meshes/${assetType}/${assetName}`;
-    const container = this.loadedContainers.get(assetKey);
-    if (container) {
-      container.dispose();
-      this.loadedContainers.delete(assetKey);
-    }
+    const assetContainer = await LoadAssetContainerAsync(`${assetKey}.glb`, this.scene);
+    return GameAssetContainer.createFromAssetContainer(assetContainer);
   }
 
   /**
@@ -67,5 +45,71 @@ export class AssetManager {
       }
     }
     return weaponJson;
+  }
+
+  public async instantiateUnityScene(sceneName: string): Promise<UnityScene> {
+    const gameAssetContainer = await this.loadGameAssetContainer(
+      sceneName,
+      AssetType.SCENE,
+    );
+    const spawnPoints: Mesh[] = [];
+
+    const rootMesh = gameAssetContainer.addAssetsToScene();
+
+    rootMesh.getDescendants().forEach((node) => {
+      const name = node.name;
+
+      const match = name.match(/#[A-Z]+(-[A-Z]+)*#/);
+      if (!match) return;
+
+      const tokens = match[0].slice(1, -1).split('-');
+      const type = tokens[0];
+
+      if (
+        type === UnityTypeToken.PHYSICAL_OBJECT &&
+        (node instanceof Mesh || node instanceof InstancedMesh)
+      ) {
+        this.handlePhysicalObject(node, tokens, gameAssetContainer);
+      } else if (type === UnityTypeToken.SPAWN_POINT) {
+        this.handleSpawnPoint(node as Mesh, spawnPoints);
+      }
+    });
+
+    return {
+      container: gameAssetContainer,
+      rootMesh: rootMesh,
+      spawnPoints: spawnPoints,
+    };
+  }
+
+  private handlePhysicalObject(
+    node: Mesh | InstancedMesh,
+    tokens: string[],
+    gameAssetContainer: GameAssetContainer,
+  ): void {
+    const shape = tokens[1];
+
+    let physicsAggregate!: PhysicsAggregate;
+
+    if (shape === UnityPhysicShapeToken.BOX) {
+      physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.BOX, {
+        mass: 0,
+      });
+    } else if (shape === UnityPhysicShapeToken.CONVEX_HULL) {
+      physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.CONVEX_HULL, {
+        mass: 0,
+      });
+    } else if (shape === UnityPhysicShapeToken.MESH) {
+      physicsAggregate = new PhysicsAggregate(node, PhysicsShapeType.MESH, {
+        mass: 0,
+      });
+    }
+    gameAssetContainer.addPhysicsAggregate(physicsAggregate);
+  }
+
+  private handleSpawnPoint(node: Mesh, spawnPoints: Mesh[]): void {
+    console.log('Spawn point found');
+    node.position.x *= -1;
+    spawnPoints.push(node);
   }
 }

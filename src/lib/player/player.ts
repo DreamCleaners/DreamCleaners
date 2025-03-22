@@ -1,13 +1,13 @@
 import {
-  IPhysicsCollisionEvent,
   Mesh,
   MeshBuilder,
   Observable,
   PhysicsAggregate,
   PhysicsEngineV2,
-  PhysicsEventType,
   PhysicsRaycastResult,
   PhysicsShapeType,
+  Quaternion,
+  ShapeCastResult,
   Vector2,
   Vector3,
 } from '@babylonjs/core';
@@ -20,19 +20,34 @@ import { IDamageable } from '../damageable';
 import { HealthController } from '../healthController';
 import { GameEntityType } from '../gameEntityType';
 import { PlayerUpgradeManager } from './playerUpgradeManager';
-import { CameraManager } from '../cameraManager';
+import { CameraManager } from './cameraManager';
 import { PlayerUpgradeType } from './playerUpgradeType';
 import { InteractiveElement } from '../interactiveElements/interactiveElement';
 import { WeaponType } from '../weapons/weaponType';
+import { AdvancedDynamicTexture } from '@babylonjs/gui/2D/advancedDynamicTexture';
+import { Rectangle } from '@babylonjs/gui/2D/controls/rectangle';
+import { Control } from '@babylonjs/gui/2D/controls/control';
+import { TextBlock } from '@babylonjs/gui/2D/controls/textBlock';
 
 export class Player implements IDamageable {
   private inputs: InputState;
   public cameraManager!: CameraManager;
   public hitbox!: Mesh;
   public playerUpgradeManager!: PlayerUpgradeManager;
-  private movementSpeed = 0;
+
+  // gui
+  private gui: AdvancedDynamicTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
+  private container!: Control;
+  private readonly INTERACTION_UI_OFFSET_Y = 250;
+  private isInteractionUIVisible = false;
+
+  // observables
   public onDamageTakenObservable = new Observable<number>();
   public onWeaponChange = new Observable<Weapon>();
+
+  // movement
+  private movementSpeed = 0;
+  private moveDirection: Vector2 = Vector2.Zero();
 
   // health
   public readonly healthController = new HealthController();
@@ -43,15 +58,20 @@ export class Player implements IDamageable {
   private lastRegenTick = 0; // ms
   private isRegenUnlocked = false;
 
-  // jump
-  private readonly JUMP_FORCE = 6;
-  private readonly PLAYER_GRAVITY = 0.17;
-  private isGrounded = true;
-  private canJump = true;
-
   // physics
+  public physicsEngine!: PhysicsEngineV2;
+  private readonly PLAYER_GRAVITY = 0.3;
+  private readonly MAX_FALL_SPEED = 10;
+  private isGrounded = true;
   private velocity: Vector3 = Vector3.Zero();
   private physicsAggregate!: PhysicsAggregate;
+  private surfaceNormal: Vector3 = Vector3.Zero(); // the normal of the surface the player is standing on
+  private readonly MAX_SLOPE_ANGLE = 50; // degrees
+
+  // jump
+  private readonly JUMP_FORCE = 9;
+  private lastJumpTime = 0;
+  private readonly JUMP_COOLDOWN = 500; // ms
 
   // weapons
   private weapons!: Array<Weapon>;
@@ -62,23 +82,25 @@ export class Player implements IDamageable {
 
   // Crouching / sliding
   private isCrouching = false;
+  private wasCrouchingBeforeFalling = false; // used to prevent the player from gaining speed after falling while he was crouching
   public isSliding = false;
-  // This vector is used to store the player's velocity before sliding as only this velocity will be used during the slide
-  private currentSlideVector: Vector3 = Vector3.Zero();
+  private lastMoveDirection: Vector2 = Vector2.Zero(); // last direction before sliding
   // By how much we multiply the player's velocity during the current slide
-  private currentSlidingSpeedFactor = 1.02;
-  private readonly INITIAL_SLIDING_SPEED_FACTOR = 1.02; // The initial factor
+  private currentSlidingSpeedFactor = 0;
+  private readonly SLIDING_SPEED_REDUCTION = 0.012; // The factor by which we reduce the sliding speed over time
+  private readonly INITIAL_SLIDING_SPEED_FACTOR = 1.6; // The initial factor
 
-  private crouchStartTime: number | null = null;
+  private crouchStartTime: number = 0;
   // Duration of the crouch (lowering the camera and player's body)
-  // animation in milliseconds
-  private readonly CROUCH_DURATION = 350;
+  private readonly CROUCH_DURATION = 350; // ms
   private readonly ORIGINAL_PLAYER_HEIGHT = 2;
   private currentCrouchHeight = this.ORIGINAL_PLAYER_HEIGHT;
 
-  // Interaction related
-  public physicsEngine!: PhysicsEngineV2;
-  private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
+  // Interaction
+  private interactionRaycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
+  private readonly INTERACTION_RANGE = 3;
+  private interactiveObject: InteractiveElement | null = null;
+  private canInteract = true;
 
   constructor(public game: Game) {
     this.physicsEngine = game.scene.getPhysicsEngine() as PhysicsEngineV2;
@@ -86,6 +108,8 @@ export class Player implements IDamageable {
     this.healthController.onDeath.add(this.onGameOver.bind(this));
     this.initPhysicsAggregate();
     this.cameraManager = new CameraManager(this);
+
+    this.initInteractionUI();
 
     // player upgrades
     this.playerUpgradeManager = new PlayerUpgradeManager(game);
@@ -113,22 +137,7 @@ export class Player implements IDamageable {
 
   public start(): void {
     this.setPosition(new Vector3(0, 1, 0));
-
-    // set player upgrades
-    this.healthController.init(
-      this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
-    );
-
-    this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-      PlayerUpgradeType.MOVEMENT_SPEED,
-    );
-
-    if (this.playerUpgradeManager.isUpgradeUnlocked(PlayerUpgradeType.REGEN_SPEED)) {
-      this.isRegenUnlocked = true;
-      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-        PlayerUpgradeType.REGEN_SPEED,
-      );
-    }
+    this.setPlayerUpgrades();
   }
 
   public setPosition(position: Vector3): void {
@@ -150,16 +159,12 @@ export class Player implements IDamageable {
 
     this.physicsAggregate = new PhysicsAggregate(
       this.hitbox,
-      PhysicsShapeType.BOX,
+      PhysicsShapeType.CAPSULE,
       { mass: 1 },
       this.game.scene,
     );
     this.physicsAggregate.body.disablePreStep = false;
     this.physicsAggregate.body.setMassProperties({ inertia: new Vector3(0, 0, 0) });
-
-    this.physicsAggregate.body.setCollisionCallbackEnabled(true);
-    const observable = this.physicsAggregate.body.getCollisionObservable();
-    observable.add(this.onCollision.bind(this));
   }
 
   public update(): void {
@@ -186,7 +191,7 @@ export class Player implements IDamageable {
     }
 
     if (this.inputs.actions.get(InputAction.CROUCH)) {
-      if (!this.isCrouching) {
+      if (!this.isCrouching && this.isGrounded) {
         this.crouch();
       }
     } else {
@@ -195,20 +200,33 @@ export class Player implements IDamageable {
       }
     }
 
-    if (this.inputs.actions.get(InputAction.INTERACT)) {
-      // If the player tries to interact, we check if there is an interactive object in front of him
-      // via a raycast, if there is, we call the interact method of the object
-      this.checkForInteractables();
+    if (this.interactiveObject !== null) {
+      this.displayInteractionUI(this.interactiveObject);
+
+      if (this.inputs.actions.get(InputAction.INTERACT) && this.canInteract) {
+        this.canInteract = false;
+        this.interactiveObject.interact();
+      }
+    } else {
+      this.hideInteractionUI();
     }
 
-    this.cameraManager.updateCamera(this.velocity);
+    if (!this.inputs.actions.get(InputAction.INTERACT)) {
+      this.canInteract = true;
+    }
+
+    this.cameraManager.updateCamera(this.inputs);
   }
 
   public fixedUpdate(): void {
     if (!this.game.isPointerLocked) return;
 
+    this.checkForInteractables();
+
     if (this.isRegenUnlocked) this.handleRegen();
+
     this.updateVelocity();
+
     this.equippedWeapon.fixedUpdate();
     this.equippedWeapon.updatePosition(this.velocity);
   }
@@ -223,11 +241,14 @@ export class Player implements IDamageable {
     this.healthController.removeHealth(damage);
   }
 
+  // ----------------------- Health --------------------------
+  // ---------------------------------------------------------
+
   private handleRegen(): void {
-    this.timeSinceLastDamage += this.game.getDeltaTime();
+    this.timeSinceLastDamage += this.game.getFixedDeltaTime();
 
     if (this.timeSinceLastDamage > this.REGEN_DELAY * 1000) {
-      this.lastRegenTick += this.game.getDeltaTime();
+      this.lastRegenTick += this.game.getFixedDeltaTime();
 
       if (
         this.lastRegenTick > this.regenSpeed * 1000 &&
@@ -272,6 +293,23 @@ export class Player implements IDamageable {
     }
   }
 
+  private setPlayerUpgrades(): void {
+    this.healthController.init(
+      this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
+    );
+
+    this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+      PlayerUpgradeType.MOVEMENT_SPEED,
+    );
+
+    if (this.playerUpgradeManager.isUpgradeUnlocked(PlayerUpgradeType.REGEN_SPEED)) {
+      this.isRegenUnlocked = true;
+      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
+        PlayerUpgradeType.REGEN_SPEED,
+      );
+    }
+  }
+
   // --------------------- Physics --------------------------
   // --------------------------------------------------------
 
@@ -282,40 +320,95 @@ export class Player implements IDamageable {
     const directionX = this.inputs.directions.x;
     const directionZ = this.inputs.directions.y;
 
-    const direction = Vector2.Zero();
+    this.moveDirection = Vector2.Zero();
     const rotationY = this.cameraManager.getRotationY();
-    direction.x = directionZ * Math.sin(rotationY) + directionX * Math.cos(rotationY);
-    direction.y = directionZ * Math.cos(rotationY) - directionX * Math.sin(rotationY);
+    this.moveDirection.x =
+      directionZ * Math.sin(rotationY) + directionX * Math.cos(rotationY);
+    this.moveDirection.y =
+      directionZ * Math.cos(rotationY) - directionX * Math.sin(rotationY);
 
-    direction.normalize(); // Prevents faster diagonal movement
+    this.moveDirection.normalize(); // Prevents faster diagonal movement
 
-    // Slower movement when crouching
-    if (this.isCrouching && !this.isSliding) {
-      this.velocity.x = direction.x * (this.movementSpeed / 2);
-      this.velocity.z = direction.y * (this.movementSpeed / 2);
-    } else if (this.isCrouching && this.isSliding) {
-      // Sliding movement
-      this.velocity = this.currentSlideVector;
-      // Overwrite the velocity with the one before sliding, the player is not able to change direction during a slide
-      // Actually we make the slide slightly faster than the player's normal speed
-      this.currentSlidingSpeedFactor = Math.max(
-        0,
-        this.currentSlidingSpeedFactor - 0.0005,
-      );
-      // We reduce this factor over time during slide to make the slide stop eventually
-      this.velocity.x = this.velocity.x * this.currentSlidingSpeedFactor;
-      this.velocity.z = this.velocity.z * this.currentSlidingSpeedFactor;
-    } else {
-      this.velocity.x = direction.x * this.movementSpeed;
-      this.velocity.z = direction.y * this.movementSpeed;
+    this.isGrounded = this.checkIsGrounded();
+
+    // player is falling
+    if (!this.isGrounded) {
+      const speed = this.wasCrouchingBeforeFalling
+        ? this.movementSpeed / 2
+        : this.movementSpeed;
+
+      this.velocity.x = this.moveDirection.x * speed;
+      this.velocity.z = this.moveDirection.y * speed;
+
+      // apply gravity
+      if (this.velocity.y > -this.MAX_FALL_SPEED) {
+        this.velocity.y -= this.PLAYER_GRAVITY;
+      } else {
+        this.velocity.y = -this.MAX_FALL_SPEED;
+      }
+
+      this.physicsAggregate.body.setLinearVelocity(this.velocity);
+      return;
     }
 
-    if (this.isGrounded && this.inputs.actions.get(InputAction.JUMP) && this.canJump) {
-      this.velocity.y = this.JUMP_FORCE;
-      this.canJump = false;
+    // jump
+    const canJump = performance.now() - this.lastJumpTime > this.JUMP_COOLDOWN;
+    if (this.inputs.actions.get(InputAction.JUMP) && canJump) {
       this.isGrounded = false;
-    } else if (!this.isGrounded) {
-      this.velocity.y -= this.PLAYER_GRAVITY;
+      this.lastJumpTime = performance.now();
+
+      this.velocity.x = this.moveDirection.x * this.movementSpeed;
+      this.velocity.y = this.JUMP_FORCE;
+      this.velocity.z = this.moveDirection.y * this.movementSpeed;
+
+      this.physicsAggregate.body.setLinearVelocity(this.velocity);
+      return;
+    }
+
+    // crouch
+    if (this.isCrouching && !this.isSliding) {
+      const slopDirection = this.getSlopeDirection(this.moveDirection);
+      // apply slower movements when crouching
+      this.velocity.x = slopDirection.x * (this.movementSpeed / 2);
+      this.velocity.y = slopDirection.y * (this.movementSpeed / 2);
+      this.velocity.z = slopDirection.z * (this.movementSpeed / 2);
+    }
+    // slide
+    else if (this.isCrouching && this.isSliding) {
+      // we use the last move direction because the player is not able to change direction during a slide
+      const slopDirection = this.getSlopeDirection(this.lastMoveDirection);
+
+      // we reduce this factor over time during slide to make the slide stop eventually
+      this.currentSlidingSpeedFactor = Math.max(
+        0,
+        this.currentSlidingSpeedFactor - this.SLIDING_SPEED_REDUCTION,
+      );
+
+      let speedFactor = this.movementSpeed * this.currentSlidingSpeedFactor;
+
+      // if the slide speed is less than the crouching speed or if the player is moving up a slope
+      // we change the player's state to crouching
+      if (
+        this.movementSpeed * this.currentSlidingSpeedFactor < this.movementSpeed / 2 ||
+        slopDirection.y > 0
+      ) {
+        this.isSliding = false;
+        speedFactor = this.movementSpeed / 2;
+      }
+
+      this.velocity.x = slopDirection.x * speedFactor;
+      this.velocity.y = slopDirection.y * speedFactor;
+      this.velocity.z = slopDirection.z * speedFactor;
+    }
+    // move normally
+    else {
+      const slopDirection = this.getSlopeDirection(this.moveDirection);
+
+      this.velocity.x = slopDirection.x * this.movementSpeed;
+      this.velocity.y = slopDirection.y * this.movementSpeed;
+      this.velocity.z = slopDirection.z * this.movementSpeed;
+
+      this.wasCrouchingBeforeFalling = false;
     }
 
     this.physicsAggregate.body.setLinearVelocity(this.velocity);
@@ -325,16 +418,65 @@ export class Player implements IDamageable {
     this.physicsAggregate.body.setLinearVelocity(Vector3.Zero());
   }
 
-  private onCollision(collisionEvent: IPhysicsCollisionEvent): void {
-    const other = collisionEvent.collidedAgainst;
-    if (
-      collisionEvent.type === PhysicsEventType.COLLISION_STARTED &&
-      other.transformNode.name === GameEntityType.GROUND
-    ) {
-      this.isGrounded = true;
-      this.canJump = true;
-      this.velocity.y = 0;
+  private checkIsGrounded(): boolean {
+    let isGrounded = false;
+
+    const start = this.hitbox.position.clone();
+
+    const end = start.clone();
+    end.y -= 0.05;
+
+    const shapeLocalResult = new ShapeCastResult();
+    const hitWorldResult = new ShapeCastResult();
+
+    // make a shape cast under the player to check if he is grounded
+    this.game.physicsPlugin.shapeCast(
+      {
+        shape: this.physicsAggregate.shape,
+        rotation: Quaternion.Identity(),
+        startPosition: start,
+        endPosition: end,
+        shouldHitTriggers: false,
+      },
+      shapeLocalResult,
+      hitWorldResult,
+    );
+
+    if (hitWorldResult.hasHit) {
+      this.surfaceNormal = hitWorldResult.hitNormal;
+      const surfaceAngle =
+        Math.acos(Vector3.Dot(hitWorldResult.hitNormal, Vector3.Up())) * (180 / Math.PI);
+
+      // if the angle is too steep, the player is not grounded
+      if (surfaceAngle < this.MAX_SLOPE_ANGLE) {
+        isGrounded = true;
+      }
     }
+
+    return isGrounded;
+  }
+
+  private projectOnNormal(vec: Vector3, normal: Vector3): Vector3 {
+    const dot = Vector3.Dot(vec, normal);
+    return vec.subtract(normal.scale(dot));
+  }
+
+  public getVelocity(): Vector3 {
+    return this.velocity;
+  }
+
+  /**
+   * Returns the direction of the player on the slope he is standing on
+   *
+   * The slope direction is normalized
+   */
+  private getSlopeDirection(direction: Vector2): Vector3 {
+    const slopDirection = this.projectOnNormal(
+      new Vector3(direction.x, 0, direction.y),
+      this.surfaceNormal,
+    );
+    slopDirection.normalize();
+    return slopDirection;
   }
 
   // --------------------- Weapons ---------------------------
@@ -379,9 +521,11 @@ export class Player implements IDamageable {
     this.equippedWeapon.showInScene();
   }
 
-  // Sliding related, might be better to put these in another class
+  // ------------------ Crouch / Sliding ---------------------
+  // ---------------------------------------------------------
 
-  /** Crouching logic for the player, we initiate an animation for simply reducing the player's body
+  /**
+   * Crouching logic for the player, we initiate an animation for simply reducing the player's body
    * height, this will lower the camera as well and reduce the player's speed.
    */
   private crouch(): void {
@@ -393,24 +537,29 @@ export class Player implements IDamageable {
       // We try to crouch while moving, we initiate a slide
       this.isSliding = true;
       this.currentSlidingSpeedFactor = this.INITIAL_SLIDING_SPEED_FACTOR;
-      this.currentSlideVector = this.velocity;
+      this.lastMoveDirection = this.moveDirection;
     }
 
     this.isCrouching = true;
+    this.wasCrouchingBeforeFalling = true;
     this.crouchStartTime = performance.now();
     this.interpolateHitboxHeight(this.currentCrouchHeight, 1, this.CROUCH_DURATION);
   }
 
-  /** Whether the player is in movement, used to detect sliding initiation */
+  /**
+   * Whether the player is in movement, used to detect sliding initiation
+   */
   private isMoving(): boolean {
     return this.inputs.directions.x !== 0 || this.inputs.directions.y !== 0;
   }
 
-  /** Restore player's body height at original value */
+  /**
+   * Restore player's body height at original value
+   */
   private restoreHitboxHeight(): void {
     this.isCrouching = false;
     this.isSliding = false;
-    this.crouchStartTime = null;
+    this.crouchStartTime = performance.now();
     this.interpolateHitboxHeight(
       this.currentCrouchHeight,
       this.ORIGINAL_PLAYER_HEIGHT,
@@ -418,13 +567,15 @@ export class Player implements IDamageable {
     );
   }
 
-  /** Actual body's height modification over a duration to smooth the operation */
+  /**
+   * Actual body's height modification over a duration to smooth the operation
+   */
   private interpolateHitboxHeight(
     startHeight: number,
     targetHeight: number,
     duration: number,
   ): void {
-    const startTime = this.crouchStartTime || performance.now();
+    const startTime = this.crouchStartTime;
     const initialCameraY = this.cameraManager.getCameraPositionY();
 
     const animate = (currentTime: number) => {
@@ -444,36 +595,73 @@ export class Player implements IDamageable {
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        this.crouchStartTime = null;
+        this.crouchStartTime = 0;
       }
     };
 
     requestAnimationFrame(animate);
   }
 
-  public getVelocity(): Vector3 {
-    return this.velocity;
-  }
+  // -------------------- Interaction ------------------------
+  // ---------------------------------------------------------
 
-  // Interaction
+  /**
+   * If the player tries to interact, we check if there is an interactive object in front of him
+   * via a raycast, if there is, we call the interact method of the object
+   */
   private checkForInteractables(): void {
     const start = this.cameraManager.getCamera().globalPosition.clone();
     const direction = this.cameraManager.getCamera().getForwardRay().direction.scale(0.5);
 
     start.addInPlace(direction);
+    start.addInPlace(direction);
 
-    const end = start.add(direction.scale(3)); // For interaction range
+    const end = start.add(direction.scale(this.INTERACTION_RANGE));
 
-    this.physicsEngine.raycastToRef(start, end, this.raycastResult);
+    this.physicsEngine.raycastToRef(start, end, this.interactionRaycastResult);
 
-    if (this.raycastResult.hasHit) {
-      const metadata = this.raycastResult.body?.transformNode.metadata;
+    if (this.interactionRaycastResult.hasHit) {
+      const metadata = this.interactionRaycastResult.body?.transformNode.metadata;
       if (metadata && metadata.isInteractive) {
-        const interactiveEntity = this.raycastResult.body?.transformNode
-          .metadata as InteractiveElement;
-        interactiveEntity.interact();
+        this.interactiveObject = metadata.object as InteractiveElement;
+        return;
       }
     }
+
+    this.interactiveObject = null;
+  }
+
+  private initInteractionUI(): void {
+    const rect = new Rectangle();
+    rect.width = '50px';
+    rect.height = '50px';
+    rect.cornerRadius = 10;
+    rect.color = 'white';
+    rect.thickness = 4;
+    rect.background = 'black';
+    this.container = rect;
+
+    const text = new TextBlock();
+    text.text = 'E';
+    text.color = 'white';
+    text.fontSize = 28;
+    rect.addControl(text);
+  }
+
+  private displayInteractionUI(interactiveObject: InteractiveElement): void {
+    if (this.isInteractionUIVisible) return;
+
+    this.isInteractionUIVisible = true;
+    this.gui.addControl(this.container);
+    this.container.linkWithMesh(interactiveObject.mesh);
+    this.container.linkOffsetY = -this.INTERACTION_UI_OFFSET_Y;
+  }
+
+  private hideInteractionUI(): void {
+    if (!this.isInteractionUIVisible) return;
+
+    this.isInteractionUIVisible = false;
+    this.gui.removeControl(this.container);
   }
 
   public getWeapons(): Array<Weapon> {
