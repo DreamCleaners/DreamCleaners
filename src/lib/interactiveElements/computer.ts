@@ -11,11 +11,13 @@ export class Computer extends InteractiveElement {
   }
 
   override async create(position: Vector3): Promise<void> {
-    const entries = await this.gameScene.game.assetManager.instantiateAsset(
-      'scifi_pc',
-      AssetType.OBJECT,
-    );
-    this.mesh = entries.rootNodes[0] as Mesh;
+    this.gameAssetContainer =
+      await this.gameScene.game.assetManager.loadGameAssetContainer(
+        'scifi_pc',
+        AssetType.OBJECT,
+      );
+
+    this.mesh = this.gameAssetContainer.addAssetsToScene();
     this.mesh.position = position;
     this.mesh.scaling.scaleInPlace(2);
 
@@ -29,10 +31,6 @@ export class Computer extends InteractiveElement {
     const physicsAggregate = new PhysicsAggregate(pcHitbox, PhysicsShapeType.BOX, {
       mass: 0,
     });
-    this.gameScene.gameAssetContainer.addPhysicsAggregate(physicsAggregate);
-  }
-
-  override dispose(): void {
-    this.gameScene.game.assetManager.unloadAsset('scifi_pc', AssetType.OBJECT);
+    this.gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 }

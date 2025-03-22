@@ -24,12 +24,25 @@ export class GameAssetContainer {
     return container;
   }
 
-  public instantiateModelsToScene(): InstantiatedEntries {
+  public cloneAssetsToScene(): InstantiatedEntries {
     return this.assetContainer.instantiateModelsToScene(
       (sourceName: string): string => sourceName,
       true,
       { doNotInstantiate: true },
     );
+  }
+
+  /**
+   * Add all assets to the scene and return the root mesh
+   */
+  public addAssetsToScene(): Mesh {
+    this.assetContainer.addAllToScene();
+
+    if (this.assetContainer.meshes.length === 0) {
+      return this.assetContainer.createRootMesh();
+    } else {
+      return this.assetContainer.meshes[0] as Mesh;
+    }
   }
 
   public addMesh(mesh: Mesh | InstancedMesh): void {
@@ -50,6 +63,7 @@ export class GameAssetContainer {
     });
     this.physicsAggregates = [];
 
+    this.assetContainer.removeAllFromScene();
     this.assetContainer.dispose();
   }
 }

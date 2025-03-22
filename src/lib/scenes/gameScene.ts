@@ -6,7 +6,7 @@ import { GameAssetContainer } from '../assets/gameAssetContainer';
 
 export abstract class GameScene {
   public scene: Scene;
-  protected enemyManager!: EnemyFactory;
+  protected enemyFactory!: EnemyFactory;
 
   public gameAssetContainer!: GameAssetContainer;
 
@@ -16,9 +16,8 @@ export abstract class GameScene {
   public enemyTypesToSpawn: EnemyType[] = [];
 
   constructor(public game: Game) {
-    this.gameAssetContainer = new GameAssetContainer(this.game.scene);
     this.scene = game.scene;
-    this.enemyManager = EnemyFactory.getInstance();
+    this.enemyFactory = EnemyFactory.getInstance();
   }
 
   public abstract load(): Promise<void>;
@@ -26,7 +25,7 @@ export abstract class GameScene {
   /**
    * Dispose of any resources used by the scene.
    */
-  public async dispose(): Promise<void> {
+  public dispose(): void {
     this.gameAssetContainer.dispose();
   }
 

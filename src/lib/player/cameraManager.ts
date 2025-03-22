@@ -1,13 +1,13 @@
 import { Quaternion, Scalar, UniversalCamera, Vector3 } from '@babylonjs/core';
-import { Player } from './player/player';
-import { InputState } from './inputs/inputState';
+import { Player } from './player';
+import { InputState } from '../inputs/inputState';
 
 export class CameraManager {
   private camera!: UniversalCamera;
   private readonly FOV = 0.9;
 
   // tilt
-  private readonly MAX_TILT_ANGLE = 0.7; // degrees
+  private readonly MAX_TILT_ANGLE = 0.6; // degrees
   private readonly TILT_TRANSITION_SPEED = 0.07;
 
   constructor(private player: Player) {
@@ -52,8 +52,12 @@ export class CameraManager {
 
     const currentCameraRotation = this.camera.rotationQuaternion.toEulerAngles();
 
-    currentCameraRotation.z = Scalar.Lerp(currentCameraRotation.z, newRotationZ, this.TILT_TRANSITION_SPEED);
-    
+    currentCameraRotation.z = Scalar.Lerp(
+      currentCameraRotation.z,
+      newRotationZ,
+      this.TILT_TRANSITION_SPEED,
+    );
+
     this.camera.rotationQuaternion = Quaternion.FromEulerAngles(
       currentCameraRotation.x,
       currentCameraRotation.y,

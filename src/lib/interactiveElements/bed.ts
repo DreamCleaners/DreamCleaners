@@ -6,8 +6,8 @@ import { AssetType } from '../assets/assetType';
 import { GameEntityType } from '../gameEntityType';
 import { MetadataFactory } from '../metadata/metadataFactory';
 
+// STAGE SELECTION BED
 export class Bed extends InteractiveElement {
-  // STAGE SELECTION BED
   override interact(): void {
     this.gameScene.game.sceneManager.changeSceneToFixedStage(
       FixedStageLayout.CLOSED_SCENE,
@@ -17,11 +17,13 @@ export class Bed extends InteractiveElement {
   }
 
   override async create(position: Vector3): Promise<void> {
-    const entries = await this.gameScene.game.assetManager.instantiateAsset(
-      'bed',
-      AssetType.OBJECT,
-    );
-    this.mesh = entries.rootNodes[0] as Mesh;
+    this.gameAssetContainer =
+      await this.gameScene.game.assetManager.loadGameAssetContainer(
+        'bed',
+        AssetType.OBJECT,
+      );
+
+    this.mesh = this.gameAssetContainer.addAssetsToScene();
     this.mesh.position = position;
     this.mesh.scaling.scaleInPlace(0.13);
 
@@ -34,10 +36,6 @@ export class Bed extends InteractiveElement {
     const physicsAggregate = new PhysicsAggregate(bedHitbox, PhysicsShapeType.BOX, {
       mass: 0,
     });
-    this.gameScene.gameAssetContainer.addPhysicsAggregate(physicsAggregate);
-  }
-
-  override dispose(): void {
-    this.gameScene.game.assetManager.unloadAsset('bed', AssetType.OBJECT);
+    this.gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 }

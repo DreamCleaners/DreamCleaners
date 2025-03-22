@@ -1,68 +1,30 @@
 import {
   InstancedMesh,
-  InstantiatedEntries,
   LoadAssetContainerAsync,
   Mesh,
   PhysicsAggregate,
   PhysicsShapeType,
   Scene,
-  Vector3,
 } from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { AssetType } from './assetType';
 import { WeaponData } from '../weapons/weaponData';
 import { GameAssetContainer } from './gameAssetContainer';
 import { UnityPhysicShapeToken, UnityTypeToken } from './unityTokens';
+import { UnityScene } from './unityScene';
 
 export class AssetManager {
-  private loadedContainers: Map<string, GameAssetContainer> = new Map();
   private loadedWeaponJsons: Map<string, WeaponData> = new Map();
 
   constructor(private scene: Scene) {}
 
-  private getAssetKey(assetName: string, assetType: AssetType): string {
-    return `meshes/${assetType}/${assetName}`;
-  }
-
-  /**
-   * Load an asset container from the server or cache
-   */
-  public async loadAsset(
+  public async loadGameAssetContainer(
     assetName: string,
     assetType: AssetType,
   ): Promise<GameAssetContainer> {
-    const assetKey = this.getAssetKey(assetName, assetType);
-
-    let gameAssetContainer = this.loadedContainers.get(assetKey);
-    if (!gameAssetContainer) {
-      const assetContainer = await LoadAssetContainerAsync(`${assetKey}.glb`, this.scene);
-      gameAssetContainer = GameAssetContainer.createFromAssetContainer(assetContainer);
-      this.loadedContainers.set(assetKey, gameAssetContainer);
-    }
-
-    return gameAssetContainer;
-  }
-
-  /**
-   * Dispose the asset container from the scene
-   */
-  public unloadAsset(assetName: string, assetType: AssetType): void {
-    const assetKey = this.getAssetKey(assetName, assetType);
-    const gameAssetContainer = this.loadedContainers.get(assetKey);
-    if (!gameAssetContainer) {
-      throw new Error(`Asset container not found for asset: ${assetKey}`);
-    }
-    gameAssetContainer.dispose();
-  }
-
-  /**
-   * Remove the container from the cache and dispose it from the scene
-   */
-  public deleteAsset(assetName: string, assetType: AssetType): void {
-    this.unloadAsset(assetName, assetType);
-
-    const assetKey = this.getAssetKey(assetName, assetType);
-    this.loadedContainers.delete(assetKey);
+    const assetKey = `meshes/${assetType}/${assetName}`;
+    const assetContainer = await LoadAssetContainerAsync(`${assetKey}.glb`, this.scene);
+    return GameAssetContainer.createFromAssetContainer(assetContainer);
   }
 
   /**
@@ -85,24 +47,16 @@ export class AssetManager {
     return weaponJson;
   }
 
-  public async instantiateAsset(
-    assetName: string,
-    assetType: AssetType,
-  ): Promise<InstantiatedEntries> {
-    const gameAssetContainer = await this.loadAsset(assetName, assetType);
-    return gameAssetContainer.instantiateModelsToScene();
-  }
+  public async instantiateUnityScene(sceneName: string): Promise<UnityScene> {
+    const gameAssetContainer = await this.loadGameAssetContainer(
+      sceneName,
+      AssetType.SCENE,
+    );
+    const spawnPoints: Mesh[] = [];
 
-  public async instantiateSceneFromUnity(
-    sceneName: string,
-  ): Promise<InstantiatedEntries> {
-    const gameAssetContainer = await this.loadAsset(sceneName, AssetType.SCENE);
-    const entries = gameAssetContainer.instantiateModelsToScene();
+    const rootMesh = gameAssetContainer.addAssetsToScene();
 
-    const scene = entries.rootNodes[0] as Mesh;
-    scene.position = new Vector3(0, 0, 0);
-
-    scene.getDescendants().forEach((node) => {
+    rootMesh.getDescendants().forEach((node) => {
       const name = node.name;
 
       const match = name.match(/#[A-Z]+(-[A-Z]+)*#/);
@@ -117,11 +71,15 @@ export class AssetManager {
       ) {
         this.handlePhysicalObject(node, tokens, gameAssetContainer);
       } else if (type === UnityTypeToken.SPAWN_POINT) {
-        this.handleSpawnPoint(node as Mesh);
+        this.handleSpawnPoint(node as Mesh, spawnPoints);
       }
     });
 
-    return entries;
+    return {
+      container: gameAssetContainer,
+      rootMesh: rootMesh,
+      spawnPoints: spawnPoints,
+    };
   }
 
   private handlePhysicalObject(
@@ -149,7 +107,9 @@ export class AssetManager {
     gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 
-  private handleSpawnPoint(node: Mesh): void {
+  private handleSpawnPoint(node: Mesh, spawnPoints: Mesh[]): void {
+    console.log('Spawn point found');
     node.position.x *= -1;
+    spawnPoints.push(node);
   }
 }

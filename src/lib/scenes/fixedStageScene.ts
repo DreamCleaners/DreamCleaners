@@ -15,7 +15,6 @@ export class FixedStageScene extends GameScene {
   public fixedStageName!: FixedStageLayout;
 
   private onPlayerDamageTakenObserver!: Observer<number>;
-
   private onUIChangeObserver!: Observer<UIType>;
 
   constructor(game: Game, fixedStageName: FixedStageLayout) {
@@ -25,18 +24,25 @@ export class FixedStageScene extends GameScene {
 
   public async load(): Promise<void> {
     // We import the stage scene based on the name
-    await this.game.assetManager.instantiateSceneFromUnity(this.fixedStageName);
+    const unityScene = await this.game.assetManager.instantiateUnityScene(
+      this.fixedStageName,
+    );
+    this.gameAssetContainer = unityScene.container;
+
+    unityScene.rootMesh.position = new Vector3(0, 0, 0);
+
+    this.spawnPoints = unityScene.spawnPoints.map((point) => point.position);
 
     this.game.player.setPosition(new Vector3(0, 1, 0));
 
-    this.loadEnemies();
+    await this.loadEnemies();
     this.game.scoreManager.startStage();
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
   }
 
-  public async dispose(): Promise<void> {
+  public dispose(): void {
     super.dispose();
 
     this.enemies.forEach((enemy) => {
@@ -63,14 +69,14 @@ export class FixedStageScene extends GameScene {
     }
 
     for (const spawnPoint of this.spawnPoints) {
-      const enemy = this.enemyManager.createEnemy(
+      const enemy = await this.enemyFactory.createEnemy(
         // The spawned enemy is randomly picked from the list of enemy types
         this.enemyTypesToSpawn[Math.floor(Math.random() * this.enemyTypesToSpawn.length)],
         this.difficultyFactor,
         this.game,
+        spawnPoint,
       );
 
-      await enemy.initAt(spawnPoint);
       enemy.onDeathObservable.add(this.onEnemyDeath.bind(this));
       this.enemies.push(enemy);
       this.enemyCount++;

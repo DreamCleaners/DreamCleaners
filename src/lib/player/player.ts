@@ -20,7 +20,7 @@ import { IDamageable } from '../damageable';
 import { HealthController } from '../healthController';
 import { GameEntityType } from '../gameEntityType';
 import { PlayerUpgradeManager } from './playerUpgradeManager';
-import { CameraManager } from '../cameraManager';
+import { CameraManager } from './cameraManager';
 import { PlayerUpgradeType } from './playerUpgradeType';
 import { InteractiveElement } from '../interactiveElements/interactiveElement';
 import { AdvancedDynamicTexture } from '@babylonjs/gui/2D/advancedDynamicTexture';
@@ -99,6 +99,7 @@ export class Player implements IDamageable {
   private interactionRaycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
   private readonly INTERACTION_RANGE = 3;
   private interactiveObject: InteractiveElement | null = null;
+  private canInteract = true;
 
   constructor(public game: Game) {
     this.physicsEngine = game.scene.getPhysicsEngine() as PhysicsEngineV2;
@@ -201,11 +202,16 @@ export class Player implements IDamageable {
     if (this.interactiveObject !== null) {
       this.displayInteractionUI(this.interactiveObject);
 
-      if (this.inputs.actions.get(InputAction.INTERACT)) {
+      if (this.inputs.actions.get(InputAction.INTERACT) && this.canInteract) {
+        this.canInteract = false;
         this.interactiveObject.interact();
       }
     } else {
       this.hideInteractionUI();
+    }
+
+    if (!this.inputs.actions.get(InputAction.INTERACT)) {
+      this.canInteract = true;
     }
 
     this.cameraManager.updateCamera(this.inputs);

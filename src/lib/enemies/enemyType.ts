@@ -1,3 +1,3 @@
 export enum EnemyType {
-  ZOMBIE,
+  ZOMBIE = 'zombie',
 }

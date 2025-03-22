@@ -1,10 +1,12 @@
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { GameScene } from '../scenes/gameScene';
 import { Mesh } from '@babylonjs/core';
+import { GameAssetContainer } from '../assets/gameAssetContainer';
 
 /** An interactive element, physical and present within the scene */
 export abstract class InteractiveElement {
   public mesh!: Mesh;
+  protected gameAssetContainer!: GameAssetContainer;
 
   constructor(protected gameScene: GameScene) {}
 
@@ -14,5 +16,7 @@ export abstract class InteractiveElement {
   // Creates the interactive element within the scene
   public abstract create(position: Vector3): Promise<void>;
 
-  public abstract dispose(): void;
+  public dispose(): void {
+    this.gameAssetContainer.dispose();
+  }
 }
