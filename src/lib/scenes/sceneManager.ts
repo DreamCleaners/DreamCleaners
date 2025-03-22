@@ -4,6 +4,7 @@ import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
 import { GameScene } from './gameScene';
 import { SceneFactory } from './sceneFactory';
+import { StageReward } from '../stages/stageReward';
 
 export class SceneManager {
   private currentScene: GameScene | null = null;
@@ -28,6 +29,7 @@ export class SceneManager {
     layout: FixedStageLayout,
     difficultyFactor: number = 1,
     enemyTypes: EnemyType[] = [],
+    stageReward: StageReward | null = null,
   ): Promise<void> {
     this.game.engine.displayLoadingUI();
     if (this.currentScene !== null) {
@@ -41,6 +43,10 @@ export class SceneManager {
 
     const scene = SceneFactory.createFixedStageScene(layout, this.game);
     scene.setStageParameters(difficultyFactor, enemyTypes);
+    scene.setStageReward(stageReward);
+
+    // Whenever we change scene we must ask for player to re-equips its weapon
+    this.game.player.equipWeapon(0, true);
 
     await scene.load();
     this.game.engine.hideLoadingUI();
@@ -59,5 +65,9 @@ export class SceneManager {
   public fixedUpdate(): void {
     if (this.currentScene === null) return;
     this.currentScene.fixedUpdate();
+  }
+
+  public getCurrentScene(): GameScene | null {
+    return this.currentScene;
   }
 }

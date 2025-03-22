@@ -36,7 +36,7 @@ export class FixedStageScene extends GameScene {
 
   public async load(): Promise<void> {
     // Simple ground initialization
-    //this.initGround();
+    this.initGround();
 
     if (this.fixedStageName === undefined || this.fixedStageName === null) {
       throw new Error('Fixed stage name is not defined');
@@ -199,6 +199,7 @@ export class FixedStageScene extends GameScene {
 
   private onEndStage(): void {
     this.game.scoreManager.endStage();
+    this.attributeRewards();
 
     setTimeout(() => {
       const currentUI = this.game.uiManager.getCurrentUI();
@@ -222,5 +223,15 @@ export class FixedStageScene extends GameScene {
 
     this.onUIChangeObserver.remove();
     this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
+  }
+
+  /** Gives the rewards to the player */
+  private attributeRewards(): void {
+    if (this.stageReward === null) {
+      throw new Error('Stage reward is not defined');
+    }
+
+    console.log('Attributing gold reward: ' + this.stageReward.getMoneyReward());
+    this.game.moneyManager.addPlayerMoney(this.stageReward.getMoneyReward());
   }
 }

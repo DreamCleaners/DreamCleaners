@@ -79,6 +79,7 @@ export class StagesManager {
     // Pick a random layout from the weighted array
     const randomIndex = Math.floor(Math.random() * weightedLayouts.length);
     return weightedLayouts[randomIndex];
+    //return FixedStageLayout.TEST;
   }
 
   private pickRandomDifficulty(): number {

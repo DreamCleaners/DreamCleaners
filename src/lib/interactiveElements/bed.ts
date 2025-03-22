@@ -18,14 +18,15 @@ export class Bed extends InteractiveElement {
   public stageReward!: StageReward;
   // STAGE SELECTION BED
   override interact(): void {
-    // this.scene.game.sceneManager.changeSceneToFixedStage(
-    //   this.proposedFixedStageLayout as FixedStageLayout,
-    //   this.difficulty,
-    //   this.enemyTypes,
-    // );
-    console.log('This bed has the following specificites: ');
-    console.log('Difficulty: ' + this.difficulty);
-    console.log('Enemies: ' + this.enemyTypes);
+    this.scene.game.sceneManager.changeSceneToFixedStage(
+      this.proposedFixedStageLayout as FixedStageLayout,
+      this.difficulty,
+      this.enemyTypes,
+      this.stageReward,
+    );
+    // console.log('This bed has the following specificites: ');
+    // console.log('Difficulty: ' + this.difficulty);
+    // console.log('Enemies: ' + this.enemyTypes);
     console.log('Reward: ');
     console.log('     Money reward: ' + this.stageReward.getMoneyReward());
     console.log('     Weapon reward?: ');
@@ -33,9 +34,9 @@ export class Bed extends InteractiveElement {
       '         Weapon type: ' + this.stageReward.getWeaponReward()?.weaponType,
     );
     console.log('         Rarity: ' + this.stageReward.getWeaponReward()?.rarity);
-    console.log('Is stage procedural: ' + this.isStageProcedural);
-    console.log('Layout: ' + this.proposedFixedStageLayout);
-    console.log('-----------------------------------------');
+    // console.log('Is stage procedural: ' + this.isStageProcedural);
+    // console.log('Layout: ' + this.proposedFixedStageLayout);
+    // console.log('-----------------------------------------');
   }
 
   override async create(position: Vector3): Promise<void> {

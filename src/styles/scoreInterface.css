@@ -1,7 +1,107 @@
+/* Main container for the entire UI */
 .score-interface-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100vw;
   height: 100vh;
-  background-color: black;
-  opacity: 0.8;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.7); /* Transparent black background */
   color: white;
+  position: relative;
+}
+
+/* Score section on the left */
+.score-section {
+  flex: 0 0 20%; /* Take 20% of the screen width */
+  text-align: left;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  height: auto;
+  max-width: 300px; /* Optional: Limit the maximum width */
+}
+
+/* Reward section on the right */
+.reward-section {
+  flex: 0 0 20%; /* Take 20% of the screen width */
+  text-align: right;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  height: auto;
+  max-width: 300px; /* Optional: Limit the maximum width */
+}
+
+/* Center container for reward weapon and back-to-hub button */
+.center-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Weapon reward container */
+.weapon-reward-container {
+  background-color: rgba(0, 0, 0, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Weapon 1 and Weapon 2 containers */
+.player-weapons {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.player-weapon {
+  width: 45%;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Label for current weapons */
+.current-weapons-label {
+  margin: 10px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+/* Back to hub button container */
+.back-to-hub-container {
+  text-align: center;
+}
+
+.back-to-hub-container button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-to-hub-container button:hover {
+  background-color: #0056b3;
 }

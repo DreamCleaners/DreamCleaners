@@ -60,6 +60,10 @@ export abstract class GameScene {
     this.enemyTypesToSpawn = enemyTypes;
   }
 
+  public setStageReward(stageReward: StageReward | null): void {
+    this.stageReward = stageReward;
+  }
+
   public pushToPhysicsAggregates(physicsAggregate: PhysicsAggregate): void {
     this.physicsAggregates.push(physicsAggregate);
   }

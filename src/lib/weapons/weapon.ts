@@ -106,12 +106,6 @@ export class Weapon implements WeaponData {
     }
 
     this.hideInScene();
-
-    // TODO! Remove this, only present until the stages are implemented as it will be gameScene's (or sceneManager)
-    // role to show the weapon at stage entrance.
-    if (this.weaponName === WeaponType.AK.toLowerCase()) {
-      this.showInScene();
-    }
   }
 
   public hideInScene(): void {
@@ -479,5 +473,9 @@ export class Weapon implements WeaponData {
 
       requestAnimationFrame(smoothReset);
     }
+  }
+
+  public dispose(): void {
+    this.mesh.dispose();
   }
 }

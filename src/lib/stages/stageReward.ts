@@ -1,5 +1,7 @@
 import { WeaponRarity } from '../weapons/weaponRarity';
 import { WeaponType } from '../weapons/weaponType';
+import { Weapon } from '../weapons/weapon';
+import { Player } from '../player/player';
 import { RewardWeaponDescription } from './rewardWeaponDescription';
 
 /** The rewards linked to a stage */
@@ -57,5 +59,20 @@ export class StageReward {
 
   public getWeaponReward(): RewardWeaponDescription | undefined {
     return this.weaponReward;
+  }
+
+  // Weapon creation logic
+
+  public createWeapon(player: Player): Weapon {
+    if (!this.weaponReward) {
+      throw new Error('No weapon reward to create');
+    }
+
+    const weapon = new Weapon(
+      player,
+      this.weaponReward.weaponType,
+      this.weaponReward.rarity,
+    );
+    return weapon;
   }
 }

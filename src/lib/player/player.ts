@@ -348,16 +348,23 @@ export class Player implements IDamageable {
     this.weapons.splice(index, 1);
   }
 
+  public replaceWeaponAtIndex(index: number, weapon: Weapon): void {
+    this.weapons[index] = weapon;
+  }
+
   /**
    * Called whenever the players changes weapon in-hand
    * We ask the previous weapon to be hidden and the new one to be shown
    * And we replace the equippedWeapon field with the new weapon, to correctly handle shooting
    */
-  public equipWeapon(index: number): void {
-    if (index === this.currentWeaponIndex) return;
+  public equipWeapon(index: number, forceActualisation: boolean = false): void {
+    if (index === this.currentWeaponIndex && !forceActualisation) return;
 
     // Only update the desired weapon index if the key was not pressed recently
-    if (Date.now() - this.lastWeaponSwitch > this.WEAPON_SWITCH_DELAY) {
+    if (
+      Date.now() - this.lastWeaponSwitch > this.WEAPON_SWITCH_DELAY &&
+      !forceActualisation
+    ) {
       this.lastWeaponSwitch = Date.now();
       return;
     }
@@ -467,5 +474,9 @@ export class Player implements IDamageable {
         interactiveEntity.interact();
       }
     }
+  }
+
+  public getWeapons(): Array<Weapon> {
+    return this.weapons;
   }
 }
