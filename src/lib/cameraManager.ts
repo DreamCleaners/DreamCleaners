@@ -1,4 +1,4 @@
-import { Scalar, UniversalCamera, Vector3 } from '@babylonjs/core';
+import { Quaternion, Scalar, UniversalCamera, Vector3 } from '@babylonjs/core';
 import { Player } from './player/player';
 import { InputState } from './inputs/inputState';
 
@@ -7,8 +7,8 @@ export class CameraManager {
   private readonly FOV = 0.9;
 
   // tilt
-  private readonly MAX_TILT_ANGLE = 0.8; // degrees
-  private readonly TILT_TRANSITION_SPEED = 0.1;
+  private readonly MAX_TILT_ANGLE = 0.7; // degrees
+  private readonly TILT_TRANSITION_SPEED = 0.07;
 
   constructor(private player: Player) {
     this.initCamera();
@@ -41,21 +41,31 @@ export class CameraManager {
     // Allows no "near clipping" of meshes when close to the camera
     this.camera.minZ = 0.01;
     this.camera.fov = this.FOV;
+
+    // we use quaternions to avoid gimbal lock when rotating the camera
+    this.camera.rotationQuaternion = Quaternion.Identity();
   }
 
   public updateCamera(playerInputs: InputState): void {
-    const tiltRad = (this.MAX_TILT_ANGLE * Math.PI) / 180;
-    this.camera.rotation.z = Scalar.Lerp(
-      this.camera.rotation.z,
-      -playerInputs.directions.x * tiltRad,
-      this.TILT_TRANSITION_SPEED,
+    const maxTiltRad = (this.MAX_TILT_ANGLE * Math.PI) / 180;
+    const newRotationZ = maxTiltRad * -playerInputs.directions.x;
+
+    const currentCameraRotation = this.camera.rotationQuaternion.toEulerAngles();
+
+    currentCameraRotation.z = Scalar.Lerp(currentCameraRotation.z, newRotationZ, this.TILT_TRANSITION_SPEED);
+    
+    this.camera.rotationQuaternion = Quaternion.FromEulerAngles(
+      currentCameraRotation.x,
+      currentCameraRotation.y,
+      currentCameraRotation.z,
     );
   }
 
   // Getters and setters
 
   public getRotationY(): number {
-    return this.camera.rotation.y;
+    if (!this.camera.rotationQuaternion) return 0;
+    return this.camera.rotationQuaternion.toEulerAngles().y;
   }
 
   public setCameraHeight(height: number): void {

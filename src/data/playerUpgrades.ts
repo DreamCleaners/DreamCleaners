@@ -26,6 +26,6 @@ playerUpgrades.set(PlayerUpgradeType.MOVEMENT_SPEED, {
   description: 'Increases the movement speed of the player',
   currentUpgradeIndex: 0,
   unlockCost: -1,
-  upgradesValue: [7, 8, 9, 10, 12],
+  upgradesValue: [9, 9.25, 9.5, 9.75, 10],
   upgradesCost: [100, 200, 400, 800, 1600],
 });

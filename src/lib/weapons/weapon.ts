@@ -54,7 +54,7 @@ export class Weapon implements WeaponData {
   private initialYPosition: number | null = null;
   private isPlayingMovingAnimating: boolean = false;
   // The speed at which the weapon moves up and down
-  private readonly MOVING_ANIMATION_SPEED = 6;
+  private readonly MOVING_ANIMATION_SPEED = 9;
   // The height at which the weapon moves up and down
   private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
