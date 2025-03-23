@@ -6,6 +6,8 @@ import { StageReward } from './stageReward';
 /** The purpose of this class is to manage proposed stages to the player, the stage rewards and so on */
 export class StagesManager {
   private static _instance: StagesManager;
+  private selectedbed !: Bed;
+
   private constructor() {}
 
   public static getInstance(): StagesManager {
@@ -116,4 +118,50 @@ export class StagesManager {
   private pickRandomReward(): StageReward {
     return new StageReward();
   }
+
+  /** Stores the currently selected bed in order to easily retrieve its stage information
+   * From the UI
+   */
+  public setSelectedBed(bed: Bed): void {
+    this.selectedbed = bed;
+    console.log("Selected bed is now: " + bed);
+  }
+
+  /** Returns information on the select bed */
+  public getSelectedBedInformation(): {
+    isProcedural: boolean;
+    layout: FixedStageLayout | null;
+    difficulty: number;
+    enemies: EnemyType[];
+    reward: StageReward;
+  } {
+    if (!this.selectedbed) {
+      console.log('Stage manager tried to get selected bed information but no bed was selected');
+      return {
+        isProcedural: false,
+        layout: FixedStageLayout.HUB,
+        difficulty: 0,
+        enemies: [],
+        reward: new StageReward(),
+      };
+    }
+
+    return {
+      isProcedural: this.selectedbed.isStageProcedural,
+      layout: this.selectedbed.proposedFixedStageLayout,
+      difficulty: this.selectedbed.difficulty,
+      enemies: this.selectedbed.enemyTypes,
+      reward: this.selectedbed.stageReward,
+    };
+
+  }
+
+  public enterStage(): void {
+    if (!this.selectedbed) {
+      return;
+    }
+
+    this.selectedbed.enterStage();
+  }
+
 }

@@ -7,6 +7,7 @@ import { GameEntityType } from '../gameEntityType';
 import { StageReward } from '../stages/stageReward';
 import { MetadataFactory } from '../metadata/metadataFactory';
 import { UIType } from '../ui/uiType';
+import { StagesManager } from '../stages/stagesManager';
 
 // STAGE SELECTION BED
 export class Bed extends InteractiveElement {
@@ -21,27 +22,11 @@ export class Bed extends InteractiveElement {
   public stageReward!: StageReward;
   // STAGE SELECTION BED
   override interact(): void {
-    console.log("Displaying stage selection UI");
+    console.log('Displaying stage selection UI');
+    // We set the selected bed to this one
+    StagesManager.getInstance().setSelectedBed(this);
+    // We display the stage selection UI which will seek for the select bed infos
     this.gameScene.game.uiManager.displayUI(UIType.STAGE_SELECTION);
-    // this.gameScene.game.sceneManager.changeSceneToFixedStage(
-    //   this.proposedFixedStageLayout as FixedStageLayout,
-    //   this.difficulty,
-    //   this.enemyTypes,
-    //   this.stageReward,
-    // );
-    // console.log('This bed has the following specificites: ');
-    // console.log('Difficulty: ' + this.difficulty);
-    // console.log('Enemies: ' + this.enemyTypes);
-    console.log('Reward: ');
-    console.log('     Money reward: ' + this.stageReward.getMoneyReward());
-    console.log('     Weapon reward?: ');
-    console.log(
-      '         Weapon type: ' + this.stageReward.getWeaponReward()?.weaponType,
-    );
-    console.log('         Rarity: ' + this.stageReward.getWeaponReward()?.rarity);
-    // console.log('Is stage procedural: ' + this.isStageProcedural);
-    // console.log('Layout: ' + this.proposedFixedStageLayout);
-    // console.log('-----------------------------------------');
   }
 
   override async create(position: Vector3): Promise<void> {
@@ -87,4 +72,13 @@ export class Bed extends InteractiveElement {
   // }): void {
   //   // Not implemented yet
   // }
+
+  public enterStage(): void {
+    this.gameScene.game.sceneManager.changeSceneToFixedStage(
+      this.proposedFixedStageLayout as FixedStageLayout,
+      this.difficulty,
+      this.enemyTypes,
+      this.stageReward,
+    );
+  }
 }

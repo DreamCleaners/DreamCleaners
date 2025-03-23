@@ -7,12 +7,12 @@
     display: grid;
     grid-template-areas:
       "stage-title stage-title"
-      "stage-info stage-description"
+      "stage-info-reward stage-description"
       "select-button select-button";
-    grid-template-rows: auto 1fr auto; /* Allow the title container to adjust its height */
-    grid-template-columns: 50% 50%; /* Two equal columns */
-    gap: 2%; /* Gap between grid items */
-    padding: 2%; /* Padding around the container */
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 50% 50%;
+    gap: 2%;
+    padding: 2%;
 }
 
 .stage-title-container {
@@ -21,26 +21,99 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1%; /* Reduced padding to match the smaller height */
-    width: 20%; /* Set the width to 20% of the screen */
-    height: 50%; /* Set the height to half of its current size */
-    margin: 0 auto; /* Center the container horizontally */
+    padding: 1%;
+    height: 10%;
+    width: 10%;
+    margin: 0 auto;
 }
-  
-.stage-info-container {
-    grid-area: stage-info;
+
+.stage-info-reward-container {
+    grid-area: stage-info-reward;
+    display: grid;
+    grid-template-rows: 50% 50%;
+    gap: 2%;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.stage-info-container,
+.stage-reward-container {
     background-color: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2%; /* Padding inside the container */
+    padding: 2%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stage-reward-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2%;
+    text-align: center;
+}
+
+.stage-reward-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.stage-reward-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.reward-with-weapon {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    gap: 2rem;
+}
+
+.reward-money {
+    font-size: 1rem;
+    font-weight: normal;
+    text-align: left;
+    flex: 1;
+}
+
+.reward-weapon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: normal;
+    text-align: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.reward-no-weapon {
+    font-size: 1rem;
+    font-weight: normal;
 }
 
 .stage-description-container {
     grid-area: stage-description;
     display: grid;
-    grid-template-rows: 50% 50%; /* Two equal rows for image and text */
-    gap: 2%; /* Gap between rows */
+    grid-template-rows: 50% 50%;
+    gap: 2%;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 0;
+    height: 100%;
+    width: 100%;
 }
 
 .stage-image-container,
@@ -49,16 +122,54 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2%; /* Padding inside the container */
+    padding: 2%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .select-button-container {
     grid-area: select-button;
-    background-color: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2%; /* Padding inside the container */
-    width: 20%; /* Set the width to 20% of the screen */
-    margin: 0 auto; /* Center the container horizontally */
+    padding: 2%;
+    margin: 0 auto;
+}
+
+.select-button-container button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.select-button-container button:hover {
+    background-color: #45a049;
+}
+
+.select-button-container button:active {
+    background-color: #3e8e41;
+}
+
+.back-button-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.back-button-container button {
+    background-color: #ded4d4;
+    color: rgb(0, 0, 0);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.back-button-container button:hover {
+    background-color: #555;
 }

@@ -32,7 +32,7 @@ const UserInterface = () => {
       {uiType === UIType.PLAYER_HUD && <PlayerHUD />}
       {uiType === UIType.PLAYER_UPGRADES && <PlayerUpgradeInterface />}
       {uiType === UIType.SCORE && <ScoreInterface />}
-      {uiType === UIType.STAGE_SELECTION && <StageSelection/>}
+      {uiType === UIType.STAGE_SELECTION && <StageSelection />}
     </div>
   );
 };
