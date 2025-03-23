@@ -6,6 +6,7 @@ import { AssetType } from '../assets/assetType';
 import { GameEntityType } from '../gameEntityType';
 import { StageReward } from '../stages/stageReward';
 import { MetadataFactory } from '../metadata/metadataFactory';
+import { UIType } from '../ui/uiType';
 
 // STAGE SELECTION BED
 export class Bed extends InteractiveElement {
@@ -20,12 +21,14 @@ export class Bed extends InteractiveElement {
   public stageReward!: StageReward;
   // STAGE SELECTION BED
   override interact(): void {
-    this.gameScene.game.sceneManager.changeSceneToFixedStage(
-      this.proposedFixedStageLayout as FixedStageLayout,
-      this.difficulty,
-      this.enemyTypes,
-      this.stageReward,
-    );
+    console.log("Displaying stage selection UI");
+    this.gameScene.game.uiManager.displayUI(UIType.STAGE_SELECTION);
+    // this.gameScene.game.sceneManager.changeSceneToFixedStage(
+    //   this.proposedFixedStageLayout as FixedStageLayout,
+    //   this.difficulty,
+    //   this.enemyTypes,
+    //   this.stageReward,
+    // );
     // console.log('This bed has the following specificites: ');
     // console.log('Difficulty: ' + this.difficulty);
     // console.log('Enemies: ' + this.enemyTypes);

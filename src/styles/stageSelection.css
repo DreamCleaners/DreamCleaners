@@ -1,0 +1,64 @@
+.stage-selection-container {
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    opacity: 0.9;
+    color: white;
+    display: grid;
+    grid-template-areas:
+      "stage-title stage-title"
+      "stage-info stage-description"
+      "select-button select-button";
+    grid-template-rows: auto 1fr auto; /* Allow the title container to adjust its height */
+    grid-template-columns: 50% 50%; /* Two equal columns */
+    gap: 2%; /* Gap between grid items */
+    padding: 2%; /* Padding around the container */
+}
+
+.stage-title-container {
+    grid-area: stage-title;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1%; /* Reduced padding to match the smaller height */
+    width: 20%; /* Set the width to 20% of the screen */
+    height: 50%; /* Set the height to half of its current size */
+    margin: 0 auto; /* Center the container horizontally */
+}
+  
+.stage-info-container {
+    grid-area: stage-info;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2%; /* Padding inside the container */
+}
+
+.stage-description-container {
+    grid-area: stage-description;
+    display: grid;
+    grid-template-rows: 50% 50%; /* Two equal rows for image and text */
+    gap: 2%; /* Gap between rows */
+}
+
+.stage-image-container,
+.stage-description-text-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2%; /* Padding inside the container */
+}
+
+.select-button-container {
+    grid-area: select-button;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2%; /* Padding inside the container */
+    width: 20%; /* Set the width to 20% of the screen */
+    margin: 0 auto; /* Center the container horizontally */
+}
