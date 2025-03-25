@@ -5,6 +5,7 @@ import { Game } from '../game';
 import { Enemy } from './enemy';
 import { EnemyType } from './enemyType';
 import { Zombie } from './zombie';
+import { GameScene } from '../scenes/gameScene';
 
 // Singleton
 export class EnemyFactory {
@@ -45,14 +46,14 @@ export class EnemyFactory {
   public async createEnemy(
     enemyType: EnemyType,
     difficultyFactor: number,
-    game: Game,
+    gameScene: GameScene,
     position: Vector3,
   ): Promise<Enemy> {
-    const entries = await this.getEnemyEntries(enemyType, game);
+    const entries = await this.getEnemyEntries(enemyType, gameScene.game);
 
     switch (enemyType) {
       case EnemyType.ZOMBIE:
-        return new Zombie(game, difficultyFactor, position, entries);
+        return new Zombie(gameScene, difficultyFactor, position, entries);
       default:
         throw new Error('Unknown enemy type');
     }

@@ -1,6 +1,5 @@
 import {
   InstancedMesh,
-  Light,
   LoadAssetContainerAsync,
   Mesh,
   PhysicsAggregate,
@@ -73,8 +72,6 @@ export class AssetManager {
         this.handlePhysicalObject(node, tokens, gameAssetContainer);
       } else if (type === UnityTypeToken.SPAWN_POINT) {
         this.handleSpawnPoint(node as Mesh, spawnPoints);
-      } else if (type === UnityTypeToken.LIGHT) {
-        this.handleLight(node as Light);
       }
     });
 
@@ -111,12 +108,7 @@ export class AssetManager {
   }
 
   private handleSpawnPoint(node: Mesh, spawnPoints: Mesh[]): void {
-    console.log('Spawn point found');
     node.position.x *= -1;
     spawnPoints.push(node);
-  }
-
-  private handleLight(node: Light): void {
-    node.intensity *= 10;
   }
 }

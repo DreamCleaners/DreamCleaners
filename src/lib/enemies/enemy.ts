@@ -1,18 +1,15 @@
 import {
   InstantiatedEntries,
-  IPhysicsCollisionEvent,
   Mesh,
   Observable,
   PhysicsAggregate,
-  PhysicsEventType,
   Vector3,
 } from '@babylonjs/core';
-import { Game } from '../game';
 import { HealthController } from '../healthController';
 import { AnimationController } from '../animations/animationController';
 import { ZombieState } from './zombie';
-import { GameEntityType } from '../gameEntityType';
 import { IDamageable } from '../damageable';
+import { GameScene } from '../scenes/gameScene';
 
 export abstract class Enemy implements IDamageable {
   public mesh!: Mesh;
@@ -22,9 +19,9 @@ export abstract class Enemy implements IDamageable {
   protected attackingState!: ZombieState | null;
   protected deadState!: ZombieState | null;
   protected isAttacking = false;
+  protected agentIndex: number = -1;
 
   protected physicsAggregate!: PhysicsAggregate;
-  protected velocity: Vector3 = Vector3.Zero();
   protected target: Vector3 = Vector3.Zero();
   protected SPEED!: number;
   protected ATTACK_RANGE!: number;
@@ -36,14 +33,14 @@ export abstract class Enemy implements IDamageable {
   public onDeathObservable!: Observable<void>;
 
   constructor(
-    protected game: Game,
+    protected gameScene: GameScene,
     difficultyFactor: number,
     entries: InstantiatedEntries,
   ) {
     this.onDeathObservable = this.healthController.onDeath;
     this.healthController.onDeath.add(this.onDeath.bind(this));
     this.initStats(difficultyFactor);
-    this.target = this.game.player.hitbox.position;
+    this.target = this.gameScene.game.player.hitbox.position;
     this.entries = entries;
   }
 
@@ -59,17 +56,6 @@ export abstract class Enemy implements IDamageable {
   public dispose(): void {
     this.entries.dispose();
     this.physicsAggregate.dispose();
-  }
-
-  protected onCollision(collisionEvent: IPhysicsCollisionEvent): void {
-    const other = collisionEvent.collidedAgainst;
-    if (
-      (collisionEvent.type === PhysicsEventType.COLLISION_STARTED ||
-        collisionEvent.type === PhysicsEventType.COLLISION_CONTINUED) &&
-      other.transformNode.name === GameEntityType.PLAYER
-    ) {
-      this.state = this.attackingState;
-    }
   }
 
   public onDeath(): void {

@@ -6,7 +6,7 @@ import { StageReward } from './stageReward';
 /** The purpose of this class is to manage proposed stages to the player, the stage rewards and so on */
 export class StagesManager {
   private static _instance: StagesManager;
-  private selectedbed !: Bed;
+  private selectedbed!: Bed;
 
   private constructor() {}
 
@@ -20,8 +20,6 @@ export class StagesManager {
   /** Based on current run's progress, will edit each bed of the HUB so they propose various stages */
   public setProposedStagesForBeds(beds: Bed[]): void {
     const n = beds.length;
-
-    console.log('Making up stages for beds to propose, there are ' + n + ' beds');
 
     if (n === 0) {
       console.log(
@@ -124,7 +122,6 @@ export class StagesManager {
    */
   public setSelectedBed(bed: Bed): void {
     this.selectedbed = bed;
-    console.log("Selected bed is now: " + bed);
   }
 
   /** Returns information on the select bed */
@@ -136,14 +133,9 @@ export class StagesManager {
     reward: StageReward;
   } {
     if (!this.selectedbed) {
-      console.log('Stage manager tried to get selected bed information but no bed was selected');
-      return {
-        isProcedural: false,
-        layout: FixedStageLayout.HUB,
-        difficulty: 0,
-        enemies: [],
-        reward: new StageReward(),
-      };
+      throw new Error(
+        'Stage manager tried to get selected bed information but no bed was selected',
+      );
     }
 
     return {
@@ -153,7 +145,6 @@ export class StagesManager {
       enemies: this.selectedbed.enemyTypes,
       reward: this.selectedbed.stageReward,
     };
-
   }
 
   public enterStage(): void {
@@ -163,5 +154,4 @@ export class StagesManager {
 
     this.selectedbed.enterStage();
   }
-
 }

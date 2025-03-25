@@ -4,6 +4,7 @@ import { FixedStageLayout } from './fixedStageLayout';
 import { Bed } from '../interactiveElements/bed';
 import { Computer } from '../interactiveElements/computer';
 import { StagesManager } from '../stages/stagesManager';
+import { NavigationManager } from '../navigationManager';
 
 export class HubScene extends GameScene {
   // The entity responsible for determining which stages will be proposed to the player
@@ -21,11 +22,22 @@ export class HubScene extends GameScene {
 
     unityScene.rootMesh.position = new Vector3(0, 0, 0);
 
-    // We create multiple beds in the hub by hand
+    this.navigationManager = new NavigationManager(
+      this.game.recastInjection,
+      this.scene,
+      0,
+    );
 
-    for (let i = 0; i < 6; i++) {
+    const bedPositions = [
+      new Vector3(5, 0, 5),
+      new Vector3(-5, 0, 5),
+      new Vector3(3, 0, 5),
+    ];
+
+    // We create multiple beds in the hub by hand
+    for (let i = 0; i < 3; i++) {
       const bed = new Bed(this);
-      await bed.create(new Vector3(0, 0, -i * 4));
+      await bed.create(bedPositions[i]);
       this.beds.push(bed);
     }
 
@@ -33,7 +45,7 @@ export class HubScene extends GameScene {
     this.stagesManager.setProposedStagesForBeds(this.beds);
 
     this.computer = new Computer(this);
-    await this.computer.create(new Vector3(0, 1, 10));
+    await this.computer.create(new Vector3(0, 1, 15));
 
     this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
     this.game.scoreManager.reset();

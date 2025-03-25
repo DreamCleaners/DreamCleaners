@@ -15,7 +15,6 @@ export class SceneFactory {
   }
 
   public static createProceduralStageScene(game: Game): GameScene {
-    console.log('PROCEDURAL SCENES ARE NOT YET IMPLEMENTED');
     return new HubScene(game);
   }
 }

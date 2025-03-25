@@ -8,7 +8,7 @@ export class CameraManager {
 
   // tilt
   private readonly MAX_TILT_ANGLE = 0.6; // degrees
-  private readonly TILT_TRANSITION_SPEED = 0.07;
+  private readonly TILT_TRANSITION_SPEED = 6;
 
   constructor(private player: Player) {
     this.initCamera();
@@ -47,6 +47,8 @@ export class CameraManager {
   }
 
   public updateCamera(playerInputs: InputState): void {
+    const deltaTime = this.player.game.getDeltaTime() / 1000;
+
     const maxTiltRad = (this.MAX_TILT_ANGLE * Math.PI) / 180;
     const newRotationZ = maxTiltRad * -playerInputs.directions.x;
 
@@ -55,7 +57,7 @@ export class CameraManager {
     currentCameraRotation.z = Scalar.Lerp(
       currentCameraRotation.z,
       newRotationZ,
-      this.TILT_TRANSITION_SPEED,
+      this.TILT_TRANSITION_SPEED * deltaTime,
     );
 
     this.camera.rotationQuaternion = Quaternion.FromEulerAngles(

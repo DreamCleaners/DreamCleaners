@@ -5,9 +5,11 @@ import { EnemyType } from '../enemies/enemyType';
 import { FixedStageLayout } from './fixedStageLayout';
 import { StageReward } from '../stages/stageReward';
 import { GameAssetContainer } from '../assets/gameAssetContainer';
+import { NavigationManager } from '../navigationManager';
 
 export abstract class GameScene {
   public scene: Scene;
+  public navigationManager!: NavigationManager;
   protected enemyFactory!: EnemyFactory;
 
   public gameAssetContainer!: GameAssetContainer;
@@ -34,6 +36,7 @@ export abstract class GameScene {
    */
   public dispose(): void {
     this.gameAssetContainer.dispose();
+    this.navigationManager.dispose();
   }
 
   public update(): void {}

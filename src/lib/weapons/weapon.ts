@@ -337,7 +337,9 @@ export class Weapon implements WeaponData {
 
     const end = start.add(direction.scale(this.getStat(WeaponStatistic.RANGE)));
 
-    this.physicsEngine.raycastToRef(start, end, this.raycastResult);
+    this.physicsEngine.raycastToRef(start, end, this.raycastResult, {
+      shouldHitTriggers: true,
+    });
 
     if (this.raycastResult.hasHit) {
       const metadata = this.raycastResult.body?.transformNode

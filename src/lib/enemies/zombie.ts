@@ -1,16 +1,20 @@
 import {
+  IBasePhysicsCollisionEvent,
   InstantiatedEntries,
   Mesh,
+  MeshBuilder,
+  Observer,
   PhysicsAggregate,
+  PhysicsEventType,
   PhysicsShapeType,
   Quaternion,
   Vector3,
 } from '@babylonjs/core';
-import { Game } from '../game';
 import { Enemy } from './enemy';
 import { GameEntityType } from '../gameEntityType';
 import { MetadataFactory } from '../metadata/metadataFactory';
 import { IDamageable } from '../damageable';
+import { GameScene } from '../scenes/gameScene';
 
 export enum ZombieState {
   START_WALK,
@@ -26,14 +30,15 @@ enum ZombieAnimation {
 
 export class Zombie extends Enemy {
   public onDeathObservable = this.healthController.onDeath;
+  private onCollisionObserver!: Observer<IBasePhysicsCollisionEvent>;
 
   constructor(
-    game: Game,
+    gameScene: GameScene,
     difficultyFactor: number,
     position: Vector3,
     entries: InstantiatedEntries,
   ) {
-    super(game, difficultyFactor, entries);
+    super(gameScene, difficultyFactor, entries);
 
     this.deadState = ZombieState.DEAD;
     this.attackingState = ZombieState.ATTACK;
@@ -49,35 +54,58 @@ export class Zombie extends Enemy {
   }
 
   private async init(position: Vector3): Promise<void> {
-    const children = this.entries.rootNodes[0].getChildMeshes(false);
-    this.mesh = children[0] as Mesh;
-    this.mesh.name = GameEntityType.ENEMY;
-    this.mesh.metadata = MetadataFactory.createMetadataObject<IDamageable>(this, {
+    this.mesh = this.entries.rootNodes[0] as Mesh;
+
+    const rootNode = this.mesh.getChildTransformNodes(true)[0];
+    rootNode.scaling.scaleInPlace(0.35);
+
+    const agentParameters = {
+      radius: 0.5,
+      height: 2.5,
+      maxAcceleration: 8.0,
+      maxSpeed: this.SPEED,
+      collisionQueryRange: 0.5,
+      pathOptimizationRange: 0.5,
+      separationWeight: 1.0,
+    };
+
+    const hitbox = MeshBuilder.CreateCapsule('capsule', {
+      height: agentParameters.height,
+      radius: agentParameters.radius,
+      tessellation: 16,
+    });
+    hitbox.name = GameEntityType.ENEMY;
+    hitbox.metadata = MetadataFactory.createMetadataObject<IDamageable>(this, {
       isDamageable: true,
     });
-    this.mesh.position = position;
+    this.mesh.addChild(hitbox);
+    hitbox.position.addInPlace(new Vector3(0.2, 1.25, 0.25));
 
-    this.mesh.scaling.scaleInPlace(0.35);
-    // WARNING This is not a wanted solution, but the enemy keeps appearing at
-    // the wrong absolute position. This is a temporary fix.
-    this.mesh.setAbsolutePosition(position);
-
-    this.physicsAggregate = new PhysicsAggregate(
+    // navigation
+    this.agentIndex = this.gameScene.navigationManager.crowd.addAgent(
+      position,
+      agentParameters,
       this.mesh,
-      PhysicsShapeType.BOX,
+    );
+
+    // physics
+    this.physicsAggregate = new PhysicsAggregate(
+      hitbox,
+      PhysicsShapeType.CAPSULE,
       {
         mass: 1,
       },
-      this.game.scene,
+      this.gameScene.game.scene,
     );
     this.physicsAggregate.body.setMassProperties({ inertia: new Vector3(0, 0, 0) });
 
     // disablePreStep to false so we can rotate the mesh without affecting the physics body
     this.physicsAggregate.body.disablePreStep = false;
-    this.physicsAggregate.body.setCollisionCallbackEnabled(true);
-    const observable = this.physicsAggregate.body.getCollisionObservable();
-    observable.add(this.onCollision.bind(this));
+    this.physicsAggregate.shape.isTrigger = true;
+    const observable = this.gameScene.game.physicsPlugin.onTriggerCollisionObservable;
+    this.onCollisionObserver = observable.add(this.onCollision.bind(this));
 
+    // animations
     this.entries.animationGroups.forEach((animationGroup) => {
       if (animationGroup.name === 'Zombie|ZombieWalk') {
         this.animationController.addAnimation(ZombieAnimation.WALK, animationGroup);
@@ -113,8 +141,11 @@ export class Zombie extends Enemy {
         return;
       default:
     }
+  }
 
-    this.physicsAggregate.body.setLinearVelocity(this.velocity);
+  override dispose(): void {
+    super.dispose();
+    this.onCollisionObserver.remove();
   }
 
   private startWalk(): void {
@@ -128,22 +159,21 @@ export class Zombie extends Enemy {
   }
 
   private walk(): void {
+    this.gameScene.navigationManager.moveAgentTo(this.agentIndex, this.target);
+
     const direction = new Vector3(
       this.target.x - this.mesh.absolutePosition.x,
       0,
       this.target.z - this.mesh.absolutePosition.z,
     ).normalize();
-    this.velocity = direction.scale(this.SPEED);
-
-    const rotationY: number = Math.atan2(this.velocity.z, this.velocity.x) - Math.PI / 2;
+    const rotationY: number = Math.atan2(direction.z, -direction.x) + Math.PI / 2;
     this.mesh.rotationQuaternion = Quaternion.FromEulerAngles(0, rotationY, 0);
   }
 
   private attack(): void {
     this.isAttacking = true;
 
-    this.velocity = Vector3.Zero();
-    this.game.player.takeDamage(this.ATTACK_RANGE);
+    this.gameScene.game.player.takeDamage(this.ATTACK_RANGE);
 
     const animation = this.animationController.startAnimation(ZombieAnimation.BITE, {
       loop: false,
@@ -159,5 +189,24 @@ export class Zombie extends Enemy {
       this.state = ZombieState.START_WALK;
       this.isAttacking = false;
     });
+  }
+
+  private onCollision(collisionEvent: IBasePhysicsCollisionEvent): void {
+    const collidedAgainst = collisionEvent.collidedAgainst;
+    const collider = collisionEvent.collider;
+
+    const isPlayerEnemyCollision =
+      collidedAgainst.transformNode.name === GameEntityType.ENEMY &&
+      collider.transformNode.name === GameEntityType.PLAYER;
+    const isEnemyPlayerCollision =
+      collidedAgainst.transformNode.name === GameEntityType.PLAYER &&
+      collider.transformNode.name === GameEntityType.ENEMY;
+
+    if (
+      collisionEvent.type === PhysicsEventType.TRIGGER_ENTERED &&
+      (isPlayerEnemyCollision || isEnemyPlayerCollision)
+    ) {
+      this.state = this.attackingState;
+    }
   }
 }

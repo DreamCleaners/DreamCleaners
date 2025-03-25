@@ -11,6 +11,8 @@ import { UIManager } from './ui/uiManager';
 import { MoneyManager } from './moneyManager';
 import { SaveManager } from './saveManager';
 import { UIType } from './ui/uiType';
+import { RecastInjection } from './navigationManager';
+import Recast from 'recast-detour';
 
 export class Game {
   public scene!: Scene;
@@ -33,6 +35,7 @@ export class Game {
   public moneyManager = new MoneyManager();
   public uiManager = new UIManager(this);
   public saveManager = new SaveManager();
+  public recastInjection: RecastInjection;
 
   private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -50,6 +53,7 @@ export class Game {
     this.scene = new Scene(this.engine);
     this.assetManager = new AssetManager(this.scene);
     this.inputManager = new InputManager(this.engine);
+    this.recastInjection = await Recast.bind({})();
 
     this.physicsPlugin = await this.getPhysicsPlugin();
     // const gravity = new Vector3(0, -9.81, 0);

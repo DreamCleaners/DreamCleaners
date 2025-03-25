@@ -1,9 +1,10 @@
-import { Vector3, Observer } from '@babylonjs/core';
+import { Vector3, Observer, Mesh } from '@babylonjs/core';
 import { Enemy } from '../enemies/enemy';
 import { GameScene } from './gameScene';
 import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
 import { UIType } from '../ui/uiType';
+import { NavigationManager } from '../navigationManager';
 
 export class FixedStageScene extends GameScene {
   private enemies: Enemy[] = [];
@@ -30,8 +31,33 @@ export class FixedStageScene extends GameScene {
     this.gameAssetContainer = unityScene.container;
 
     unityScene.rootMesh.position = new Vector3(0, 0, 0);
-
     this.spawnPoints = unityScene.spawnPoints.map((point) => point.position);
+
+    this.navigationManager = new NavigationManager(
+      this.game.recastInjection,
+      this.scene,
+      100, // Temporary! -> not every stage will have the same parameters
+    );
+
+    // Temporary! -> not every stage will have the same parameters
+    const parameters = {
+      cs: 0.2, // voxel cell size on xz plane
+      ch: 0.2, // voxel cell height on y axis
+      walkableSlopeAngle: 45, // max slope in degrees
+      walkableHeight: 5, // min height a walkable area must have
+      walkableClimb: 3, // how high can the character step up without jumping
+      walkableRadius: 1, // radius of the character
+      maxEdgeLen: 12,
+      maxSimplificationError: 1.3,
+      minRegionArea: 8,
+      mergeRegionArea: 20,
+      maxVertsPerPoly: 6,
+      detailSampleDist: 6,
+      detailSampleMaxError: 1,
+    };
+
+    const meshes = unityScene.rootMesh.getChildMeshes();
+    this.navigationManager.createNavmesh(meshes as Mesh[], parameters, true);
 
     this.game.player.setPosition(new Vector3(0, 1, 0));
 
@@ -73,7 +99,7 @@ export class FixedStageScene extends GameScene {
         // The spawned enemy is randomly picked from the list of enemy types
         this.enemyTypesToSpawn[Math.floor(Math.random() * this.enemyTypesToSpawn.length)],
         this.difficultyFactor,
-        this.game,
+        this,
         spawnPoint,
       );
 
@@ -140,7 +166,6 @@ export class FixedStageScene extends GameScene {
       throw new Error('Stage reward is not defined');
     }
 
-    console.log('Attributing gold reward: ' + this.stageReward.getMoneyReward());
     this.game.moneyManager.addPlayerMoney(this.stageReward.getMoneyReward());
   }
 }

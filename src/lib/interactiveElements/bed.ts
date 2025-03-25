@@ -22,7 +22,6 @@ export class Bed extends InteractiveElement {
   public stageReward!: StageReward;
   // STAGE SELECTION BED
   override interact(): void {
-    console.log('Displaying stage selection UI');
     // We set the selected bed to this one
     StagesManager.getInstance().setSelectedBed(this);
     // We display the stage selection UI which will seek for the select bed infos
