@@ -13,6 +13,7 @@ import { WeaponData } from '../weapons/weaponData';
 import { GameAssetContainer } from './gameAssetContainer';
 import { UnityPhysicShapeToken, UnityTypeToken } from './unityTokens';
 import { UnityScene } from './unityScene';
+import { SpawnTrigger } from '../spawnTrigger';
 
 export class AssetManager {
   private loadedWeaponJsons: Map<string, WeaponData> = new Map();
@@ -53,7 +54,7 @@ export class AssetManager {
       sceneName,
       AssetType.SCENE,
     );
-    const spawnPoints: TransformNode[] = [];
+    const spawnTriggers: SpawnTrigger[] = [];
     let arrivalPoint: TransformNode | undefined = undefined;
 
     const rootMesh = gameAssetContainer.addAssetsToScene();
@@ -61,7 +62,7 @@ export class AssetManager {
     rootMesh.getDescendants().forEach((node) => {
       const name = node.name;
 
-      const match = name.match(/#[A-Z]+(-[A-Z]+)*#/);
+      const match = name.match(/#[A-Z]+(-[A-Z0-9]+)*#/);
       if (!match) return;
 
       const tokens = match[0].slice(1, -1).split('-');
@@ -72,17 +73,17 @@ export class AssetManager {
         (node instanceof Mesh || node instanceof InstancedMesh)
       ) {
         this.handlePhysicalObject(node, tokens, gameAssetContainer);
-      } else if (type === UnityTypeToken.SPAWN_POINT) {
-        this.handleSpawnPoint(node as Mesh, spawnPoints);
       } else if (type === UnityTypeToken.ARRIVAL_POINT) {
         arrivalPoint = this.handleArrivalPoint(node as Mesh);
+      } else if (type === UnityTypeToken.SPAWN_TRIGGER) {
+        this.handleSpawnTrigger(node as Mesh, spawnTriggers, tokens);
       }
     });
 
     return {
       container: gameAssetContainer,
       rootMesh: rootMesh,
-      spawnPoints: spawnPoints,
+      spawnTriggers: spawnTriggers,
       arrivalPoint: arrivalPoint,
     };
   }
@@ -112,13 +113,27 @@ export class AssetManager {
     gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 
-  private handleSpawnPoint(node: Mesh, spawnPoints: TransformNode[]): void {
-    node.position.x *= -1;
-    spawnPoints.push(node);
-  }
-
   private handleArrivalPoint(node: Mesh): TransformNode {
     node.position.x *= -1;
     return node;
+  }
+
+  private handleSpawnTrigger(
+    node: Mesh,
+    spawnTriggers: SpawnTrigger[],
+    tokens: string[],
+  ): void {
+    const diameter = parseInt(tokens[1]);
+    node.position.x *= -1;
+
+    const spawnPoints: TransformNode[] = [];
+    node.getChildTransformNodes(true).forEach((child) => {
+      child.position.x *= -1;
+      spawnPoints.push(child);
+    });
+
+    spawnTriggers.push(
+      new SpawnTrigger(this.scene, diameter, node.absolutePosition, spawnPoints),
+    );
   }
 }

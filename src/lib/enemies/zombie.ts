@@ -29,7 +29,6 @@ enum ZombieAnimation {
 }
 
 export class Zombie extends Enemy {
-  public onDeathObservable = this.healthController.onDeath;
   private onCollisionObserver!: Observer<IBasePhysicsCollisionEvent>;
 
   constructor(
@@ -57,7 +56,7 @@ export class Zombie extends Enemy {
     this.mesh = this.entries.rootNodes[0] as Mesh;
 
     const rootNode = this.mesh.getChildTransformNodes(true)[0];
-    rootNode.scaling.scaleInPlace(0.35);
+    rootNode.scaling.scaleInPlace(0.3);
 
     const agentParameters = {
       radius: 0.5,

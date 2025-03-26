@@ -1,6 +1,6 @@
 export enum UnityTypeToken {
   PHYSICAL_OBJECT = 'O',
-  SPAWN_POINT = 'S',
+  SPAWN_TRIGGER = 'T',
   ARRIVAL_POINT = 'A',
 }
 

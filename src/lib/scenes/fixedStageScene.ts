@@ -7,6 +7,7 @@ import {
   PhysicsShapeType,
   IBasePhysicsCollisionEvent,
   PhysicsEventType,
+  TransformNode,
 } from '@babylonjs/core';
 import { Enemy } from '../enemies/enemy';
 import { GameScene } from './gameScene';
@@ -16,11 +17,12 @@ import { UIType } from '../ui/uiType';
 import { NavigationManager } from '../navigationManager';
 import { GameEntityType } from '../gameEntityType';
 import { UnityScene } from '../assets/unityScene';
+import { SpawnTrigger } from '../spawnTrigger';
+import { IMetadataObject } from '../metadata/metadataObject';
 
 export class FixedStageScene extends GameScene {
   private enemies: Enemy[] = [];
 
-  private spawnPoints: Vector3[] = [];
   private arrivalPoint: Vector3 = Vector3.Zero();
 
   // The stage name, used to import the correct scene
@@ -43,9 +45,12 @@ export class FixedStageScene extends GameScene {
     this.gameAssetContainer = unityScene.container;
 
     unityScene.rootMesh.position = new Vector3(0, 0, 0);
-    this.spawnPoints = unityScene.spawnPoints.map((point) => point.position);
 
     this.initArrivalPoint(unityScene);
+
+    this.onCollisionObserver = this.game.physicsPlugin.onTriggerCollisionObservable.add(
+      this.onCollision.bind(this),
+    );
 
     this.navigationManager = new NavigationManager(
       this.game.recastInjection,
@@ -71,11 +76,10 @@ export class FixedStageScene extends GameScene {
     };
 
     const meshes = unityScene.rootMesh.getChildMeshes();
-    this.navigationManager.createNavmesh(meshes as Mesh[], parameters, true);
+    this.navigationManager.createNavmesh(meshes as Mesh[], parameters);
 
     this.game.player.setPosition(new Vector3(0, 1, 0));
 
-    await this.loadEnemies();
     this.game.scoreManager.startStage();
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
@@ -90,8 +94,6 @@ export class FixedStageScene extends GameScene {
     });
     this.enemies = [];
 
-    this.spawnPoints = [];
-
     this.onPlayerDamageTakenObserver.remove();
   }
 
@@ -99,11 +101,11 @@ export class FixedStageScene extends GameScene {
     if (!unityScene.arrivalPoint) {
       throw new Error('Arrival point is not defined');
     }
-    this.arrivalPoint = unityScene.arrivalPoint.position;
+    this.arrivalPoint = unityScene.arrivalPoint.absolutePosition;
 
-    const arrivalPointHitbox = MeshBuilder.CreateBox(
+    const arrivalPointHitbox = MeshBuilder.CreateSphere(
       GameEntityType.ARRIVAL_POINT,
-      { width: 2, height: 2, depth: 2 },
+      { diameter: 2 },
       this.scene,
     );
     arrivalPointHitbox.position = this.arrivalPoint.clone();
@@ -118,35 +120,24 @@ export class FixedStageScene extends GameScene {
       this.scene,
     );
     arrivalPointPhysicsAggregate.shape.isTrigger = true;
-    this.onCollisionObserver = this.game.physicsPlugin.onTriggerCollisionObservable.add(
-      this.onCollision.bind(this),
-    );
     this.gameAssetContainer.addPhysicsAggregate(arrivalPointPhysicsAggregate);
   }
 
   /**
    * Based on the difficulty factor, the enemyTypes and the spawn point coordinates,
    *  creates enemies and adds them to the enemies array
-   * WARNING: Currently we are spawning enemies all at once, however we might want to make different
-   * ways of spawn: via proximity, or waves etc
    */
-  private async loadEnemies(): Promise<void> {
-    // Based on the coordinates we stored previously while parsing the glb
-    // We will create enemies, according to the stage particularities
-    if (this.spawnPoints.length <= 0) {
-      return;
-    }
-
-    for (const spawnPoint of this.spawnPoints) {
+  private async spawnEnemies(spawnPoints: TransformNode[]): Promise<void> {
+    for (const spawnPoint of spawnPoints) {
       const enemy = await this.enemyFactory.createEnemy(
         // The spawned enemy is randomly picked from the list of enemy types
         this.enemyTypesToSpawn[Math.floor(Math.random() * this.enemyTypesToSpawn.length)],
         this.difficultyFactor,
         this,
-        spawnPoint,
+        spawnPoint.absolutePosition,
       );
 
-      enemy.onDeathObservable.add(this.onEnemyDeath.bind(this));
+      enemy.onDeathObservable.add(this.onEnemyDeath.bind(this, enemy));
       this.enemies.push(enemy);
     }
   }
@@ -163,28 +154,31 @@ export class FixedStageScene extends GameScene {
     });
   }
 
-  private onEnemyDeath(): void {
+  private onEnemyDeath(enemy: Enemy): void {
     this.game.scoreManager.onEnemyDeath();
+    this.enemies = this.enemies.filter((e) => e !== enemy);
   }
 
   private onCollision(collisionEvent: IBasePhysicsCollisionEvent): void {
     const collider = collisionEvent.collider;
     const collidedAgainst = collisionEvent.collidedAgainst;
 
-    const isPlayerArrivalPointCollision =
-      collider.transformNode.name === GameEntityType.PLAYER &&
-      collidedAgainst.transformNode.name === GameEntityType.ARRIVAL_POINT;
-
-    const isArrivalPointPlayerCollision =
-      collider.transformNode.name === GameEntityType.ARRIVAL_POINT &&
-      collidedAgainst.transformNode.name === GameEntityType.PLAYER;
+    if (collisionEvent.type !== PhysicsEventType.TRIGGER_ENTERED) return;
 
     if (
-      collisionEvent.type === PhysicsEventType.TRIGGER_ENTERED &&
-      (isPlayerArrivalPointCollision || isArrivalPointPlayerCollision)
+      collider.transformNode.name === GameEntityType.PLAYER &&
+      collidedAgainst.transformNode.name === GameEntityType.ARRIVAL_POINT
     ) {
       this.onCollisionObserver.remove();
       this.onEndStage();
+    } else if (
+      collider.transformNode.name === GameEntityType.PLAYER &&
+      collidedAgainst.transformNode.name === GameEntityType.SPAWN_TRIGGER
+    ) {
+      const metadata = collidedAgainst.transformNode
+        .metadata as IMetadataObject<SpawnTrigger>;
+      this.spawnEnemies(metadata.object.spawnPoints);
+      metadata.object.dispose();
     }
   }
 
