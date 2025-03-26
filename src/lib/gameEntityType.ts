@@ -3,4 +3,5 @@ export enum GameEntityType {
   ENEMY = 'enemy',
   BED = 'bed',
   PC = 'pc',
+  ARRIVAL_POINT = 'arrival_point',
 }

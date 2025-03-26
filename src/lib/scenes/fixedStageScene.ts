@@ -1,22 +1,34 @@
-import { Vector3, Observer, Mesh } from '@babylonjs/core';
+import {
+  Vector3,
+  Observer,
+  Mesh,
+  MeshBuilder,
+  PhysicsAggregate,
+  PhysicsShapeType,
+  IBasePhysicsCollisionEvent,
+  PhysicsEventType,
+} from '@babylonjs/core';
 import { Enemy } from '../enemies/enemy';
 import { GameScene } from './gameScene';
 import { Game } from '../game';
 import { FixedStageLayout } from './fixedStageLayout';
 import { UIType } from '../ui/uiType';
 import { NavigationManager } from '../navigationManager';
+import { GameEntityType } from '../gameEntityType';
+import { UnityScene } from '../assets/unityScene';
 
 export class FixedStageScene extends GameScene {
   private enemies: Enemy[] = [];
-  private enemyCount = 0;
 
   private spawnPoints: Vector3[] = [];
+  private arrivalPoint: Vector3 = Vector3.Zero();
 
   // The stage name, used to import the correct scene
   public fixedStageName!: FixedStageLayout;
 
   private onPlayerDamageTakenObserver!: Observer<number>;
   private onUIChangeObserver!: Observer<UIType>;
+  private onCollisionObserver!: Observer<IBasePhysicsCollisionEvent>;
 
   constructor(game: Game, fixedStageName: FixedStageLayout) {
     super(game);
@@ -32,6 +44,8 @@ export class FixedStageScene extends GameScene {
 
     unityScene.rootMesh.position = new Vector3(0, 0, 0);
     this.spawnPoints = unityScene.spawnPoints.map((point) => point.position);
+
+    this.initArrivalPoint(unityScene);
 
     this.navigationManager = new NavigationManager(
       this.game.recastInjection,
@@ -81,6 +95,35 @@ export class FixedStageScene extends GameScene {
     this.onPlayerDamageTakenObserver.remove();
   }
 
+  private initArrivalPoint(unityScene: UnityScene): void {
+    if (!unityScene.arrivalPoint) {
+      throw new Error('Arrival point is not defined');
+    }
+    this.arrivalPoint = unityScene.arrivalPoint.position;
+
+    const arrivalPointHitbox = MeshBuilder.CreateBox(
+      GameEntityType.ARRIVAL_POINT,
+      { width: 2, height: 2, depth: 2 },
+      this.scene,
+    );
+    arrivalPointHitbox.position = this.arrivalPoint.clone();
+    arrivalPointHitbox.position.y += 1.5;
+    arrivalPointHitbox.isVisible = false;
+    this.gameAssetContainer.addMesh(arrivalPointHitbox);
+
+    const arrivalPointPhysicsAggregate = new PhysicsAggregate(
+      arrivalPointHitbox,
+      PhysicsShapeType.BOX,
+      { mass: 0 },
+      this.scene,
+    );
+    arrivalPointPhysicsAggregate.shape.isTrigger = true;
+    this.onCollisionObserver = this.game.physicsPlugin.onTriggerCollisionObservable.add(
+      this.onCollision.bind(this),
+    );
+    this.gameAssetContainer.addPhysicsAggregate(arrivalPointPhysicsAggregate);
+  }
+
   /**
    * Based on the difficulty factor, the enemyTypes and the spawn point coordinates,
    *  creates enemies and adds them to the enemies array
@@ -105,7 +148,6 @@ export class FixedStageScene extends GameScene {
 
       enemy.onDeathObservable.add(this.onEnemyDeath.bind(this));
       this.enemies.push(enemy);
-      this.enemyCount++;
     }
   }
 
@@ -123,11 +165,25 @@ export class FixedStageScene extends GameScene {
 
   private onEnemyDeath(): void {
     this.game.scoreManager.onEnemyDeath();
+  }
 
-    this.enemyCount--;
-    // WARNING: This is the end condition for the basic "no enemy left = end of stage"
-    // We might add in the future more complex conditions, for example time limit and so on
-    if (this.enemyCount === 0) {
+  private onCollision(collisionEvent: IBasePhysicsCollisionEvent): void {
+    const collider = collisionEvent.collider;
+    const collidedAgainst = collisionEvent.collidedAgainst;
+
+    const isPlayerArrivalPointCollision =
+      collider.transformNode.name === GameEntityType.PLAYER &&
+      collidedAgainst.transformNode.name === GameEntityType.ARRIVAL_POINT;
+
+    const isArrivalPointPlayerCollision =
+      collider.transformNode.name === GameEntityType.ARRIVAL_POINT &&
+      collidedAgainst.transformNode.name === GameEntityType.PLAYER;
+
+    if (
+      collisionEvent.type === PhysicsEventType.TRIGGER_ENTERED &&
+      (isPlayerArrivalPointCollision || isArrivalPointPlayerCollision)
+    ) {
+      this.onCollisionObserver.remove();
       this.onEndStage();
     }
   }
@@ -136,16 +192,10 @@ export class FixedStageScene extends GameScene {
     this.game.scoreManager.endStage();
     this.attributeRewards();
 
-    setTimeout(() => {
-      const currentUI = this.game.uiManager.getCurrentUI();
-
-      if (currentUI === UIType.MAIN_MENU) return;
-
-      this.game.uiManager.displayUI(UIType.SCORE);
-      this.onUIChangeObserver = this.game.uiManager.onUIChange.add(
-        this.onUIChange.bind(this),
-      );
-    }, 2000);
+    this.game.uiManager.displayUI(UIType.SCORE);
+    this.onUIChangeObserver = this.game.uiManager.onUIChange.add(
+      this.onUIChange.bind(this),
+    );
   }
 
   private onUIChange(uiType: UIType): void {

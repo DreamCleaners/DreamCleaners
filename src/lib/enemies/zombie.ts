@@ -80,6 +80,7 @@ export class Zombie extends Enemy {
     });
     this.mesh.addChild(hitbox);
     hitbox.position.addInPlace(new Vector3(0.2, 1.25, 0.25));
+    hitbox.isVisible = false;
 
     // navigation
     this.agentIndex = this.gameScene.navigationManager.crowd.addAgent(

@@ -5,6 +5,7 @@ import {
   PhysicsAggregate,
   PhysicsShapeType,
   Scene,
+  TransformNode,
 } from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { AssetType } from './assetType';
@@ -52,7 +53,8 @@ export class AssetManager {
       sceneName,
       AssetType.SCENE,
     );
-    const spawnPoints: Mesh[] = [];
+    const spawnPoints: TransformNode[] = [];
+    let arrivalPoint: TransformNode | undefined = undefined;
 
     const rootMesh = gameAssetContainer.addAssetsToScene();
 
@@ -72,6 +74,8 @@ export class AssetManager {
         this.handlePhysicalObject(node, tokens, gameAssetContainer);
       } else if (type === UnityTypeToken.SPAWN_POINT) {
         this.handleSpawnPoint(node as Mesh, spawnPoints);
+      } else if (type === UnityTypeToken.ARRIVAL_POINT) {
+        arrivalPoint = this.handleArrivalPoint(node as Mesh);
       }
     });
 
@@ -79,6 +83,7 @@ export class AssetManager {
       container: gameAssetContainer,
       rootMesh: rootMesh,
       spawnPoints: spawnPoints,
+      arrivalPoint: arrivalPoint,
     };
   }
 
@@ -107,8 +112,13 @@ export class AssetManager {
     gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 
-  private handleSpawnPoint(node: Mesh, spawnPoints: Mesh[]): void {
+  private handleSpawnPoint(node: Mesh, spawnPoints: TransformNode[]): void {
     node.position.x *= -1;
     spawnPoints.push(node);
+  }
+
+  private handleArrivalPoint(node: Mesh): TransformNode {
+    node.position.x *= -1;
+    return node;
   }
 }
