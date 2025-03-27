@@ -87,6 +87,8 @@ export class Player implements IDamageable {
   private lastMoveDirection: Vector2 = Vector2.Zero(); // last direction before sliding
   // By how much we multiply the player's velocity during the current slide
   private currentSlidingSpeedFactor = 0;
+  // The final speed by which the player moves when sliding
+  private currentSlidingSpeed = 0;
   private readonly SLIDING_SPEED_REDUCTION = 0.012; // The factor by which we reduce the sliding speed over time
   private readonly INITIAL_SLIDING_SPEED_FACTOR = 1.6; // The initial factor
 
@@ -333,9 +335,24 @@ export class Player implements IDamageable {
 
     // player is falling
     if (!this.isGrounded) {
-      const speed = this.wasCrouchingBeforeFalling
-        ? this.movementSpeed / 2
-        : this.movementSpeed;
+
+      let speed = 0;
+
+      if(this.isSliding){
+        // As the player is sliding, the speed while jumping will be the 
+        // maximum between the movement speed and the sliding speed
+        speed = Math.max(this.movementSpeed, this.currentSlidingSpeed);
+        // We prevent the player from moving left/right/backwards during a jump while sliding
+        this.moveDirection = this.lastMoveDirection.clone(); 
+      }
+      else{
+        // As the player is not sliding, the speed while jumping will be the movement speed
+        speed = this.movementSpeed;
+      }
+
+      speed = this.wasCrouchingBeforeFalling
+        ? speed / 2
+        : speed;
 
       this.velocity.x = this.moveDirection.x * speed;
       this.velocity.z = this.moveDirection.y * speed;
@@ -357,9 +374,13 @@ export class Player implements IDamageable {
       this.isGrounded = false;
       this.lastJumpTime = performance.now();
 
-      this.velocity.x = this.moveDirection.x * this.movementSpeed;
+      const jumpingSpeed = Math.max(this.movementSpeed, this.currentSlidingSpeed);
+      // console.log("Move speed: ", this.movementSpeed, "Sliding speed: ", this.currentSlidingSpeed);
+      // console.log("Jumping speed: ", jumpingSpeed);
+
+      this.velocity.x = this.moveDirection.x * jumpingSpeed;
       this.velocity.y = this.JUMP_FORCE;
-      this.velocity.z = this.moveDirection.y * this.movementSpeed;
+      this.velocity.z = this.moveDirection.y * jumpingSpeed;
 
       this.physicsAggregate.body.setLinearVelocity(this.velocity);
       return;
@@ -377,28 +398,28 @@ export class Player implements IDamageable {
     else if (this.isCrouching && this.isSliding) {
       // we use the last move direction because the player is not able to change direction during a slide
       const slopDirection = this.getSlopeDirection(this.lastMoveDirection);
-
+  
       // we reduce this factor over time during slide to make the slide stop eventually
       this.currentSlidingSpeedFactor = Math.max(
         0,
         this.currentSlidingSpeedFactor - this.SLIDING_SPEED_REDUCTION,
       );
-
-      let speedFactor = this.movementSpeed * this.currentSlidingSpeedFactor;
-
+  
+      this.currentSlidingSpeed = this.movementSpeed * this.currentSlidingSpeedFactor;
+  
       // if the slide speed is less than the crouching speed or if the player is moving up a slope
       // we change the player's state to crouching
       if (
-        this.movementSpeed * this.currentSlidingSpeedFactor < this.movementSpeed / 2 ||
+        this.currentSlidingSpeed < this.movementSpeed / 2 ||
         slopDirection.y > 0
       ) {
         this.isSliding = false;
-        speedFactor = this.movementSpeed / 2;
+        this.currentSlidingSpeed = this.movementSpeed / 2; // Reset sliding speed
       }
-
-      this.velocity.x = slopDirection.x * speedFactor;
-      this.velocity.y = slopDirection.y * speedFactor;
-      this.velocity.z = slopDirection.z * speedFactor;
+  
+      this.velocity.x = slopDirection.x * this.currentSlidingSpeed;
+      this.velocity.y = slopDirection.y * this.currentSlidingSpeed;
+      this.velocity.z = slopDirection.z * this.currentSlidingSpeed;
     }
     // move normally
     else {
@@ -539,9 +560,12 @@ export class Player implements IDamageable {
       this.currentSlidingSpeedFactor = this.INITIAL_SLIDING_SPEED_FACTOR;
       this.lastMoveDirection = this.moveDirection;
     }
+    else {
+      // The player was not crouching but sliding
+      this.wasCrouchingBeforeFalling = true;
+    }
 
     this.isCrouching = true;
-    this.wasCrouchingBeforeFalling = true;
     this.crouchStartTime = performance.now();
     this.interpolateHitboxHeight(this.currentCrouchHeight, 1, this.CROUCH_DURATION);
   }
