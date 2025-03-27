@@ -60,7 +60,7 @@ const StageSelection = () => {
                   <span className="reward-money">{stageInfo.reward.money} gold</span>
                   <div className="reward-weapon">
                     <span>A random weapon of quality:</span>
-                    <span>{WeaponRarity[stageInfo.reward.weaponRarity || 1]}</span>
+                    <span>{WeaponRarity[stageInfo.reward.weaponRarity || 0]}</span>
                   </div>
                 </div>
               ) : (

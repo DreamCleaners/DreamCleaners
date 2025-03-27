@@ -20,6 +20,9 @@ const PlayerHUD = () => {
 
   const [playerMoney, setPlayerMoney] = useState<number>(0);
 
+  // Stage Completed
+  const [stageCompletedCount, setStageCompletedCount] = useState<number>(0);
+
   const onWeaponChange = (weapon: Weapon) => {
     // remove previous observer so we don't have multiple observers
     onAmmoChangeObserverRef.current?.remove();
@@ -41,6 +44,7 @@ const PlayerHUD = () => {
     setPlayerHealth(game.player.healthController.getHealth());
     setPlayerMaxHealth(game.player.healthController.getMaxHealth());
     setPlayerMoney(game.moneyManager.getPlayerMoney());
+    setStageCompletedCount(game.runManager.getStageCompletedCount());
     onWeaponChange(game.player.equippedWeapon);
 
     // add observers
@@ -54,12 +58,16 @@ const PlayerHUD = () => {
     const onPlayerMoneyChangeObserver =
       game.moneyManager.onPlayerMoneyChange.add(setPlayerMoney);
 
+    const onStageCompletedObserver =
+      game.runManager.onStageCompletedChange.add(setStageCompletedCount);
+
     return () => {
       // remove observers when component unmounts
       onHealthChangeObserver.remove();
       onMaxHealthChangeObserver.remove();
       onWeaponChangeObserver.remove();
       onPlayerMoneyChangeObserver.remove();
+      onStageCompletedObserver.remove();
       onAmmoChangeObserverRef.current?.remove();
       onReloadObserverRef.current?.remove();
     };
@@ -74,6 +82,7 @@ const PlayerHUD = () => {
       <p>Ammo: {ammo}</p>
       <p>Is reloading: {isReloading ? 'true' : 'false'}</p>
       <p>Money: {playerMoney}$</p>
+      <p>Stages cleared: {stageCompletedCount}</p>
     </div>
   );
 };

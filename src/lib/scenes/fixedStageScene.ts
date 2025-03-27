@@ -120,6 +120,8 @@ export class FixedStageScene extends GameScene {
         this.onUIChange.bind(this),
       );
     }, 2000);
+
+    this.game.runManager.incrementStageCompleted();
   }
 
   private onUIChange(uiType: UIType): void {

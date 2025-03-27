@@ -6,7 +6,7 @@ import { StageReward } from './stageReward';
 /** The purpose of this class is to manage proposed stages to the player, the stage rewards and so on */
 export class StagesManager {
   private static _instance: StagesManager;
-  private selectedbed !: Bed;
+  private selectedbed!: Bed;
 
   private constructor() {}
 
@@ -18,10 +18,8 @@ export class StagesManager {
   }
 
   /** Based on current run's progress, will edit each bed of the HUB so they propose various stages */
-  public setProposedStagesForBeds(beds: Bed[]): void {
+  public setProposedStagesForBeds(beds: Bed[], runProgession: number): void {
     const n = beds.length;
-
-    console.log('Making up stages for beds to propose, there are ' + n + ' beds');
 
     if (n === 0) {
       console.log(
@@ -36,9 +34,9 @@ export class StagesManager {
 
     for (let i = 0; i < n; i++) {
       const bed = beds[i];
-      const difficultyFactor = this.pickRandomDifficulty();
+      const reward = this.pickRandomReward(runProgession);
+      const difficultyFactor = this.pickDifficulty(reward, runProgession);
       const enemyTypes = this.pickRandomEnemyTypes();
-      const reward = this.pickRandomReward();
       let layout!: FixedStageLayout;
 
       if (!bed.isStageProcedural) {
@@ -84,10 +82,20 @@ export class StagesManager {
     //return FixedStageLayout.CLOSED_SCENE;
   }
 
-  private pickRandomDifficulty(): number {
-    // For now it's simply a random number between 1 and 2
-    // Later we will base ourself on the run's progression (not yet implemented)
-    return Math.floor(Math.random() * 2) + 1;
+  private pickDifficulty(stageReward: StageReward, runProgress: number): number {
+    // Base difficulty is random between 1 and 2
+    let difficulty = Math.floor(Math.random() * 2) + 1;
+
+    // Adjust difficulty based on the rarity of the weapon reward
+    const weaponReward = stageReward.getWeaponReward();
+
+    if (weaponReward) {
+      difficulty += 1 + weaponReward.rarity;
+    }
+
+    // Add 1 to the difficulty every 2 stages completed
+    difficulty += Math.floor(runProgress / 2);
+    return difficulty;
   }
 
   /** Picks enemyTypes to spawn in the stage, completely random ! */
@@ -115,8 +123,8 @@ export class StagesManager {
   }
 
   /** Creates a stage reward object and decides what the stage reward will be */
-  private pickRandomReward(): StageReward {
-    return new StageReward();
+  private pickRandomReward(runProgession: number): StageReward {
+    return new StageReward(runProgession);
   }
 
   /** Stores the currently selected bed in order to easily retrieve its stage information
@@ -124,7 +132,6 @@ export class StagesManager {
    */
   public setSelectedBed(bed: Bed): void {
     this.selectedbed = bed;
-    console.log("Selected bed is now: " + bed);
   }
 
   /** Returns information on the select bed */
@@ -136,13 +143,15 @@ export class StagesManager {
     reward: StageReward;
   } {
     if (!this.selectedbed) {
-      console.log('Stage manager tried to get selected bed information but no bed was selected');
+      console.log(
+        'Stage manager tried to get selected bed information but no bed was selected',
+      );
       return {
         isProcedural: false,
         layout: FixedStageLayout.HUB,
         difficulty: 0,
         enemies: [],
-        reward: new StageReward(),
+        reward: new StageReward(0),
       };
     }
 
@@ -153,7 +162,6 @@ export class StagesManager {
       enemies: this.selectedbed.enemyTypes,
       reward: this.selectedbed.stageReward,
     };
-
   }
 
   public enterStage(): void {
@@ -163,5 +171,4 @@ export class StagesManager {
 
     this.selectedbed.enterStage();
   }
-
 }

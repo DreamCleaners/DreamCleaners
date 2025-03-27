@@ -11,6 +11,7 @@ import { UIManager } from './ui/uiManager';
 import { MoneyManager } from './moneyManager';
 import { SaveManager } from './saveManager';
 import { UIType } from './ui/uiType';
+import { RunManager } from './runManager';
 
 export class Game {
   public scene!: Scene;
@@ -33,6 +34,7 @@ export class Game {
   public moneyManager = new MoneyManager();
   public uiManager = new UIManager(this);
   public saveManager = new SaveManager();
+  public runManager = new RunManager();
 
   private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -61,6 +63,7 @@ export class Game {
 
     this.saveManager.addSaveable(this.moneyManager);
     this.saveManager.addSaveable(this.player.playerUpgradeManager);
+    this.saveManager.addSaveable(this.runManager);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
     window.addEventListener('resize', this.onResize);

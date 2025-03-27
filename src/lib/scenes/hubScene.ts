@@ -30,7 +30,10 @@ export class HubScene extends GameScene {
     }
 
     // Once beds are created we give them to the stageManager so that it attributes the beds rewards, difficulty and so on
-    this.stagesManager.setProposedStagesForBeds(this.beds);
+    this.stagesManager.setProposedStagesForBeds(
+      this.beds,
+      this.game.runManager.getStageCompletedCount(),
+    );
 
     this.computer = new Computer(this);
     await this.computer.create(new Vector3(0, 1, 10));
