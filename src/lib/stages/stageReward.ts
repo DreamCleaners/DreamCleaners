@@ -12,31 +12,35 @@ export class StageReward {
   // There is a chance that there will be a weapon as reward
   private weaponReward: RewardWeaponDescription | undefined = undefined;
 
-  constructor() {
+  constructor(runProgression: number) {
     // We could also rely on the stage specificites to create the reward.
     // For now we will just create a random reward
-    this.moneyReward = this.determineMoneyReward();
     if (this.rewardContainsWeapon()) {
-      this.weaponReward = this.determineWeaponReward();
+      this.weaponReward = this.determineWeaponReward(runProgression);
     }
+    this.moneyReward = this.determineMoneyReward(runProgression);
   }
 
-  private determineMoneyReward(): number {
-    // Money between 400 and 700
-    return (Math.floor(Math.random() * 30) + 40) * 10;
+  private determineMoneyReward(runProgression: number): number {
+    if (this.weaponReward === undefined) {
+      // No weapon reward, slightly more money
+      // Between 600 and 800 base + the modifier.s
+      return (Math.floor(Math.random() * 20) + 60) * 10 + runProgression * 150;
+    }
+    // Money between 400 and 600 + the modifier.s
+    return (Math.floor(Math.random() * 20) + 40) * 10 + runProgression * 150;
   }
 
   private rewardContainsWeapon(): boolean {
     // One chance on three to have a weapon
     return Math.random() < 0.34;
-    //return Math.random() < 1.01;
   }
 
-  private determineWeaponReward(): RewardWeaponDescription {
+  private determineWeaponReward(runProgession: number): RewardWeaponDescription {
     // We will generate random informations for the reward weapon
     // The actual weapon will be created when the stage is completed
     const weaponType = this.pickRandomWeaponType();
-    const rarity = this.pickRandomRarity();
+    const rarity = this.pickRandomRarity(runProgession);
     return new RewardWeaponDescription(weaponType, rarity);
   }
 
@@ -46,12 +50,36 @@ export class StageReward {
     return weaponTypes[randomIndex];
   }
 
-  private pickRandomRarity(): WeaponRarity {
+  /** Picks a rarity for the wepaon, based on the run progress */
+  private pickRandomRarity(runProgression: number): WeaponRarity {
     const rarities = Object.values(WeaponRarity).filter(
       (value) => typeof value === 'number',
     ) as number[];
-    const randomIndex = Math.floor(Math.random() * rarities.length);
-    return rarities[randomIndex] as WeaponRarity;
+
+    // Create weighted probabilities based on runProgression using a sigmoid function
+    const weights = rarities.map((rarity) => {
+      // Various factors for the sigmoid function
+      const scalingFactor = 5 * rarity; // Adjust this value to control the transition
+      const x = runProgression - scalingFactor;
+      const baseWeight = 1 / (1 + Math.exp(-x / 2)); // Sigmoid function
+      const biasMultiplier = Math.pow(5, rarity); // Bias multiplier for higher rarities
+      return baseWeight * biasMultiplier;
+    });
+
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+    const randomValue = Math.random() * totalWeight;
+
+    let cumulativeWeight = 0;
+    for (let i = 0; i < rarities.length; i++) {
+      cumulativeWeight += weights[i];
+      if (randomValue < cumulativeWeight) {
+        return rarities[i] as WeaponRarity;
+      }
+    }
+
+    // Fallback to the lowest rarity in case of an error
+    return rarities[0] as WeaponRarity;
   }
 
   public getMoneyReward(): number {
@@ -76,4 +104,41 @@ export class StageReward {
     );
     return weapon;
   }
+
+  /*
+  public debugRarityWeights(): void {
+    for (let runProgression = 0; runProgression <= 10; runProgression++) {
+      console.log(`Run Progression: ${runProgression}`);
+      
+      const rarities = Object.values(WeaponRarity).filter(
+        (value) => typeof value === 'number',
+      ) as number[];
+  
+      // Create weighted probabilities based on runProgression using a sigmoid function
+      const weights = rarities.map((rarity) => {
+        // Various factors for the sigmoid function
+        const scalingFactor = 5 * rarity; // Adjust this value to control the transition
+        const x = runProgression - scalingFactor;
+        const baseWeight = 1 / (1 + Math.exp(-x / 2)); // Sigmoid function
+        const biasMultiplier = Math.pow(5, rarity); // Bias multiplier for higher rarities
+        return baseWeight * biasMultiplier;
+      });
+  
+      const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+  
+      // Normalize weights to ensure they sum to 100
+      const normalizedWeights = weights.map((weight) => (weight / totalWeight) * 100);
+  
+      // Log the weights and their corresponding probabilities
+      console.log(
+        'Rarity Weights:',
+        rarities.map((rarity, index) => ({
+          rarity,
+          weight: normalizedWeights[index],
+          chance: normalizedWeights[index].toFixed(2) + '%',
+        }))
+      );
+    }
+  }
+    */
 }

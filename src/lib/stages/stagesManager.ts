@@ -18,7 +18,7 @@ export class StagesManager {
   }
 
   /** Based on current run's progress, will edit each bed of the HUB so they propose various stages */
-  public setProposedStagesForBeds(beds: Bed[]): void {
+  public setProposedStagesForBeds(beds: Bed[], runProgession: number): void {
     const n = beds.length;
 
     if (n === 0) {
@@ -34,9 +34,9 @@ export class StagesManager {
 
     for (let i = 0; i < n; i++) {
       const bed = beds[i];
-      const difficultyFactor = this.pickRandomDifficulty();
+      const reward = this.pickRandomReward(runProgession);
+      const difficultyFactor = this.pickDifficulty(reward, runProgession);
       const enemyTypes = this.pickRandomEnemyTypes();
-      const reward = this.pickRandomReward();
       let layout!: FixedStageLayout;
 
       if (!bed.isStageProcedural) {
@@ -82,10 +82,20 @@ export class StagesManager {
     //return FixedStageLayout.CLOSED_SCENE;
   }
 
-  private pickRandomDifficulty(): number {
-    // For now it's simply a random number between 1 and 2
-    // Later we will base ourself on the run's progression (not yet implemented)
-    return Math.floor(Math.random() * 2) + 1;
+  private pickDifficulty(stageReward: StageReward, runProgress: number): number {
+    // Base difficulty is random between 1 and 2
+    let difficulty = Math.floor(Math.random() * 2) + 1;
+
+    // Adjust difficulty based on the rarity of the weapon reward
+    const weaponReward = stageReward.getWeaponReward();
+
+    if (weaponReward) {
+      difficulty += 1 + weaponReward.rarity;
+    }
+
+    // Add 1 to the difficulty every 2 stages completed
+    difficulty += Math.floor(runProgress / 2);
+    return difficulty;
   }
 
   /** Picks enemyTypes to spawn in the stage, completely random ! */
@@ -113,8 +123,8 @@ export class StagesManager {
   }
 
   /** Creates a stage reward object and decides what the stage reward will be */
-  private pickRandomReward(): StageReward {
-    return new StageReward();
+  private pickRandomReward(runProgession: number): StageReward {
+    return new StageReward(runProgession);
   }
 
   /** Stores the currently selected bed in order to easily retrieve its stage information

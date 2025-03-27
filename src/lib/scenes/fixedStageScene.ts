@@ -184,6 +184,7 @@ export class FixedStageScene extends GameScene {
 
   private onEndStage(): void {
     this.game.scoreManager.endStage();
+    this.game.runManager.incrementStageCompleted();
     this.attributeRewards();
 
     this.game.uiManager.displayUI(UIType.SCORE);
