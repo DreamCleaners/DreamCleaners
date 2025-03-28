@@ -8,18 +8,13 @@ import { StageReward } from '../stages/stageReward';
 import { MetadataFactory } from '../metadata/metadataFactory';
 import { UIType } from '../ui/uiType';
 import { StagesManager } from '../stages/stagesManager';
+import { StageInformation } from '../stages/stageInformation';
 
 // STAGE SELECTION BED
 export class Bed extends InteractiveElement {
   // Stage specificities
+  public stageInfo!: StageInformation;
 
-  public isStageProcedural = false;
-  // The proposed stage layout, null if procedural
-  public proposedFixedStageLayout: FixedStageLayout | null = null;
-  public difficulty = 1;
-  public enemyTypes: EnemyType[] = [];
-
-  public stageReward!: StageReward;
   // STAGE SELECTION BED
   override interact(): void {
     // We set the selected bed to this one
@@ -51,17 +46,20 @@ export class Bed extends InteractiveElement {
     this.gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 
-  public setFixedStageProperties(properties: {
+  public setStageInfo(properties: {
+    isProcedural: boolean;
     layout: FixedStageLayout;
     difficulty: number;
     enemies: EnemyType[];
     reward: StageReward;
   }): void {
-    this.isStageProcedural = false;
-    this.proposedFixedStageLayout = properties.layout;
-    this.difficulty = properties.difficulty;
-    this.enemyTypes = properties.enemies;
-    this.stageReward = properties.reward;
+    this.stageInfo = new StageInformation(
+      properties.isProcedural,
+      properties.layout,
+      properties.difficulty,
+      properties.enemies,
+      properties.reward,
+    );
   }
 
   // public setProceduralStageProperties(properties: {
@@ -74,10 +72,10 @@ export class Bed extends InteractiveElement {
 
   public enterStage(): void {
     this.gameScene.game.sceneManager.changeSceneToFixedStage(
-      this.proposedFixedStageLayout as FixedStageLayout,
-      this.difficulty,
-      this.enemyTypes,
-      this.stageReward,
+      this.stageInfo.proposedFixedStageLayout as FixedStageLayout,
+      this.stageInfo.difficulty,
+      this.stageInfo.enemyTypes,
+      this.stageInfo.stageReward,
     );
   }
 }

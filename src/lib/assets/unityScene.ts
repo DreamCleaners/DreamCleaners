@@ -1,6 +1,6 @@
 import { Mesh, TransformNode } from '@babylonjs/core';
 import { GameAssetContainer } from './gameAssetContainer';
-import { SpawnTrigger } from '../spawnTrigger';
+import { SpawnTrigger } from '../stages/spawnTrigger';
 
 export type UnityScene = {
   container: GameAssetContainer;

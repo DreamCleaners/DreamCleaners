@@ -268,7 +268,6 @@ export class Weapon implements WeaponData {
           i * delayBetweenShotsInBurst * 1000,
         );
       }
-
     } else {
       this.shootBullets(bulletsPerShot, projectionCone);
       this.currentAmmoRemaining--;

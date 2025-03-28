@@ -25,7 +25,7 @@ const ScoreInterface = () => {
 
   if (!game) return null;
 
-  const stageReward = game.sceneManager.getCurrentScene()?.stageReward;
+  const stageReward = game.sceneManager.getCurrentScene()?.stageInfo.stageReward;
   const stageRewardGold = stageReward?.getMoneyReward() ?? 0;
   const weaponReward = stageReward?.getWeaponReward();
 

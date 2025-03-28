@@ -17,7 +17,7 @@ import { UIType } from '../ui/uiType';
 import { NavigationManager } from '../navigationManager';
 import { GameEntityType } from '../gameEntityType';
 import { UnityScene } from '../assets/unityScene';
-import { SpawnTrigger } from '../spawnTrigger';
+import { SpawnTrigger } from '../stages/spawnTrigger';
 import { IMetadataObject } from '../metadata/metadataObject';
 
 export class FixedStageScene extends GameScene {
@@ -131,8 +131,10 @@ export class FixedStageScene extends GameScene {
     for (const spawnPoint of spawnPoints) {
       const enemy = await this.enemyFactory.createEnemy(
         // The spawned enemy is randomly picked from the list of enemy types
-        this.enemyTypesToSpawn[Math.floor(Math.random() * this.enemyTypesToSpawn.length)],
-        this.difficultyFactor,
+        this.stageInfo.enemyTypes[
+          Math.floor(Math.random() * this.stageInfo.enemyTypes.length)
+        ],
+        this.stageInfo.difficulty,
         this,
         spawnPoint.absolutePosition,
       );
@@ -207,10 +209,10 @@ export class FixedStageScene extends GameScene {
 
   /** Gives the rewards to the player */
   private attributeRewards(): void {
-    if (this.stageReward === null) {
+    if (this.stageInfo.stageReward === null) {
       throw new Error('Stage reward is not defined');
     }
 
-    this.game.moneyManager.addPlayerMoney(this.stageReward.getMoneyReward());
+    this.game.moneyManager.addPlayerMoney(this.stageInfo.stageReward.getMoneyReward());
   }
 }

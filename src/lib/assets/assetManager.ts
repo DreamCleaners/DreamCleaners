@@ -13,7 +13,7 @@ import { WeaponData } from '../weapons/weaponData';
 import { GameAssetContainer } from './gameAssetContainer';
 import { UnityPhysicShapeToken, UnityTypeToken } from './unityTokens';
 import { UnityScene } from './unityScene';
-import { SpawnTrigger } from '../spawnTrigger';
+import { SpawnTrigger } from '../stages/spawnTrigger';
 
 export class AssetManager {
   private loadedWeaponJsons: Map<string, WeaponData> = new Map();

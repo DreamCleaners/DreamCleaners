@@ -7,8 +7,8 @@ import {
   TransformNode,
   Vector3,
 } from '@babylonjs/core';
-import { GameEntityType } from './gameEntityType';
-import { MetadataFactory } from './metadata/metadataFactory';
+import { GameEntityType } from '../gameEntityType';
+import { MetadataFactory } from '../metadata/metadataFactory';
 
 export class SpawnTrigger {
   private physicsAggregate!: PhysicsAggregate;

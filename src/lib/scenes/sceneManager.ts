@@ -5,6 +5,7 @@ import { FixedStageLayout } from './fixedStageLayout';
 import { GameScene } from './gameScene';
 import { SceneFactory } from './sceneFactory';
 import { StageReward } from '../stages/stageReward';
+import { StageInformation } from '../stages/stageInformation';
 
 export class SceneManager {
   private currentScene: GameScene | null = null;
@@ -42,8 +43,16 @@ export class SceneManager {
     this.game.player.cameraManager.getCamera().setTarget(new Vector3(0, 1, 1));
 
     const scene = SceneFactory.createFixedStageScene(layout, this.game);
-    scene.setStageParameters(difficultyFactor, enemyTypes);
-    scene.setStageReward(stageReward);
+
+    scene.setStageInformation(
+      new StageInformation(
+        false,
+        layout,
+        difficultyFactor,
+        enemyTypes,
+        stageReward as StageReward,
+      ),
+    );
 
     await scene.load();
     this.game.engine.hideLoadingUI();

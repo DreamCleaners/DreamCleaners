@@ -1,11 +1,9 @@
 import { Scene } from '@babylonjs/core';
 import { Game } from '../game';
 import { EnemyFactory } from '../enemies/enemyFactory';
-import { EnemyType } from '../enemies/enemyType';
-import { FixedStageLayout } from './fixedStageLayout';
-import { StageReward } from '../stages/stageReward';
 import { GameAssetContainer } from '../assets/gameAssetContainer';
 import { NavigationManager } from '../navigationManager';
+import { StageInformation } from '../stages/stageInformation';
 
 export abstract class GameScene {
   public scene: Scene;
@@ -15,14 +13,7 @@ export abstract class GameScene {
   public gameAssetContainer!: GameAssetContainer;
 
   // The specificities of the stage linked to this scene
-
-  public isStageProcedural = false;
-  // The proposed stage layout, null if procedural
-  public proposedFixedStageLayout: FixedStageLayout | null = null;
-  public difficultyFactor = 1;
-  public enemyTypesToSpawn: EnemyType[] = [];
-
-  public stageReward: StageReward | null = null;
+  public stageInfo!: StageInformation;
 
   constructor(public game: Game) {
     this.scene = game.scene;
@@ -43,12 +34,16 @@ export abstract class GameScene {
 
   public fixedUpdate(): void {}
 
-  public setStageParameters(difficultyFactor: number, enemyTypes: EnemyType[]): void {
-    this.difficultyFactor = difficultyFactor;
-    this.enemyTypesToSpawn = enemyTypes;
+  public setStageInformation(stageInfo: StageInformation): void {
+    this.stageInfo = stageInfo;
   }
 
-  public setStageReward(stageReward: StageReward | null): void {
-    this.stageReward = stageReward;
-  }
+  // public setStageParameters(difficultyFactor: number, enemyTypes: EnemyType[]): void {
+  //   this.difficultyFactor = difficultyFactor;
+  //   this.enemyTypesToSpawn = enemyTypes;
+  // }
+
+  // public setStageReward(stageReward: StageReward | null): void {
+  //   this.stageReward = stageReward;
+  // }
 }

@@ -1,6 +1,7 @@
 import { EnemyType } from '../enemies/enemyType';
 import { Bed } from '../interactiveElements/bed';
 import { FixedStageLayout } from '../scenes/fixedStageLayout';
+import { StageInformation } from './stageInformation';
 import { StageReward } from './stageReward';
 
 /** The purpose of this class is to manage proposed stages to the player, the stage rewards and so on */
@@ -37,15 +38,16 @@ export class StagesManager {
       const reward = this.pickRandomReward(runProgession);
       const difficultyFactor = this.pickDifficulty(reward, runProgession);
       const enemyTypes = this.pickRandomEnemyTypes();
-      let layout!: FixedStageLayout;
 
-      if (!bed.isStageProcedural) {
-        layout = this.pickRandomFixedLayout(alreadyPickedFixedLayouts);
-        alreadyPickedFixedLayouts.add(layout);
-      }
+      // Currently only proposes fixed stages
+      // If we want to add procedural stages, we will need to add a logic of choosing
+      // between fixed and procedural stages and adapting our stage info
+      const layout = this.pickRandomFixedLayout(alreadyPickedFixedLayouts);
+      alreadyPickedFixedLayouts.add(layout);
 
       // For now only fixed stages are implemented
-      bed.setFixedStageProperties({
+      bed.setStageInfo({
+        isProcedural: false, // For now only fixed stages are implemented
         layout: layout,
         difficulty: difficultyFactor,
         enemies: enemyTypes,
@@ -135,26 +137,14 @@ export class StagesManager {
   }
 
   /** Returns information on the select bed */
-  public getSelectedBedInformation(): {
-    isProcedural: boolean;
-    layout: FixedStageLayout | null;
-    difficulty: number;
-    enemies: EnemyType[];
-    reward: StageReward;
-  } {
+  public getSelectedBedInformation(): StageInformation {
     if (!this.selectedbed) {
       throw new Error(
         'Stage manager tried to get selected bed information but no bed was selected',
       );
     }
 
-    return {
-      isProcedural: this.selectedbed.isStageProcedural,
-      layout: this.selectedbed.proposedFixedStageLayout,
-      difficulty: this.selectedbed.difficulty,
-      enemies: this.selectedbed.enemyTypes,
-      reward: this.selectedbed.stageReward,
-    };
+    return this.selectedbed.stageInfo;
   }
 
   public enterStage(): void {
