@@ -156,9 +156,7 @@
 }
 
 .back-button-container {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+    position: relative;
 }
 
 .back-button-container button {

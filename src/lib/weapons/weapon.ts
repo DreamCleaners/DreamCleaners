@@ -255,12 +255,9 @@ export class Weapon implements WeaponData {
     if (isBurst) {
       const delayBetweenShotsInBurst =
         this.getStaticStat(StaticWeaponStatistic.DELAY_BETWEEN_SHOTS_IN_BURST) || 0;
-    
-      console.log("Shooting with burst type weapon");
-      console.log("Bullets before burst: " + this.currentAmmoRemaining);
-    
+
       const shotsFired = Math.min(bulletsPerBurst, this.currentAmmoRemaining);
-    
+
       for (let i = 0; i < shotsFired; i++) {
         setTimeout(
           () => {
@@ -271,8 +268,7 @@ export class Weapon implements WeaponData {
           i * delayBetweenShotsInBurst * 1000,
         );
       }
-    
-      console.log("Bullets after burst: " + this.currentAmmoRemaining);
+
     } else {
       this.shootBullets(bulletsPerShot, projectionCone);
       this.currentAmmoRemaining--;
@@ -494,13 +490,6 @@ export class Weapon implements WeaponData {
    * Serializes the weapon into a JSON-compatible object.
    */
   public serialize(): WeaponSerializedData {
-    console.log('Serializing weapon into: ', {
-      weaponName: WeaponType[this.weaponName.toUpperCase() as keyof typeof WeaponType],
-      currentRarity: this.currentRarity,
-      globalStats: Array.from(this.globalStats.entries()),
-      staticStats: Array.from(this.staticStats.entries()),
-      meshParameters: Array.from(this.meshParameters.entries()),
-    });
     return {
       weaponName: WeaponType[this.weaponName.toUpperCase() as keyof typeof WeaponType],
       currentRarity: this.currentRarity,
@@ -521,8 +510,6 @@ export class Weapon implements WeaponData {
     weapon.meshParameters = new Map(data.meshParameters);
 
     weapon.applyCurrentStats();
-
-    console.log('Stats: ', weapon.currentStats);
 
     return weapon;
   }

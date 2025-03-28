@@ -16,7 +16,6 @@ export class PlayerInventory implements ISaveable {
 
   save(): string {
     // Serialize the weapons array into a JSON string
-    console.log('Saving player inventory');
     return JSON.stringify(this.weapons.map((weapon) => weapon.serialize()));
   }
 
@@ -26,12 +25,9 @@ export class PlayerInventory implements ISaveable {
     this.weapons = weaponData.map((weaponJson) =>
       Weapon.deserialize(weaponJson, this.player),
     );
-    console.log('Restored player inventory');
-    console.log('Weapons: ', this.weapons);
   }
 
   resetSave(): void {
-    console.log('Resetting player inventory');
     // Base weapon is by default a common shotgun
     this.weapons = [];
     const weapon = new Weapon(this.player, WeaponType.SHOTGUN, WeaponRarity.COMMON);

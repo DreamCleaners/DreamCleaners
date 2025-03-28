@@ -33,6 +33,7 @@ const StageSelection = () => {
   const handleHideUI = () => {
     game?.uiManager.hideUI();
   };
+  
 
   return (
     <div className="stage-selection-container">
