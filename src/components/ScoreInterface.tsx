@@ -31,17 +31,17 @@ const ScoreInterface = () => {
 
   const handleReplaceWeapon = async (weaponIndex: number) => {
     if (!stageReward || !weaponReward) return;
-  
+
     try {
       // Call the abstract method of StageReward to get the new weapon
       const newWeapon = await stageReward.createWeapon(game.player);
-  
+
       // Replace the weapon at the specified index
       game.player.replaceWeaponAtIndex(weaponIndex, newWeapon);
-  
+
       // Update the player weapons state
       setPlayerWeapons(game.player.getWeapons());
-  
+
       // Mark the reward as used
       setRewardUsed(true);
     } catch (error) {

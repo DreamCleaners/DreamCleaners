@@ -484,8 +484,8 @@ export class Player implements IDamageable {
 
   public replaceWeaponAtIndex(index: number, weapon: Weapon): void {
     this.inventory.replaceWeaponInInventory(weapon, index);
-    if(this.currentWeaponIndex === index) {
-      console.log("Replacing a weapon that is currently equipped");
+    if (this.currentWeaponIndex === index) {
+      console.log('Replacing a weapon that is currently equipped');
       this.equipWeapon(index, true);
     }
   }

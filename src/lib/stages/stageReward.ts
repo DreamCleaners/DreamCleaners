@@ -95,7 +95,7 @@ export class StageReward {
     if (!this.weaponReward) {
       throw new Error('No weapon reward to create');
     }
-  
+
     const weapon = new Weapon(
       player,
       this.weaponReward.weaponType,
