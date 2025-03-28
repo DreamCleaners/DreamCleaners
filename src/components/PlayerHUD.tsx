@@ -24,6 +24,7 @@ const PlayerHUD = () => {
   const [stageCompletedCount, setStageCompletedCount] = useState<number>(0);
 
   const onWeaponChange = (weapon: Weapon) => {
+    if (weapon === undefined) return;
     // remove previous observer so we don't have multiple observers
     onAmmoChangeObserverRef.current?.remove();
     onReloadObserverRef.current?.remove();

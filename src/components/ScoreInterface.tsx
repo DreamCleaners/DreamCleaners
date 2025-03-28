@@ -29,20 +29,24 @@ const ScoreInterface = () => {
   const stageRewardGold = stageReward?.getMoneyReward() ?? 0;
   const weaponReward = stageReward?.getWeaponReward();
 
-  const handleReplaceWeapon = (weaponIndex: number) => {
+  const handleReplaceWeapon = async (weaponIndex: number) => {
     if (!stageReward || !weaponReward) return;
-
-    // Call the abstract method of StageReward to get the new weapon
-    const newWeapon = stageReward.createWeapon(game.player);
-
-    // Replace the weapon at the specified index
-    game.player.replaceWeaponAtIndex(weaponIndex, newWeapon);
-
-    // Update the player weapons state
-    setPlayerWeapons(game.player.getWeapons());
-
-    // Mark the reward as used
-    setRewardUsed(true);
+  
+    try {
+      // Call the abstract method of StageReward to get the new weapon
+      const newWeapon = await stageReward.createWeapon(game.player);
+  
+      // Replace the weapon at the specified index
+      game.player.replaceWeaponAtIndex(weaponIndex, newWeapon);
+  
+      // Update the player weapons state
+      setPlayerWeapons(game.player.getWeapons());
+  
+      // Mark the reward as used
+      setRewardUsed(true);
+    } catch (error) {
+      console.error('Failed to create weapon:', error);
+    }
   };
 
   const handleHideUI = () => {
@@ -94,10 +98,21 @@ const ScoreInterface = () => {
                 )}
               </div>
               <div className="player-weapon right">
-                <p>Type: {playerWeapons[1].weaponName}</p>
-                <p>Rarity: {WeaponRarity[playerWeapons[1].currentRarity]}</p>
-                {!rewardUsed && (
-                  <button onClick={() => handleReplaceWeapon(1)}>Replace</button>
+                {playerWeapons[1] ? (
+                  <>
+                    <p>Type: {playerWeapons[1].weaponName}</p>
+                    <p>Rarity: {WeaponRarity[playerWeapons[1].currentRarity]}</p>
+                    {!rewardUsed && (
+                      <button onClick={() => handleReplaceWeapon(1)}>Replace</button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p>You have no weapon in this emplacement !</p>
+                    {!rewardUsed && (
+                      <button onClick={() => handleReplaceWeapon(1)}>Choose</button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

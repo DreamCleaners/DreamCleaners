@@ -91,17 +91,17 @@ export class StageReward {
   }
 
   // Weapon creation logic
-
-  public createWeapon(player: Player): Weapon {
+  public async createWeapon(player: Player): Promise<Weapon> {
     if (!this.weaponReward) {
       throw new Error('No weapon reward to create');
     }
-
+  
     const weapon = new Weapon(
       player,
       this.weaponReward.weaponType,
       this.weaponReward.rarity,
     );
+    await weapon.initMesh();
     return weapon;
   }
 

@@ -14,7 +14,6 @@ import {
 import { InputState } from '../inputs/inputState';
 import { Game } from '../game';
 import { Weapon } from '../weapons/weapon';
-import { WeaponRarity } from '../weapons/weaponRarity';
 import { InputAction } from '../inputs/inputAction';
 import { IDamageable } from '../damageable';
 import { HealthController } from '../healthController';
@@ -23,11 +22,11 @@ import { PlayerUpgradeManager } from './playerUpgradeManager';
 import { CameraManager } from './cameraManager';
 import { PlayerUpgradeType } from './playerUpgradeType';
 import { InteractiveElement } from '../interactiveElements/interactiveElement';
-import { WeaponType } from '../weapons/weaponType';
 import { AdvancedDynamicTexture } from '@babylonjs/gui/2D/advancedDynamicTexture';
 import { Rectangle } from '@babylonjs/gui/2D/controls/rectangle';
 import { Control } from '@babylonjs/gui/2D/controls/control';
 import { TextBlock } from '@babylonjs/gui/2D/controls/textBlock';
+import { PlayerInventory } from './playerInventory';
 
 export class Player implements IDamageable {
   private inputs: InputState;
@@ -73,10 +72,10 @@ export class Player implements IDamageable {
   private lastJumpTime = 0;
   private readonly JUMP_COOLDOWN = 500; // ms
 
-  // weapons
-  private weapons!: Array<Weapon>;
+  // Inventory (weapons) related
+  public inventory: PlayerInventory = new PlayerInventory(this);
   public equippedWeapon!: Weapon;
-  private currentWeaponIndex = 0;
+  private currentWeaponIndex = -1;
   private readonly WEAPON_SWITCH_DELAY = 500;
   private lastWeaponSwitch = 0;
 
@@ -119,25 +118,20 @@ export class Player implements IDamageable {
     this.playerUpgradeManager.onPlayerUpgradeUnlock.add(
       this.onPlayerUpgradeUnlock.bind(this),
     );
-
-    // weapons
-    this.weapons = new Array<Weapon>();
-
-    /* const simpleGlock = new Weapon(this, 'glock', WeaponRarity.COMMON);
-    this.weapons.push(simpleGlock);
-    this.equippedWeapon = simpleGlock; */
-
-    const ak = new Weapon(this, WeaponType.AK, WeaponRarity.COMMON);
-    this.weapons.push(ak);
-    this.equippedWeapon = ak;
-
-    const shotgun = new Weapon(this, WeaponType.SHOTGUN, WeaponRarity.LEGENDARY);
-    this.weapons.push(shotgun);
   }
 
-  public start(): void {
+  public async start(): Promise<void> {
     this.setPosition(new Vector3(0, 1, 0));
     this.setPlayerUpgrades();
+
+    const weapons = this.inventory.getWeapons();
+
+    // We need to initialize all meshes of the weapons before we can equip one, and thus
+    // start the player
+    await Promise.all(weapons.map((weapon) => weapon.initMesh()));
+    if (weapons.length > 0) {
+      this.equipWeapon(0, true);
+    }
   }
 
   public setPosition(position: Vector3): void {
@@ -170,24 +164,26 @@ export class Player implements IDamageable {
   public update(): void {
     if (!this.game.isPointerLocked) return;
 
-    if (this.inputs.actions.get(InputAction.SHOOT)) {
-      this.equippedWeapon.handlePrimaryFire();
-    } else {
-      if (this.equippedWeapon.justShot) {
-        // Meaning we just shot and released the button, we can now reset the justShot flag
-        // To allow another shot
-        this.equippedWeapon.justShot = false;
+    if (this.equippedWeapon != undefined) {
+      if (this.inputs.actions.get(InputAction.SHOOT)) {
+        this.equippedWeapon.handlePrimaryFire();
+      } else {
+        if (this.equippedWeapon.justShot) {
+          // Meaning we just shot and released the button, we can now reset the justShot flag
+          // To allow another shot
+          this.equippedWeapon.justShot = false;
+        }
       }
-    }
 
-    if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
-      this.equipWeapon(0);
-    }
-    if (this.inputs.actions.get(InputAction.PRESS_TWO)) {
-      this.equipWeapon(1);
-    }
-    if (this.inputs.actions.get(InputAction.RELOAD)) {
-      this.equippedWeapon.initReload();
+      if (this.inputs.actions.get(InputAction.PRESS_ONE)) {
+        this.equipWeapon(0);
+      }
+      if (this.inputs.actions.get(InputAction.PRESS_TWO)) {
+        this.equipWeapon(1);
+      }
+      if (this.inputs.actions.get(InputAction.RELOAD)) {
+        this.equippedWeapon.initReload();
+      }
     }
 
     if (this.inputs.actions.get(InputAction.CROUCH)) {
@@ -221,14 +217,18 @@ export class Player implements IDamageable {
   public fixedUpdate(): void {
     if (!this.game.isPointerLocked) return;
 
+    //console.log("Player inventory: ", this.inventory.getWeapons());
+
     this.checkForInteractables();
 
     if (this.isRegenUnlocked) this.handleRegen();
 
     this.updateVelocity();
 
-    this.equippedWeapon.fixedUpdate();
-    this.equippedWeapon.updatePosition(this.velocity);
+    if (this.equippedWeapon != undefined) {
+      this.equippedWeapon.fixedUpdate();
+      this.equippedWeapon.updatePosition(this.velocity);
+    }
   }
 
   public onGameOver(): void {
@@ -482,16 +482,12 @@ export class Player implements IDamageable {
   // --------------------- Weapons ---------------------------
   // ---------------------------------------------------------
 
-  public addWeaponToPlayer(weapon: Weapon): void {
-    this.weapons.push(weapon);
-  }
-
-  public removeWeaponFromPlayer(index: number): void {
-    this.weapons.splice(index, 1);
-  }
-
   public replaceWeaponAtIndex(index: number, weapon: Weapon): void {
-    this.weapons[index] = weapon;
+    this.inventory.replaceWeaponInInventory(weapon, index);
+    if(this.currentWeaponIndex === index) {
+      console.log("Replacing a weapon that is currently equipped");
+      this.equipWeapon(index, true);
+    }
   }
 
   /**
@@ -502,6 +498,11 @@ export class Player implements IDamageable {
   public equipWeapon(index: number, forceActualisation: boolean = false): void {
     if (index === this.currentWeaponIndex && !forceActualisation) return;
 
+    if (index >= this.inventory.getAmountOfWeapons()) {
+      console.log('Tried to equip weapon ', index, ' but there is no weapon in here');
+      return;
+    }
+
     // Only update the desired weapon index if the key was not pressed recently
     if (
       Date.now() - this.lastWeaponSwitch > this.WEAPON_SWITCH_DELAY &&
@@ -510,15 +511,18 @@ export class Player implements IDamageable {
       this.lastWeaponSwitch = Date.now();
       return;
     }
-    if (index >= this.weapons.length) {
-      throw new Error('Trying to equip a weapon that does not exist');
-    }
 
     this.currentWeaponIndex = index;
-    this.equippedWeapon.hideInScene();
-    this.equippedWeapon = this.weapons[this.currentWeaponIndex];
+    if (this.equippedWeapon != undefined) {
+      this.equippedWeapon.hideInScene();
+    }
+    this.equippedWeapon = this.inventory.getWeapons()[this.currentWeaponIndex];
     this.onWeaponChange.notifyObservers(this.equippedWeapon);
     this.equippedWeapon.showInScene();
+  }
+
+  public getInventory(): PlayerInventory {
+    return this.inventory;
   }
 
   // ------------------ Crouch / Sliding ---------------------
@@ -665,6 +669,6 @@ export class Player implements IDamageable {
   }
 
   public getWeapons(): Array<Weapon> {
-    return this.weapons;
+    return this.inventory.getWeapons();
   }
 }

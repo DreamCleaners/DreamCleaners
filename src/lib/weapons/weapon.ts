@@ -19,6 +19,7 @@ import { WeaponMeshParameter } from './weaponMeshParameters';
 import { WeaponType } from './weaponType';
 import { GameAssetContainer } from '../assets/gameAssetContainer';
 import { IMetadataObject } from '../metadata/metadataObject';
+import { WeaponSerializedData } from './weaponSerializedData';
 
 export class Weapon implements WeaponData {
   private mesh!: AbstractMesh;
@@ -69,15 +70,13 @@ export class Weapon implements WeaponData {
     this.weaponName = name.toLowerCase();
     this.physicsEngine = player.physicsEngine;
     this.initArrays();
-    this.loadJSONIntoArrays().then(() => {
-      this.initMesh();
-    });
+    this.loadJSONIntoArrays();
   }
 
   // ----------------- Asset container related (babylon) -----------------
   // ---------------------------------------------------------------
 
-  private async initMesh(): Promise<void> {
+  public async initMesh(): Promise<void> {
     this.gameAssetContainer = await this.player.game.assetManager.loadGameAssetContainer(
       this.weaponName,
       AssetType.WEAPON,
@@ -482,5 +481,45 @@ export class Weapon implements WeaponData {
 
   public dispose(): void {
     this.mesh.dispose();
+  }
+
+  // Saving related - Serializing and deserializing the weapon
+  // ---------------------------------------------------------------
+
+  /**
+   * Serializes the weapon into a JSON-compatible object.
+   */
+  public serialize(): WeaponSerializedData {
+    console.log("Serializing weapon into: ", {
+      weaponName: WeaponType[this.weaponName.toUpperCase() as keyof typeof WeaponType],
+      currentRarity: this.currentRarity,
+      globalStats: Array.from(this.globalStats.entries()),
+      staticStats: Array.from(this.staticStats.entries()),
+      meshParameters: Array.from(this.meshParameters.entries()),
+    });
+    return {
+      weaponName: WeaponType[this.weaponName.toUpperCase() as keyof typeof WeaponType],
+      currentRarity: this.currentRarity,
+      globalStats: Array.from(this.globalStats.entries()),
+      staticStats: Array.from(this.staticStats.entries()),
+      meshParameters: Array.from(this.meshParameters.entries()),
+    };
+  }
+
+  /**
+   * Deserializes a JSON-compatible object into a Weapon instance.
+   */
+  public static deserialize(data: WeaponSerializedData, player: Player): Weapon {
+    const weapon = new Weapon(player, data.weaponName, data.currentRarity);
+
+    weapon.globalStats = new Map(data.globalStats);
+    weapon.staticStats = new Map(data.staticStats);
+    weapon.meshParameters = new Map(data.meshParameters);
+
+    weapon.applyCurrentStats();
+
+    console.log("Stats: ", weapon.currentStats);
+
+    return weapon;
   }
 }

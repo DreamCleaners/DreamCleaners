@@ -68,6 +68,7 @@ export class Game {
     this.saveManager.addSaveable(this.moneyManager);
     this.saveManager.addSaveable(this.player.playerUpgradeManager);
     this.saveManager.addSaveable(this.runManager);
+    this.saveManager.addSaveable(this.player.getInventory());
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
     window.addEventListener('resize', this.onResize);

@@ -45,9 +45,6 @@ export class SceneManager {
     scene.setStageParameters(difficultyFactor, enemyTypes);
     scene.setStageReward(stageReward);
 
-    // Whenever we change scene we must ask for player to re-equips its weapon
-    this.game.player.equipWeapon(0, true);
-
     await scene.load();
     this.game.engine.hideLoadingUI();
     this.currentScene = scene;
