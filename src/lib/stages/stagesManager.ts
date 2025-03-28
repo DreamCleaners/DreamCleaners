@@ -1,13 +1,18 @@
 import { EnemyType } from '../enemies/enemyType';
 import { Bed } from '../interactiveElements/bed';
+import { ISaveable } from '../saveable';
 import { FixedStageLayout } from '../scenes/fixedStageLayout';
+import { SerializedStageInformation } from './serializedStageInformation';
 import { StageInformation } from './stageInformation';
 import { StageReward } from './stageReward';
 
 /** The purpose of this class is to manage proposed stages to the player, the stage rewards and so on */
-export class StagesManager {
+export class StagesManager implements ISaveable {
   private static _instance: StagesManager;
   private selectedbed!: Bed;
+
+  private previouslyProposedStages: StageInformation[] = [];
+  private mustLoadPreviousStages: boolean = false;
 
   private constructor() {}
 
@@ -20,6 +25,32 @@ export class StagesManager {
 
   /** Based on current run's progress, will edit each bed of the HUB so they propose various stages */
   public setProposedStagesForBeds(beds: Bed[], runProgession: number): void {
+    if (this.mustLoadPreviousStages) {
+      if (this.previouslyProposedStages.length !== beds.length) {
+        console.log(
+          'An anomaly occured, the amount of beds and the amount of stored stages infos do not match',
+        );
+        this.mustLoadPreviousStages = false;
+        return;
+      }
+      // In that case we load our previously proposed stages infos into the beds
+      for (let i = 0; i < beds.length; i++) {
+        const stageInfo = this.previouslyProposedStages[i];
+        beds[i].setStageInfo({
+          isProcedural: stageInfo.isStageProcedural,
+          layout: stageInfo.proposedFixedStageLayout as FixedStageLayout,
+          difficulty: stageInfo.difficulty,
+          enemies: stageInfo.enemyTypes,
+          reward: stageInfo.stageReward,
+        });
+      }
+
+      this.mustLoadPreviousStages = false;
+      return;
+    }
+
+    this.previouslyProposedStages = [];
+
     const n = beds.length;
 
     if (n === 0) {
@@ -53,6 +84,9 @@ export class StagesManager {
         enemies: enemyTypes,
         reward: reward,
       });
+
+      // We also store the stage information for saving purposes
+      this.previouslyProposedStages.push(bed.stageInfo);
     }
   }
 
@@ -153,5 +187,53 @@ export class StagesManager {
     }
 
     this.selectedbed.enterStage();
+  }
+
+  // SAVE RELATED ---------
+  // -----------------------------------------------------------
+
+  save(): string {
+    // Custom serialization of the stage information because json stringify does not work with undefined values
+    const serializedStages: SerializedStageInformation[] = this.previouslyProposedStages.map((stage) => ({
+      isStageProcedural: stage.isStageProcedural,
+      proposedFixedStageLayout: stage.proposedFixedStageLayout,
+      difficulty: stage.difficulty,
+      enemyTypes: stage.enemyTypes,
+      stageReward: {
+        moneyReward: stage.stageReward.getMoneyReward(),
+        weaponReward: stage.stageReward.getWeaponReward() || null, // Explicitly store null if undefined
+      },
+    }));
+  
+    return JSON.stringify(serializedStages);
+  }
+  
+  restoreSave(data: string): void {
+    const parsedData: SerializedStageInformation[] = JSON.parse(data);
+  
+    this.previouslyProposedStages = parsedData.map((stage) => {
+      const stageReward = new StageReward(0); 
+      stageReward['moneyReward'] = stage.stageReward.moneyReward;
+      stageReward['weaponReward'] = stage.stageReward.weaponReward || undefined; // Back to undefined
+  
+      return new StageInformation(
+        stage.isStageProcedural,
+        stage.proposedFixedStageLayout,
+        stage.difficulty,
+        stage.enemyTypes,
+        stageReward
+      );
+    });
+  }
+
+  resetSave(): void {
+    this.previouslyProposedStages = [];
+  }
+
+  public start(isNewGame: boolean) {
+    if (!isNewGame) {
+      this.mustLoadPreviousStages = true;
+      return;
+    }
   }
 }

@@ -14,6 +14,7 @@ import { UIType } from './ui/uiType';
 import { RecastInjection } from './navigationManager';
 import Recast from 'recast-detour';
 import { RunManager } from './runManager';
+import { StagesManager } from './stages/stagesManager';
 
 export class Game {
   public scene!: Scene;
@@ -36,6 +37,7 @@ export class Game {
   public moneyManager = new MoneyManager();
   public uiManager = new UIManager(this);
   public saveManager = new SaveManager();
+  public stageManager = StagesManager.getInstance();
   public recastInjection: RecastInjection;
   public runManager = new RunManager();
 
@@ -69,6 +71,7 @@ export class Game {
     this.saveManager.addSaveable(this.player.playerUpgradeManager);
     this.saveManager.addSaveable(this.runManager);
     this.saveManager.addSaveable(this.player.getInventory());
+    this.saveManager.addSaveable(this.stageManager);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
     window.addEventListener('resize', this.onResize);
@@ -88,6 +91,7 @@ export class Game {
 
     this.player.start();
     this.sceneManager.start();
+    this.stageManager.start(isNewGame);
     this.uiManager.hideUI();
     this.engine.runRenderLoop(this.update.bind(this));
   }
