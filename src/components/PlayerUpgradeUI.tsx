@@ -2,9 +2,9 @@ import { useContext, useEffect, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import { PlayerUpgradeType } from '../lib/player/playerUpgradeType';
 import { PlayerUpgrade } from '../lib/player/playerUpgrade';
-import '../styles/playerUpgradeInterface.css';
+import '../styles/playerUpgradeUI.css';
 
-const PlayerUpgradeInterface = () => {
+const PlayerUpgradeUI = () => {
   const game = useContext(GameContext);
 
   const [playerMoney, setPlayerMoney] = useState<number>(0);
@@ -108,4 +108,4 @@ const PlayerUpgradeInterface = () => {
   );
 };
 
-export default PlayerUpgradeInterface;
+export default PlayerUpgradeUI;

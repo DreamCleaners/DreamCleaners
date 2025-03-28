@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import { Weapon } from '../lib/weapons/weapon';
 import { Observer } from '@babylonjs/core';
-import '../styles/playerHUD.css';
+import '../styles/playerUI.css';
 
 const PlayerHUD = () => {
   const game = useContext(GameContext);

@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import { WeaponRarity } from '../lib/weapons/weaponRarity';
-import '../styles/scoreInterface.css';
+import '../styles/stageEndUI.css';
 
-const ScoreInterface = () => {
+const StageEndUI = () => {
   const game = useContext(GameContext);
   const [rewardUsed, setRewardUsed] = useState(false); // Track if the reward has been used
   const [playerWeapons, setPlayerWeapons] = useState(game?.player.getWeapons() || []); // Track player weapons
@@ -126,4 +126,4 @@ const ScoreInterface = () => {
   );
 };
 
-export default ScoreInterface;
+export default StageEndUI;

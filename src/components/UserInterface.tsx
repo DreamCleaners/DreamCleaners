@@ -1,13 +1,14 @@
 import { useContext, useEffect, useState } from 'react';
 import '../styles/userInterface.css';
-import PlayerHUD from './PlayerHUD';
+import PlayerHUD from './PlayerUI';
 import { GameContext } from '../contexts/GameContext';
-import PlayerUpgradeInterface from './PlayerUpgradeInterface';
 import { UIType } from '../lib/ui/uiType';
-import ScoreInterface from './ScoreInterface';
 import MainMenu from './MainMenu';
 import PauseMenu from './PauseMenu';
-import StageSelection from './StageSelection';
+import GameOverUI from './GameOverUI';
+import StageSelectionUI from './StageSelectionUI';
+import StageEndUI from './StageEndUI';
+import PlayerUpgradeUI from './PlayerUpgradeUI';
 
 const UserInterface = () => {
   const game = useContext(GameContext);
@@ -30,9 +31,10 @@ const UserInterface = () => {
       {isPaused && <PauseMenu />}
       {uiType === UIType.MAIN_MENU && <MainMenu />}
       {uiType === UIType.PLAYER_HUD && <PlayerHUD />}
-      {uiType === UIType.PLAYER_UPGRADES && <PlayerUpgradeInterface />}
-      {uiType === UIType.SCORE && <ScoreInterface />}
-      {uiType === UIType.STAGE_SELECTION && <StageSelection />}
+      {uiType === UIType.PLAYER_UPGRADES && <PlayerUpgradeUI />}
+      {uiType === UIType.SCORE && <StageEndUI />}
+      {uiType === UIType.STAGE_SELECTION && <StageSelectionUI />}
+      {uiType === UIType.GAME_OVER && < GameOverUI/>}
     </div>
   );
 };

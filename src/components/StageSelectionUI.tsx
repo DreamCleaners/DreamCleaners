@@ -1,11 +1,11 @@
 import { useEffect, useState, useContext } from 'react';
-import '../styles/stageSelection.css';
+import '../styles/stageSelectionUI.css';
 import { StagesManager } from '../lib/stages/stagesManager';
 import { GameContext } from '../contexts/GameContext';
 import { WeaponRarity } from '../lib/weapons/weaponRarity';
 import { StageInformation } from '../lib/stages/stageInformation';
 
-const StageSelection = () => {
+const StageSelectionUI = () => {
   const game = useContext(GameContext);
   const [stageInfo, setStageInfo] = useState<StageInformation | null>(null);
 
@@ -88,4 +88,4 @@ const StageSelection = () => {
   );
 };
 
-export default StageSelection;
+export default StageSelectionUI;

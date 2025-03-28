@@ -4,4 +4,5 @@ export enum UIType {
   PLAYER_HUD,
   SCORE,
   STAGE_SELECTION,
+  GAME_OVER,
 }

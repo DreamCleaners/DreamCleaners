@@ -97,6 +97,7 @@ export class Game {
   }
 
   public stop(): void {
+    console.log("Stopping the game");
     this.sceneManager.stop();
     this.uiManager.hidePauseMenu();
     this.uiManager.displayUI(UIType.MAIN_MENU);
@@ -243,5 +244,13 @@ export class Game {
     } else {
       Inspector.Show(this.scene, { overlay: true, handleResize: true });
     }
+  }
+
+
+  // Game over ----------------
+  public gameOver(): void {
+    console.log("Game over");
+    this.uiManager.displayUI(UIType.GAME_OVER);
+    this.engine.stopRenderLoop();
   }
 }

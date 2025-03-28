@@ -217,8 +217,6 @@ export class Player implements IDamageable {
   public fixedUpdate(): void {
     if (!this.game.isPointerLocked) return;
 
-    //console.log("Player inventory: ", this.inventory.getWeapons());
-
     this.checkForInteractables();
 
     if (this.isRegenUnlocked) this.handleRegen();
@@ -232,7 +230,8 @@ export class Player implements IDamageable {
   }
 
   public onGameOver(): void {
-    console.log('GAME OVER: YOU ARE FIRED');
+    // We will simply ask for game to handle the game over
+    this.game.gameOver();
   }
 
   public takeDamage(damage: number): void {
