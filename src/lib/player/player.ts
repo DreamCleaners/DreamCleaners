@@ -333,23 +333,21 @@ export class Player implements IDamageable {
 
     this.isGrounded = this.checkIsGrounded();
 
+    if (this.isGrounded && !this.isSliding) {
+      // Reset the sliding speed var if the player is grounded
+      this.currentSlidingSpeed = 0;
+    }
+
     // player is falling
     if (!this.isGrounded) {
 
+      if(this.isSliding) {
+        // We cancel the slide mid-air as we don't allow sliding in the air
+        this.isSliding = false;
+      }
+
       let speed = 0;
-
-      if(this.isSliding){
-        // As the player is sliding, the speed while jumping will be the 
-        // maximum between the movement speed and the sliding speed
-        speed = Math.max(this.movementSpeed, this.currentSlidingSpeed);
-        // We prevent the player from moving left/right/backwards during a jump while sliding
-        this.moveDirection = this.lastMoveDirection.clone(); 
-      }
-      else{
-        // As the player is not sliding, the speed while jumping will be the movement speed
-        speed = this.movementSpeed;
-      }
-
+      speed = Math.max(this.movementSpeed, this.currentSlidingSpeed);
       speed = this.wasCrouchingBeforeFalling
         ? speed / 2
         : speed;
