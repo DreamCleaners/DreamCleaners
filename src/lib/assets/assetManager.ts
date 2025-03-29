@@ -1,5 +1,6 @@
 import {
   InstancedMesh,
+  Light,
   LoadAssetContainerAsync,
   Mesh,
   PhysicsAggregate,
@@ -77,6 +78,8 @@ export class AssetManager {
         arrivalPoint = this.handleArrivalPoint(node as Mesh);
       } else if (type === UnityTypeToken.SPAWN_TRIGGER) {
         this.handleSpawnTrigger(node as Mesh, spawnTriggers, tokens);
+      } else if (type === UnityTypeToken.LIGHT) {
+        this.handleLight(node as Light);
       }
     });
 
@@ -135,5 +138,9 @@ export class AssetManager {
     spawnTriggers.push(
       new SpawnTrigger(this.scene, diameter, node.absolutePosition, spawnPoints),
     );
+  }
+
+  private handleLight(node: Light): void {
+    node.intensity *= 10;
   }
 }

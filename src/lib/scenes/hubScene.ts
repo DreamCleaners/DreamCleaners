@@ -29,9 +29,9 @@ export class HubScene extends GameScene {
     );
 
     const bedPositions = [
-      new Vector3(5, 0, 5),
-      new Vector3(-5, 0, 5),
-      new Vector3(3, 0, 5),
+      new Vector3(500, 0.2, 5),
+      new Vector3(-500, 0.2, 5),
+      new Vector3(300, 0.2, 5),
     ];
 
     // We create multiple beds in the hub by hand
@@ -48,7 +48,7 @@ export class HubScene extends GameScene {
     );
 
     this.computer = new Computer(this);
-    await this.computer.create(new Vector3(0, 1, 15));
+    await this.computer.create(new Vector3(200, 1, 15));
 
     this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
     this.game.scoreManager.reset();
