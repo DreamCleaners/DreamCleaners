@@ -21,8 +21,8 @@ export class PlayerInventory implements ISaveable {
 
   restoreSave(data: string): void {
     // Deserialize the JSON string back into the weapons array
-    const weaponData: Array<WeaponSerializedData> = JSON.parse(data);
-    this.weapons = weaponData.map((weaponJson) =>
+    const WeaponSerializedDataArray: WeaponSerializedData[] = JSON.parse(data);
+    this.weapons = WeaponSerializedDataArray.map((weaponJson) =>
       Weapon.deserialize(weaponJson, this.player),
     );
   }

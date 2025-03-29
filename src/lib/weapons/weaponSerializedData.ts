@@ -1,13 +1,9 @@
 import { WeaponRarity } from './weaponRarity';
-import { WeaponStatistic } from './weaponStatistic';
-import { StaticWeaponStatistic } from './staticWeaponStatistic';
-import { WeaponMeshParameter } from './weaponMeshParameters';
 import { WeaponType } from './weaponType';
+import { WeaponData } from './weaponData';
 
 export interface WeaponSerializedData {
-  weaponName: WeaponType;
+  weaponType: WeaponType;
   currentRarity: WeaponRarity;
-  globalStats: Array<[WeaponStatistic, Array<number>]>;
-  staticStats: Array<[StaticWeaponStatistic, number]>;
-  meshParameters: Array<[WeaponMeshParameter, Array<number>]>;
+  weaponData: WeaponData;
 }

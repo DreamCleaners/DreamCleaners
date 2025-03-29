@@ -194,34 +194,35 @@ export class StagesManager implements ISaveable {
 
   save(): string {
     // Custom serialization of the stage information because json stringify does not work with undefined values
-    const serializedStages: SerializedStageInformation[] = this.previouslyProposedStages.map((stage) => ({
-      isStageProcedural: stage.isStageProcedural,
-      proposedFixedStageLayout: stage.proposedFixedStageLayout,
-      difficulty: stage.difficulty,
-      enemyTypes: stage.enemyTypes,
-      stageReward: {
-        moneyReward: stage.stageReward.getMoneyReward(),
-        weaponReward: stage.stageReward.getWeaponReward() || null, // Explicitly store null if undefined
-      },
-    }));
-  
+    const serializedStages: SerializedStageInformation[] =
+      this.previouslyProposedStages.map((stage) => ({
+        isStageProcedural: stage.isStageProcedural,
+        proposedFixedStageLayout: stage.proposedFixedStageLayout,
+        difficulty: stage.difficulty,
+        enemyTypes: stage.enemyTypes,
+        stageReward: {
+          moneyReward: stage.stageReward.getMoneyReward(),
+          weaponReward: stage.stageReward.getWeaponReward() || null, // Explicitly store null if undefined
+        },
+      }));
+
     return JSON.stringify(serializedStages);
   }
-  
+
   restoreSave(data: string): void {
     const parsedData: SerializedStageInformation[] = JSON.parse(data);
-  
+
     this.previouslyProposedStages = parsedData.map((stage) => {
-      const stageReward = new StageReward(0); 
+      const stageReward = new StageReward(0);
       stageReward['moneyReward'] = stage.stageReward.moneyReward;
       stageReward['weaponReward'] = stage.stageReward.weaponReward || undefined; // Back to undefined
-  
+
       return new StageInformation(
         stage.isStageProcedural,
         stage.proposedFixedStageLayout,
         stage.difficulty,
         stage.enemyTypes,
-        stageReward
+        stageReward,
       );
     });
   }

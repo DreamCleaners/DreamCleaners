@@ -101,7 +101,7 @@ export class StageReward {
       this.weaponReward.weaponType,
       this.weaponReward.rarity,
     );
-    await weapon.initMesh();
+    await weapon.init();
     return weapon;
   }
 

@@ -1,0 +1,37 @@
+{
+  "weaponName": "AK",
+  "globalStats": {
+    "damage": [13, 17, 22, 27],
+    "reloadTime": [2.4, 2.3, 2.2, 2.1],
+    "cadency": [0.1, 0.1, 0.1, 0.1],
+    "range": [100, 100, 100, 100],
+    "magazineSize": [26000, 28, 30, 32]
+  },
+  "staticStats": {
+    "isAutomatic": true,
+    "isBurst": false,
+    "bulletsPerBurst": 0,
+    "delayBetweenBursts": 0,
+    "bulletsPerShot": 1,
+    "projectionCone": 0,
+    "knockback": 12
+  },
+  "transform": {
+    "scale": 0.5,
+    "position": {
+      "x": 0.5,
+      "y": -0.7,
+      "z": 0.9
+    },
+    "rotation": {
+      "x": 0,
+      "y": -91,
+      "z": 0
+    }
+  },
+  "firePoint": {
+    "x": -0.03,
+    "y": 0.3,
+    "z": 1.8
+  }
+}

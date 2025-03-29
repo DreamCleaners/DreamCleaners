@@ -91,7 +91,7 @@ const StageEndUI = () => {
             <h4 className="current-weapons-label">Current Weapons</h4>
             <div className="player-weapons">
               <div className="player-weapon left">
-                <p>Type: {playerWeapons[0].weaponName}</p>
+                <p>Type: {playerWeapons[0].weaponType}</p>
                 <p>Rarity: {WeaponRarity[playerWeapons[0].currentRarity]}</p>
                 {!rewardUsed && (
                   <button onClick={() => handleReplaceWeapon(0)}>Replace</button>
@@ -100,7 +100,7 @@ const StageEndUI = () => {
               <div className="player-weapon right">
                 {playerWeapons[1] ? (
                   <>
-                    <p>Type: {playerWeapons[1].weaponName}</p>
+                    <p>Type: {playerWeapons[1].weaponType}</p>
                     <p>Rarity: {WeaponRarity[playerWeapons[1].currentRarity]}</p>
                     {!rewardUsed && (
                       <button onClick={() => handleReplaceWeapon(1)}>Replace</button>

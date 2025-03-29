@@ -24,6 +24,10 @@ export class GameAssetContainer {
     return container;
   }
 
+  /**
+   * Clone all assets to the scene
+   * All instantiated meshes need to be disposed
+   */
   public cloneAssetsToScene(): InstantiatedEntries {
     return this.assetContainer.instantiateModelsToScene(
       (sourceName: string): string => sourceName,

@@ -34,7 +34,7 @@ const UserInterface = () => {
       {uiType === UIType.PLAYER_UPGRADES && <PlayerUpgradeUI />}
       {uiType === UIType.SCORE && <StageEndUI />}
       {uiType === UIType.STAGE_SELECTION && <StageSelectionUI />}
-      {uiType === UIType.GAME_OVER && < GameOverUI/>}
+      {uiType === UIType.GAME_OVER && <GameOverUI />}
     </div>
   );
 };

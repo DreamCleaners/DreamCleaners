@@ -79,7 +79,7 @@ const PlayerHUD = () => {
       <p>
         Health: {playerHealth} / {playerMaxHealth}
       </p>
-      <p>Weapon: {playerWeapon?.weaponName}</p>
+      <p>Weapon: {playerWeapon?.weaponType}</p>
       <p>Ammo: {ammo}</p>
       <p>Is reloading: {isReloading ? 'true' : 'false'}</p>
       <p>Money: {playerMoney}$</p>

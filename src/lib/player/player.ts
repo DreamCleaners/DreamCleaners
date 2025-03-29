@@ -128,7 +128,7 @@ export class Player implements IDamageable {
 
     // We need to initialize all meshes of the weapons before we can equip one, and thus
     // start the player
-    await Promise.all(weapons.map((weapon) => weapon.initMesh()));
+    await Promise.all(weapons.map((weapon) => weapon.init()));
     if (weapons.length > 0) {
       this.equipWeapon(0, true);
     }

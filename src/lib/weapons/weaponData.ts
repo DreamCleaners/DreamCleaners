@@ -1,9 +1,31 @@
-import { StaticWeaponStatistic } from './staticWeaponStatistic';
-import { WeaponMeshParameter } from './weaponMeshParameters';
-import { WeaponStatistic } from './weaponStatistic';
+import { GlobalStats } from './globalStats';
 
-export interface WeaponData {
-  globalStats: Map<WeaponStatistic, Array<number>>;
-  staticStats: Map<StaticWeaponStatistic, number>;
-  meshParameters: Map<WeaponMeshParameter, Array<number>>;
-}
+export type WeaponData = {
+  weaponName: string;
+  globalStats: GlobalStats[];
+  staticStats: StaticStats;
+  transform: WeaponTransform;
+  firePoint: Vec3;
+};
+
+export type StaticStats = {
+  isAutomatic: boolean;
+  isBurst: boolean;
+  bulletsPerBurst: number;
+  delayBetweenBursts: number;
+  bulletsPerShot: number;
+  projectionCone: number;
+  knockback: number;
+};
+
+export type WeaponTransform = {
+  position: Vec3;
+  rotation: Vec3;
+  scale: number;
+};
+
+export type Vec3 = {
+  x: number;
+  y: number;
+  z: number;
+};

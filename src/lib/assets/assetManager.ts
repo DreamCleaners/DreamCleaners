@@ -9,14 +9,16 @@ import {
 } from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { AssetType } from './assetType';
-import { WeaponData } from '../weapons/weaponData';
 import { GameAssetContainer } from './gameAssetContainer';
 import { UnityPhysicShapeToken, UnityTypeToken } from './unityTokens';
 import { UnityScene } from './unityScene';
 import { SpawnTrigger } from '../stages/spawnTrigger';
+import { WeaponType } from '../weapons/weaponType';
+import { WeaponData } from '../weapons/weaponData';
+import { WeaponJson } from '../weapons/weaponJson';
 
 export class AssetManager {
-  private loadedWeaponJsons: Map<string, WeaponData> = new Map();
+  private weaponDataCache: Map<WeaponType, WeaponData> = new Map();
 
   constructor(private scene: Scene) {}
 
@@ -29,24 +31,42 @@ export class AssetManager {
     return GameAssetContainer.createFromAssetContainer(assetContainer);
   }
 
-  /**
-   * Load a weapon JSON file
-   */
-  public async loadWeaponJson(weaponName: string): Promise<WeaponData> {
-    // Check if the weapon JSON is already loaded in map, if not we fetch it from public folder
-    const lowerCasedWeaponName = weaponName.toLowerCase();
-    let weaponJson = this.loadedWeaponJsons.get(lowerCasedWeaponName);
-    if (!weaponJson) {
+  public async loadWeaponData(weaponType: WeaponType): Promise<WeaponData> {
+    let weaponData = this.weaponDataCache.get(weaponType);
+
+    if (!weaponData) {
       try {
-        const response = await fetch(`./data/stats/${lowerCasedWeaponName}.json`);
-        weaponJson = (await response.json()) as WeaponData;
-        this.loadedWeaponJsons.set(lowerCasedWeaponName, weaponJson);
+        const response = await fetch(`./data/weapons/${weaponType}.json`);
+        const weaponJson = (await response.json()) as WeaponJson;
+
+        const globalStats = [];
+
+        for (let i = 0; i < weaponJson.globalStats.damage.length; i++) {
+          globalStats.push({
+            damage: weaponJson.globalStats.damage[i],
+            reloadTime: weaponJson.globalStats.reloadTime[i],
+            cadency: weaponJson.globalStats.cadency[i],
+            range: weaponJson.globalStats.range[i],
+            magazineSize: weaponJson.globalStats.magazineSize[i],
+          });
+        }
+
+        weaponData = {
+          weaponName: weaponJson.weaponName,
+          globalStats: globalStats,
+          staticStats: weaponJson.staticStats,
+          transform: weaponJson.transform,
+          firePoint: weaponJson.firePoint,
+        };
+
+        this.weaponDataCache.set(weaponType, weaponData);
       } catch (error) {
-        console.error(`Failed to load weapon JSON: ${weaponName} ` + error);
+        console.error(`Failed to load weapon data: ${weaponType}` + error);
         throw error;
       }
     }
-    return weaponJson;
+
+    return weaponData;
   }
 
   public async instantiateUnityScene(sceneName: string): Promise<UnityScene> {

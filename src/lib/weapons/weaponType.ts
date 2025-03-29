@@ -1,5 +1,5 @@
 export enum WeaponType {
-  AK = 'AK',
-  SHOTGUN = 'SHOTGUN',
-  GLOCK = 'GLOCK',
+  AK = 'ak',
+  SHOTGUN = 'shotgun',
+  GLOCK = 'glock',
 }

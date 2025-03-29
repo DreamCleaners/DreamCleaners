@@ -1,46 +1,40 @@
 import { WeaponRarity } from './weaponRarity';
-import { WeaponStatistic } from './weaponStatistic';
-import { StaticWeaponStatistic } from './staticWeaponStatistic';
 import { Player } from '../player/player';
 import {
-  AbstractMesh,
   Matrix,
   MeshBuilder,
   Observable,
   PhysicsEngineV2,
   PhysicsRaycastResult,
   Quaternion,
+  TransformNode,
   Vector3,
 } from '@babylonjs/core';
 import { AssetType } from '../assets/assetType';
 import { IDamageable } from '../damageable';
-import { WeaponData } from './weaponData';
-import { WeaponMeshParameter } from './weaponMeshParameters';
 import { WeaponType } from './weaponType';
 import { GameAssetContainer } from '../assets/gameAssetContainer';
 import { IMetadataObject } from '../metadata/metadataObject';
 import { WeaponSerializedData } from './weaponSerializedData';
+import { WeaponData } from './weaponData';
+import { GlobalStats } from './globalStats';
 
-export class Weapon implements WeaponData {
-  private mesh!: AbstractMesh;
-  private player!: Player;
-  public weaponName!: string;
-  public currentRarity!: WeaponRarity;
+export class Weapon {
+  private rootMesh!: TransformNode;
+  private firePoint!: TransformNode;
+  private gameAssetContainer!: GameAssetContainer;
+
+  // physics
   private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
   private physicsEngine!: PhysicsEngineV2;
-
-  private gameAssetContainer!: GameAssetContainer;
 
   public onReload: Observable<boolean> = new Observable<boolean>();
   public onAmmoChange: Observable<number> = new Observable<number>();
 
-  // Array containing all non static stats for the weapon, for every rarity tier
-  public globalStats!: Map<WeaponStatistic, Array<number>>;
-
+  public weaponData!: WeaponData;
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
-  private currentStats!: Map<WeaponStatistic, number>;
-
-  public staticStats!: Map<StaticWeaponStatistic, number>;
+  private currentStats!: GlobalStats;
+  public currentRarity!: WeaponRarity;
 
   private lastWeaponFire = 0;
 
@@ -52,9 +46,6 @@ export class Weapon implements WeaponData {
   // Used for preventing automatic shooting
   public justShot = false;
 
-  // Values for the weapon's mesh
-  public meshParameters!: Map<WeaponMeshParameter, Array<number>>;
-
   // Weapon's mesh moving related
   private initialYPosition: number | null = null;
   private isPlayingMovingAnimating: boolean = false;
@@ -64,167 +55,95 @@ export class Weapon implements WeaponData {
   private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
 
-  constructor(player: Player, name: WeaponType, rarity: WeaponRarity) {
+  constructor(
+    private player: Player,
+    public weaponType: WeaponType,
+    rarity: WeaponRarity,
+  ) {
     this.player = player;
     this.currentRarity = rarity;
-    this.weaponName = name.toLowerCase();
     this.physicsEngine = player.physicsEngine;
-    this.initArrays();
-    this.loadJSONIntoArrays();
   }
 
-  // ----------------- Asset container related (babylon) -----------------
-  // ---------------------------------------------------------------
+  public async init(): Promise<void> {
+    this.weaponData = await this.player.game.assetManager.loadWeaponData(this.weaponType);
+    this.applyCurrentStats();
+    await this.initMesh();
+  }
 
-  public async initMesh(): Promise<void> {
+  private async initMesh(): Promise<void> {
     this.gameAssetContainer = await this.player.game.assetManager.loadGameAssetContainer(
-      this.weaponName,
+      this.weaponType,
       AssetType.WEAPON,
     );
-    this.mesh = this.gameAssetContainer.addAssetsToScene();
-    this.mesh.parent = this.player.cameraManager.getCamera();
+    this.rootMesh = new TransformNode('weaponRoot', this.player.game.scene);
+    this.rootMesh.parent = this.player.cameraManager.getCamera();
 
-    const meshPositionArray = this.meshParameters.get(WeaponMeshParameter.POSITION);
-    const meshRotationArray = this.meshParameters.get(WeaponMeshParameter.ROTATION);
-    const meshScaleArray = this.meshParameters.get(WeaponMeshParameter.SCALE);
+    const weaponTransform = this.weaponData.transform;
 
-    if (meshPositionArray && meshRotationArray && meshScaleArray) {
-      const meshPosition = new Vector3(
-        meshPositionArray[0],
-        meshPositionArray[1],
-        meshPositionArray[2],
-      );
-      const meshRotation = new Vector3(
-        meshRotationArray[0],
-        meshRotationArray[1],
-        meshRotationArray[2],
-      );
-      const meshScale = meshScaleArray[0];
-      this.mesh.position.addInPlace(meshPosition);
-      this.mesh.rotation = meshRotation;
-      this.mesh.scaling = new Vector3(meshScale, meshScale, meshScale);
-    } else {
-      console.error('Mesh parameters not found for weapon ' + this.weaponName);
-    }
+    this.rootMesh.position = new Vector3(
+      weaponTransform.position.x,
+      weaponTransform.position.y,
+      weaponTransform.position.z,
+    );
+
+    const weaponMesh = this.gameAssetContainer.addAssetsToScene();
+    weaponMesh.parent = this.rootMesh;
+
+    weaponMesh.rotationQuaternion = Quaternion.FromEulerAngles(
+      weaponTransform.rotation.x * (Math.PI / 180),
+      weaponTransform.rotation.y * (Math.PI / 180),
+      weaponTransform.rotation.z * (Math.PI / 180),
+    );
+    weaponMesh.scaling = new Vector3(
+      weaponTransform.scale,
+      weaponTransform.scale,
+      weaponTransform.scale,
+    );
+
+    this.firePoint = new TransformNode('firePoint', this.player.game.scene);
+    this.rootMesh.addChild(this.firePoint);
+    this.firePoint.position = new Vector3(
+      this.weaponData.firePoint.x,
+      this.weaponData.firePoint.y,
+      this.weaponData.firePoint.z,
+    );
 
     this.hideInScene();
   }
 
   public hideInScene(): void {
-    this.mesh.setEnabled(false);
+    this.rootMesh.setEnabled(false);
   }
 
   public showInScene(): void {
-    this.mesh.setEnabled(true);
+    this.rootMesh.setEnabled(true);
   }
 
   public fixedUpdate(): void {
     this.updateReload();
   }
-
-  // --------------------- Stats related ---------------------------
   // ---------------------------------------------------------------
 
-  private initArrays(): void {
-    this.globalStats = new Map<WeaponStatistic, Array<number>>();
-    this.currentStats = new Map<WeaponStatistic, number>();
-    this.staticStats = new Map<StaticWeaponStatistic, number>();
-    this.meshParameters = new Map<WeaponMeshParameter, Array<number>>();
-  }
-
-  /** Parses JSON of the weapon stats and mesh parameters and load it into class' arrays fields */
-  private async loadJSONIntoArrays(): Promise<void> {
-    try {
-      const data = await this.player.game.assetManager.loadWeaponJson(this.weaponName);
-
-      // Load global stats
-      for (const [key, values] of Object.entries(data.globalStats)) {
-        this.globalStats.set(
-          WeaponStatistic[key as keyof typeof WeaponStatistic],
-          values as Array<number>,
-        );
-      }
-
-      // Load static stats
-      for (const [key, value] of Object.entries(data.staticStats)) {
-        this.staticStats.set(
-          StaticWeaponStatistic[key as keyof typeof StaticWeaponStatistic],
-          value as number,
-        );
-      }
-
-      // Load mesh parameters
-      for (const [key, values] of Object.entries(data.meshParameters)) {
-        const enumKey = WeaponMeshParameter[key as keyof typeof WeaponMeshParameter];
-        if (enumKey === undefined) {
-          console.error(`Invalid key: ${key}`);
-          continue;
-        }
-        if (key === 'ROTATION') {
-          // Convert string values to numbers
-          const rotationValues = (values as Array<string>).map((value) => {
-            return eval(value.replace('PI', 'Math.PI'));
-          });
-          this.meshParameters.set(enumKey, rotationValues);
-        } else if (key === 'SCALE') {
-          // Convert single number to array
-          this.meshParameters.set(enumKey, [values as number]);
-        } else {
-          this.meshParameters.set(enumKey, values as Array<number>);
-        }
-      }
-    } catch (error) {
-      console.error(
-        `Could not load JSON data for weapon of name ${this.weaponName}, error trace: ${error}`,
-      );
-    }
-
-    this.applyCurrentStats();
-  }
-
-  /** Based on the current item's rarity we update its currentStats array */
+  /**
+   * Based on the current item's rarity we update its currentStats array
+   */
   private applyCurrentStats(): void {
-    if (this.globalStats.size === 0) {
-      console.error('Global stats not loaded, cannot apply current stats');
-      return;
-    }
-
-    for (const [key, value] of this.globalStats) {
-      this.currentStats.set(key, value[this.currentRarity]);
-    }
-
-    this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
-  }
-
-  /** Returns the current value of the weapon given stat */
-  public getStat(stat: WeaponStatistic): number {
-    const ret = this.currentStats.get(stat);
-    if (ret === undefined) {
-      console.error(`Stat ${stat} not found for weapon ${this.weaponName}`);
-      return -1;
-    }
-    return ret;
-  }
-
-  private getStaticStat(stat: StaticWeaponStatistic): number {
-    const ret = this.staticStats.get(stat);
-    if (ret === undefined) {
-      console.error(`Static Stat ${stat} not found for weapon ${this.weaponName}`);
-      return -1;
-    }
-    return ret;
+    this.currentStats = this.weaponData.globalStats[this.currentRarity];
+    this.currentAmmoRemaining = this.currentStats.magazineSize;
   }
 
   // --------------------- Shooting related ---------------------------
   // ---------------------------------------------------------------
 
-  /** Handles primary fire for the weapon.
+  /**
+   * Handles primary fire for the weapon.
    * Builds the projectiles and shoots them based on the weapon's static stats
    * that describe the weapon's overall behaviour
    */
   public handlePrimaryFire(): void {
     const currentTime = Date.now();
-    const cadency = this.getStat(WeaponStatistic.CADENCY) * 1000;
+    const cadency = this.currentStats.cadency * 1000;
 
     if (!(currentTime - this.lastWeaponFire >= cadency)) {
       return;
@@ -238,23 +157,20 @@ export class Weapon implements WeaponData {
       return;
     }
 
-    if (!this.staticStats.get(StaticWeaponStatistic.IS_AUTOMATIC) && this.justShot) {
+    if (!this.weaponData.staticStats.isAutomatic && this.justShot) {
       console.log('Non automatic weapon, cannot hold the trigger');
       return;
     }
 
     this.lastWeaponFire = currentTime;
 
-    const isBurst = this.getStaticStat(StaticWeaponStatistic.IS_BURST) || false;
-    const bulletsPerBurst =
-      this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_BURST) || 1;
-    const bulletsPerShot =
-      this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT) || 1;
-    const projectionCone = this.getStaticStat(StaticWeaponStatistic.PROJECTION_CONE) || 0;
+    const isBurst = this.weaponData.staticStats.isBurst;
+    const bulletsPerBurst = this.weaponData.staticStats.bulletsPerBurst;
+    const bulletsPerShot = this.weaponData.staticStats.bulletsPerShot;
+    const projectionCone = this.weaponData.staticStats.projectionCone;
 
     if (isBurst) {
-      const delayBetweenShotsInBurst =
-        this.getStaticStat(StaticWeaponStatistic.DELAY_BETWEEN_SHOTS_IN_BURST) || 0;
+      const delayBetweenShotsInBurst = this.weaponData.staticStats.delayBetweenBursts;
 
       const shotsFired = Math.min(bulletsPerBurst, this.currentAmmoRemaining);
 
@@ -275,7 +191,7 @@ export class Weapon implements WeaponData {
 
     this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
 
-    if (!this.staticStats.get(StaticWeaponStatistic.IS_AUTOMATIC)) {
+    if (!this.weaponData.staticStats.isAutomatic) {
       this.justShot = true;
     }
   }
@@ -333,7 +249,7 @@ export class Weapon implements WeaponData {
       this.player.cameraManager.getCamera().getForwardRay().direction.scale(0.5),
     );
 
-    const end = start.add(direction.scale(this.getStat(WeaponStatistic.RANGE)));
+    const end = start.add(direction.scale(this.currentStats.range));
 
     this.physicsEngine.raycastToRef(start, end, this.raycastResult, {
       shouldHitTriggers: true,
@@ -347,8 +263,7 @@ export class Weapon implements WeaponData {
 
         // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
         const damagePerBullet =
-          this.getStat(WeaponStatistic.DAMAGE) /
-          this.getStaticStat(StaticWeaponStatistic.BULLETS_PER_SHOT);
+          this.currentStats.damage / this.weaponData.staticStats.bulletsPerShot;
 
         damageableEntity.takeDamage(damagePerBullet);
 
@@ -359,7 +274,7 @@ export class Weapon implements WeaponData {
     // Debug shooting line
     const line = MeshBuilder.CreateLines(
       'lines',
-      { points: [this.mesh.absolutePosition, end] },
+      { points: [this.firePoint.absolutePosition, end] },
       this.player.game.scene,
     );
 
@@ -376,14 +291,14 @@ export class Weapon implements WeaponData {
       return;
     }
 
-    if (this.currentAmmoRemaining === this.getStat(WeaponStatistic.MAGAZINE_CAPACITY)) {
+    if (this.currentAmmoRemaining === this.currentStats.magazineSize) {
       console.log('Magazine is full');
       return;
     }
 
     this.isReloading = true;
     this.reloadProgress = 0;
-    this.reloadDuration = this.getStat(WeaponStatistic.RELOAD_TIME) * 1000;
+    this.reloadDuration = this.currentStats.reloadTime * 1000;
     this.onReload.notifyObservers(true);
   }
 
@@ -396,7 +311,7 @@ export class Weapon implements WeaponData {
     this.reloadProgress += deltaTime;
 
     if (this.reloadProgress >= this.reloadDuration) {
-      this.currentAmmoRemaining = this.getStat(WeaponStatistic.MAGAZINE_CAPACITY);
+      this.currentAmmoRemaining = this.currentStats.magazineSize;
       this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
       this.isReloading = false;
       this.reloadProgress = 0;
@@ -427,14 +342,14 @@ export class Weapon implements WeaponData {
   /** Continuously moves the weapon up and down to match the player's movements */
   private animateWeaponMovement(velocity: Vector3): void {
     if (this.initialYPosition === null) {
-      this.initialYPosition = this.mesh.position.y;
+      this.initialYPosition = this.rootMesh.position.y;
     }
     const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
     const frequency =
       this.MOVING_ANIMATION_SPEED *
       (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
     this.isPlayingMovingAnimating = true;
-    const initialYPosition = this.mesh.position.y;
+    const initialYPosition = this.rootMesh.position.y;
     const startTime = performance.now();
 
     const animate = () => {
@@ -445,7 +360,7 @@ export class Weapon implements WeaponData {
       const elapsedTime = performance.now() - startTime;
       const time = (elapsedTime / 1000) * frequency;
       const offsetY = Math.sin(time) * amplitude;
-      this.mesh.position.y = initialYPosition + offsetY;
+      this.rootMesh.position.y = initialYPosition + offsetY;
       requestAnimationFrame(animate);
     };
 
@@ -456,7 +371,7 @@ export class Weapon implements WeaponData {
   private stopAnimation(): void {
     if (this.isPlayingMovingAnimating) {
       this.isPlayingMovingAnimating = false;
-      const currentYPosition = this.mesh.position.y;
+      const currentYPosition = this.rootMesh.position.y;
       const targetYPosition = this.initialYPosition!;
       const duration = 300;
       const startTime = performance.now();
@@ -464,13 +379,13 @@ export class Weapon implements WeaponData {
       const smoothReset = (time: number) => {
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1);
-        this.mesh.position.y =
+        this.rootMesh.position.y =
           currentYPosition + t * (targetYPosition - currentYPosition);
 
         if (t < 1) {
           requestAnimationFrame(smoothReset);
         } else {
-          this.mesh.position.y = targetYPosition;
+          this.rootMesh.position.y = targetYPosition;
         }
       };
 
@@ -479,7 +394,9 @@ export class Weapon implements WeaponData {
   }
 
   public dispose(): void {
-    this.mesh.dispose();
+    this.rootMesh.dispose();
+    this.firePoint.dispose();
+    this.gameAssetContainer.dispose();
   }
 
   // Saving related - Serializing and deserializing the weapon
@@ -490,11 +407,9 @@ export class Weapon implements WeaponData {
    */
   public serialize(): WeaponSerializedData {
     return {
-      weaponName: WeaponType[this.weaponName.toUpperCase() as keyof typeof WeaponType],
+      weaponType: this.weaponType,
       currentRarity: this.currentRarity,
-      globalStats: Array.from(this.globalStats.entries()),
-      staticStats: Array.from(this.staticStats.entries()),
-      meshParameters: Array.from(this.meshParameters.entries()),
+      weaponData: this.weaponData,
     };
   }
 
@@ -502,12 +417,9 @@ export class Weapon implements WeaponData {
    * Deserializes a JSON-compatible object into a Weapon instance.
    */
   public static deserialize(data: WeaponSerializedData, player: Player): Weapon {
-    const weapon = new Weapon(player, data.weaponName, data.currentRarity);
+    const weapon = new Weapon(player, data.weaponType, data.currentRarity);
 
-    weapon.globalStats = new Map(data.globalStats);
-    weapon.staticStats = new Map(data.staticStats);
-    weapon.meshParameters = new Map(data.meshParameters);
-
+    weapon.weaponData = data.weaponData;
     weapon.applyCurrentStats();
 
     return weapon;
