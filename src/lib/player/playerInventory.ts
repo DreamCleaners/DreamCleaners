@@ -1,4 +1,5 @@
 import { ISaveable } from '../saveable';
+import { LuckyShot } from '../weapons/passives/tier_one/luckyShot';
 import { Weapon } from '../weapons/weapon';
 import { WeaponRarity } from '../weapons/weaponRarity';
 import { WeaponSerializedData } from '../weapons/weaponSerializedData';
@@ -31,7 +32,12 @@ export class PlayerInventory implements ISaveable {
     // Base weapon is by default a common shotgun
     this.weapons = [];
     const weapon = new Weapon(this.player, WeaponType.SHOTGUN, WeaponRarity.COMMON);
+
+    // debug lucky shot
+    const luckyShot = new LuckyShot();
     this.addWeaponToInventory(weapon);
+    luckyShot.embedPassiveToWeapon(weapon);
+    // --
   }
 
   public addWeaponToInventory(weapon: Weapon): void {

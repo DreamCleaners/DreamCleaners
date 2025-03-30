@@ -18,6 +18,8 @@ import { IMetadataObject } from '../metadata/metadataObject';
 import { WeaponSerializedData } from './weaponSerializedData';
 import { WeaponData } from './weaponData';
 import { GlobalStats } from './globalStats';
+import { WeaponPassiveType } from './passives/weaponPassive';
+import { PassivesManager } from './passives/passivesManager';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -54,6 +56,14 @@ export class Weapon {
   // The height at which the weapon moves up and down
   private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
+
+  // Passives related
+  // We only store the names of the passives embedded in the weapon
+  // The actual instances of the passives are stored in the PassivesManager
+  public embeddedPassives: WeaponPassiveType[] = [];
+
+  // Lucky shot related
+  public critChanceModifier: number = 0;
 
   constructor(
     private player: Player,
@@ -199,19 +209,27 @@ export class Weapon {
   /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
    * depending on the projection cone of the weapon (The most obvious example is the shotgun)
    */
+  /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
+   * depending on the projection cone of the weapon (The most obvious example is the shotgun)
+   */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
+    // Determine if this shot is a critical hit
+    const isCriticalHit =
+      this.critChanceModifier > 0 && Math.random() < this.critChanceModifier;
+
     if (projectionCone === 0) {
       // Not a "cone" weapon, just shoot straight in the direction of the camera
       for (let i = 0; i < bulletsPerShot; i++) {
         this.performRaycast(
           this.player.cameraManager.getCamera().getForwardRay().direction,
+          isCriticalHit,
         );
       }
     } else {
       // Based on the projection cone, we must determine a direction for each bullet (raycast)
       for (let i = 0; i < bulletsPerShot; i++) {
         const direction = this.calculateRandomDirection(projectionCone);
-        this.performRaycast(direction);
+        this.performRaycast(direction, isCriticalHit);
       }
     }
   }
@@ -241,8 +259,9 @@ export class Weapon {
   }
 
   /** Performs a raycast in a given direction */
-  private performRaycast(direction: Vector3): void {
-    // The raycasts stars at the player's camera position and not at the weapon's position
+  /** Performs a raycast in a given direction */
+  private performRaycast(direction: Vector3, crit: boolean): void {
+    // The raycasts start at the player's camera position and not at the weapon's position
     // Thus, we need to add a small offset to the start position in order not to hit the player
     const start = this.player.cameraManager.getCamera().globalPosition.clone();
     start.addInPlace(
@@ -262,8 +281,16 @@ export class Weapon {
         const damageableEntity = metadata.object;
 
         // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
-        const damagePerBullet =
+        const baseDamagePerBullet =
           this.currentStats.damage / this.weaponData.staticStats.bulletsPerShot;
+
+        let damagePerBullet = baseDamagePerBullet;
+
+        // Apply critical hit if crit is true
+        if (crit) {
+          damagePerBullet *= 2;
+          console.log('Critical hit! Dealt double damage.');
+        }
 
         damageableEntity.takeDamage(damagePerBullet);
 
@@ -410,6 +437,7 @@ export class Weapon {
       weaponType: this.weaponType,
       currentRarity: this.currentRarity,
       weaponData: this.weaponData,
+      embeddedPassives: this.embeddedPassives,
     };
   }
 
@@ -421,6 +449,10 @@ export class Weapon {
 
     weapon.weaponData = data.weaponData;
     weapon.applyCurrentStats();
+
+    const pm = PassivesManager.getInstance();
+    // We need to reapply the passives to the weapon
+    pm.applyPassivesToWeapon(weapon, data.embeddedPassives);
 
     return weapon;
   }

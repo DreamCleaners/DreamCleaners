@@ -339,17 +339,14 @@ export class Player implements IDamageable {
 
     // player is falling
     if (!this.isGrounded) {
-
-      if(this.isSliding) {
+      if (this.isSliding) {
         // We cancel the slide mid-air as we don't allow sliding in the air
         this.isSliding = false;
       }
 
       let speed = 0;
       speed = Math.max(this.movementSpeed, this.currentSlidingSpeed);
-      speed = this.wasCrouchingBeforeFalling
-        ? speed / 2
-        : speed;
+      speed = this.wasCrouchingBeforeFalling ? speed / 2 : speed;
 
       this.velocity.x = this.moveDirection.x * speed;
       this.velocity.z = this.moveDirection.y * speed;
@@ -395,25 +392,22 @@ export class Player implements IDamageable {
     else if (this.isCrouching && this.isSliding) {
       // we use the last move direction because the player is not able to change direction during a slide
       const slopDirection = this.getSlopeDirection(this.lastMoveDirection);
-  
+
       // we reduce this factor over time during slide to make the slide stop eventually
       this.currentSlidingSpeedFactor = Math.max(
         0,
         this.currentSlidingSpeedFactor - this.SLIDING_SPEED_REDUCTION,
       );
-  
+
       this.currentSlidingSpeed = this.movementSpeed * this.currentSlidingSpeedFactor;
-  
+
       // if the slide speed is less than the crouching speed or if the player is moving up a slope
       // we change the player's state to crouching
-      if (
-        this.currentSlidingSpeed < this.movementSpeed / 2 ||
-        slopDirection.y > 0
-      ) {
+      if (this.currentSlidingSpeed < this.movementSpeed / 2 || slopDirection.y > 0) {
         this.isSliding = false;
         this.currentSlidingSpeed = this.movementSpeed / 2; // Reset sliding speed
       }
-  
+
       this.velocity.x = slopDirection.x * this.currentSlidingSpeed;
       this.velocity.y = slopDirection.y * this.currentSlidingSpeed;
       this.velocity.z = slopDirection.z * this.currentSlidingSpeed;
@@ -560,8 +554,7 @@ export class Player implements IDamageable {
       this.isSliding = true;
       this.currentSlidingSpeedFactor = this.INITIAL_SLIDING_SPEED_FACTOR;
       this.lastMoveDirection = this.moveDirection;
-    }
-    else {
+    } else {
       // The player was not crouching but sliding
       this.wasCrouchingBeforeFalling = true;
     }
