@@ -18,8 +18,7 @@ import { IMetadataObject } from '../metadata/metadataObject';
 import { WeaponSerializedData } from './weaponSerializedData';
 import { WeaponData } from './weaponData';
 import { GlobalStats } from './globalStats';
-import { WeaponPassiveType } from './passives/weaponPassive';
-import { PassivesManager } from './passives/passivesManager';
+import { PassivesManager, WeaponPassiveType } from './passives/passivesManager';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -449,14 +448,7 @@ export class Weapon {
     // Actually, saving them would be a bad idea as these arrays are directly
     // affected by passives, passives that we re-apply
     // So we simply init the weapon and apply the passives
-    weapon.init().then(() => {
-      console.log('Deserializing weapon', data.weaponType);
-      console.log('Current rarity', data.currentRarity);
-      console.log('Current ammo', weapon.currentAmmoRemaining);
-      console.log('Embedded passives', data.embeddedPassives);
-      console.log('Weapon data', weapon.weaponData);
-      console.log('Current stats', weapon.currentStats);
-    });
+    weapon.init();
 
     const pm = PassivesManager.getInstance();
     // We need to reapply the passives to the weapon

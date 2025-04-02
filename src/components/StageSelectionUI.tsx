@@ -42,24 +42,38 @@ const StageSelectionUI = () => {
           )}
         </div>
         <div className="stage-reward-container">
-          <h3 className="stage-reward-title">Stage Reward</h3>
+        <h3 className="stage-reward-title">Stage Reward</h3>
           {stageInfo ? (
             <div className="stage-reward-content">
               {stageInfo.stageReward.getWeaponReward() ? (
                 <div className="reward-with-weapon">
                   <span className="reward-money">
-                    {stageInfo.stageReward.getMoneyReward()} gold
+                    {stageInfo.stageReward.getMoneyReward() ?? 0} gold
                   </span>
                   <div className="reward-weapon">
-                    <span>A random weapon of quality:</span>
                     <span>
-                      {WeaponRarity[stageInfo.stageReward.getWeaponReward()?.rarity || 0]}
+                      {`Weapon: ${
+                        stageInfo.stageReward.getWeaponReward()?.weaponType?.toUpperCase() ?? 'Unknown'
+                      } of quality: ${
+                        WeaponRarity[stageInfo.stageReward.getWeaponReward()?.rarity ?? 0]
+                      }`}
                     </span>
+                    {(stageInfo.stageReward.getWeaponReward()?.embeddedPassives ?? []).length > 0 && (
+                      <span>
+                        This weapon has{' '}
+                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives?.length ?? 0}{' '}
+                        hidden{' '}
+                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives?.length === 1
+                          ? 'passive'
+                          : 'passives'}
+                        !
+                      </span>
+                    )}
                   </div>
                 </div>
               ) : (
                 <div className="reward-no-weapon">
-                  <span>{stageInfo.stageReward.getMoneyReward()} gold</span>
+                  <span>{stageInfo.stageReward.getMoneyReward() ?? 0} gold</span>
                 </div>
               )}
             </div>

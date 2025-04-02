@@ -1,4 +1,5 @@
 import { Weapon } from '../weapon';
+import { WeaponPassiveType } from './passivesManager';
 
 export abstract class WeaponPassive {
   public abstract name: string;
@@ -8,8 +9,4 @@ export abstract class WeaponPassive {
   public embedPassiveToWeapon(weapon: Weapon): void {
     weapon.embeddedPassives.push(this.enumName);
   }
-}
-
-export enum WeaponPassiveType {
-  LUCKY_SHOT,
 }

@@ -1,3 +1,4 @@
+import { WeaponPassiveType } from '../weapons/passives/passivesManager';
 import { WeaponType } from '../weapons/weaponType';
 
 /** Contains basic information on the weapon that will be a stage reward
@@ -7,5 +8,6 @@ export class RewardWeaponDescription {
   constructor(
     public weaponType: WeaponType,
     public rarity: number,
+    public embeddedPassives: WeaponPassiveType[],
   ) {}
 }

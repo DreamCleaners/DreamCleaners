@@ -1,12 +1,13 @@
 import { Weapon } from '../../weapon';
-import { WeaponPassive, WeaponPassiveType } from '../weaponPassive';
+import { WeaponPassiveT1, WeaponPassiveType } from '../passivesManager';
+import { WeaponPassive } from '../weaponPassive';
 
 export class LuckyShot extends WeaponPassive {
   public name: string = 'Lucky Shot';
   private readonly CRIT_CHANCE: number = 0.1;
   public description: string =
     this.CRIT_CHANCE * 100 + '% chance per bullet to deal double damage. ';
-  public enumName: WeaponPassiveType = WeaponPassiveType.LUCKY_SHOT;
+  public enumName: WeaponPassiveType = WeaponPassiveT1.LUCKY_SHOT;
 
   public override embedPassiveToWeapon(weapon: Weapon): void {
     // We apply the passive to the player's weapon by modifying the weapon's crit chance modifier

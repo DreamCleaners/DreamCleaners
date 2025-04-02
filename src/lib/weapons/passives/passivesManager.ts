@@ -3,7 +3,7 @@
 // to get information about the passives.
 import { Weapon } from '../weapon';
 import { LuckyShot } from './tier_one/luckyShot';
-import { WeaponPassive, WeaponPassiveType } from './weaponPassive';
+import { WeaponPassive } from './weaponPassive';
 
 // Thus, PassivesManager acts as a factory as well as a registry.
 export class PassivesManager {
@@ -24,19 +24,22 @@ export class PassivesManager {
 
   private constructor() {
     // We initialize all our passives and we store them in the map
-    this.passives.set(WeaponPassiveType.LUCKY_SHOT, new LuckyShot());
+    this.passives.set(WeaponPassiveT1.LUCKY_SHOT, new LuckyShot());
 
     // ... add more passives here
   }
 
-  /** Returns the passive name in String based on the enum value */
-  public getPassiveName(passiveType: WeaponPassiveType): string {
+  /** Returns the passive specified hard-coded name. This name can be different from
+   * the enum value, meaning the user can see a more user-friendly name that the one
+   * used in the code.
+   */
+  public getPrettyPassiveName(passiveType: WeaponPassiveType): string {
     const passive = this.passives.get(passiveType);
     if (passive) {
       return passive.name;
     } else {
       console.log('Passive not found: ', passiveType);
-      return 'Passive not found';
+      return 'UNKOWN_NAME';
     }
   }
 
@@ -47,7 +50,7 @@ export class PassivesManager {
       return passive.description;
     } else {
       console.log('Passive not found: ', passiveType);
-      return 'Passive not found';
+      return 'UNKOWN_DESCRIPTION';
     }
   }
 
@@ -72,4 +75,24 @@ export class PassivesManager {
       this.applyPassiveToWeapon(weapon, passiveType);
     }
   }
+}
+
+// Enums ---------------
+
+// All weapon passives in one same type
+export type WeaponPassiveType = WeaponPassiveT1 | WeaponPassiveT2 | WeaponPassiveT3;
+
+// Passives T1 only, used for stage reward determination and shop proposals
+// All passives enums have a string attached, not to be confused with the pretty name
+// (name field in the classes)
+export enum WeaponPassiveT1 {
+  LUCKY_SHOT = 'LUCKY_SHOT',
+}
+
+export enum WeaponPassiveT2 {
+  EXEMPLE_T2 = 'EXEMPLE_T2',
+}
+
+export enum WeaponPassiveT3 {
+  EXEMPLE_T3 = 'EXEMPLE_T3',
 }
