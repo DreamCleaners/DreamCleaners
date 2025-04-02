@@ -289,7 +289,6 @@ export class Weapon {
         // Apply critical hit if crit is true
         if (crit) {
           damagePerBullet *= 2;
-          console.log('Critical hit! Dealt double damage.');
         }
 
         damageableEntity.takeDamage(damagePerBullet);
@@ -436,7 +435,6 @@ export class Weapon {
     return {
       weaponType: this.weaponType,
       currentRarity: this.currentRarity,
-      weaponData: this.weaponData,
       embeddedPassives: this.embeddedPassives,
     };
   }
@@ -447,8 +445,18 @@ export class Weapon {
   public static deserialize(data: WeaponSerializedData, player: Player): Weapon {
     const weapon = new Weapon(player, data.weaponType, data.currentRarity);
 
-    weapon.weaponData = data.weaponData;
-    weapon.applyCurrentStats();
+    // We don't need to save/load the stat arrays as we will re-get them from the json.
+    // Actually, saving them would be a bad idea as these arrays are directly
+    // affected by passives, passives that we re-apply
+    // So we simply init the weapon and apply the passives
+    weapon.init().then(() => {
+      console.log('Deserializing weapon', data.weaponType);
+      console.log('Current rarity', data.currentRarity);
+      console.log('Current ammo', weapon.currentAmmoRemaining);
+      console.log('Embedded passives', data.embeddedPassives);
+      console.log('Weapon data', weapon.weaponData);
+      console.log('Current stats', weapon.currentStats);
+    });
 
     const pm = PassivesManager.getInstance();
     // We need to reapply the passives to the weapon
