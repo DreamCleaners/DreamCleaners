@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import '../styles/stageSelectionUI.css';
 import { StagesManager } from '../lib/stages/stagesManager';
 import { GameContext } from '../contexts/GameContext';
-import { WeaponRarity } from '../lib/weapons/weaponRarity';
+import { Rarity } from '../lib/shop/rarity.ts';
 import { StageInformation } from '../lib/stages/stageInformation';
 
 const StageSelectionUI = () => {
@@ -53,7 +53,7 @@ const StageSelectionUI = () => {
                   <div className="reward-weapon">
                     <span>A random weapon of quality:</span>
                     <span>
-                      {WeaponRarity[stageInfo.stageReward.getWeaponReward()?.rarity || 0]}
+                      {Rarity[stageInfo.stageReward.getWeaponReward()?.rarity || 0]}
                     </span>
                   </div>
                 </div>

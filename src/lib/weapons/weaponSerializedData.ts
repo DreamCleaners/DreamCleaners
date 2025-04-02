@@ -1,9 +1,7 @@
-import { WeaponRarity } from './weaponRarity';
+import { Rarity } from '../shop/rarity.ts';
 import { WeaponType } from './weaponType';
-import { WeaponData } from './weaponData';
 
 export interface WeaponSerializedData {
   weaponType: WeaponType;
-  currentRarity: WeaponRarity;
-  weaponData: WeaponData;
+  currentRarity: Rarity;
 }

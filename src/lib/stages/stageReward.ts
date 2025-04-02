@@ -1,4 +1,4 @@
-import { WeaponRarity } from '../weapons/weaponRarity';
+import { Rarity } from '../shop/rarity.ts';
 import { WeaponType } from '../weapons/weaponType';
 import { Weapon } from '../weapons/weapon';
 import { Player } from '../player/player';
@@ -51,8 +51,8 @@ export class StageReward {
   }
 
   /** Picks a rarity for the wepaon, based on the run progress */
-  private pickRandomRarity(runProgression: number): WeaponRarity {
-    const rarities = Object.values(WeaponRarity).filter(
+  private pickRandomRarity(runProgression: number): Rarity {
+    const rarities = Object.values(Rarity).filter(
       (value) => typeof value === 'number',
     ) as number[];
 
@@ -74,12 +74,12 @@ export class StageReward {
     for (let i = 0; i < rarities.length; i++) {
       cumulativeWeight += weights[i];
       if (randomValue < cumulativeWeight) {
-        return rarities[i] as WeaponRarity;
+        return rarities[i] as Rarity;
       }
     }
 
     // Fallback to the lowest rarity in case of an error
-    return rarities[0] as WeaponRarity;
+    return rarities[0] as Rarity;
   }
 
   public getMoneyReward(): number {

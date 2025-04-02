@@ -8,7 +8,7 @@ import PauseMenu from './PauseMenu';
 import GameOverUI from './GameOverUI';
 import StageSelectionUI from './StageSelectionUI';
 import StageEndUI from './StageEndUI';
-import PlayerUpgradeUI from './PlayerUpgradeUI';
+import ComputerUI from './ComputerUI';
 
 const UserInterface = () => {
   const game = useContext(GameContext);
@@ -31,7 +31,7 @@ const UserInterface = () => {
       {isPaused && <PauseMenu />}
       {uiType === UIType.MAIN_MENU && <MainMenu />}
       {uiType === UIType.PLAYER_HUD && <PlayerHUD />}
-      {uiType === UIType.PLAYER_UPGRADES && <PlayerUpgradeUI />}
+      {uiType === UIType.COMPUTER && <ComputerUI />}
       {uiType === UIType.SCORE && <StageEndUI />}
       {uiType === UIType.STAGE_SELECTION && <StageSelectionUI />}
       {uiType === UIType.GAME_OVER && <GameOverUI />}

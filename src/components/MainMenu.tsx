@@ -22,6 +22,7 @@ const MainMenu = () => {
         <button onClick={handleContinueGame}>Continue Game</button>
       )}
       <button onClick={handleNewGame}>New Game</button>
+      <p>Version {game.VERSION}</p>
     </div>
   );
 };

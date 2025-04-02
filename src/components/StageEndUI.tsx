@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
-import { WeaponRarity } from '../lib/weapons/weaponRarity';
+import { Rarity } from '../lib/shop/rarity.ts';
 import '../styles/stageEndUI.css';
 
 const StageEndUI = () => {
@@ -85,14 +85,14 @@ const StageEndUI = () => {
               <div className="reward-weapon">
                 <h3>Reward Weapon</h3>
                 <p>Type: {weaponReward.weaponType}</p>
-                <p>Rarity: {WeaponRarity[weaponReward.rarity]}</p>
+                <p>Rarity: {Rarity[weaponReward.rarity]}</p>
               </div>
             )}
             <h4 className="current-weapons-label">Current Weapons</h4>
             <div className="player-weapons">
               <div className="player-weapon left">
                 <p>Type: {playerWeapons[0].weaponType}</p>
-                <p>Rarity: {WeaponRarity[playerWeapons[0].currentRarity]}</p>
+                <p>Rarity: {Rarity[playerWeapons[0].currentRarity]}</p>
                 {!rewardUsed && (
                   <button onClick={() => handleReplaceWeapon(0)}>Replace</button>
                 )}
@@ -101,7 +101,7 @@ const StageEndUI = () => {
                 {playerWeapons[1] ? (
                   <>
                     <p>Type: {playerWeapons[1].weaponType}</p>
-                    <p>Rarity: {WeaponRarity[playerWeapons[1].currentRarity]}</p>
+                    <p>Rarity: {Rarity[playerWeapons[1].currentRarity]}</p>
                     {!rewardUsed && (
                       <button onClick={() => handleReplaceWeapon(1)}>Replace</button>
                     )}
