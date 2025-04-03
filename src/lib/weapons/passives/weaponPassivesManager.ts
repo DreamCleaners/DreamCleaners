@@ -5,9 +5,9 @@ import { Weapon } from '../weapon';
 import { LuckyShot } from './tier_one/luckyShot';
 import { WeaponPassive } from './weaponPassive';
 
-// Thus, PassivesManager acts as a factory as well as a registry.
-export class PassivesManager {
-  private static instance: PassivesManager | null = null;
+// Thus, WeaponPassivesManager acts as a factory as well as a registry.
+export class WeaponPassivesManager {
+  private static instance: WeaponPassivesManager | null = null;
 
   // A map of all the passives and their instance in the game.
   private passives: Map<WeaponPassiveType, WeaponPassive> = new Map<
@@ -15,15 +15,16 @@ export class PassivesManager {
     WeaponPassive
   >();
 
-  public static getInstance(): PassivesManager {
+  public static getInstance(): WeaponPassivesManager {
     if (this.instance === null) {
-      this.instance = new PassivesManager();
+      this.instance = new WeaponPassivesManager();
     }
     return this.instance;
   }
 
   private constructor() {
     // We initialize all our passives and we store them in the map
+    // Only put the passives here if they are implemented
     this.passives.set(WeaponPassiveT1.LUCKY_SHOT, new LuckyShot());
 
     // ... add more passives here

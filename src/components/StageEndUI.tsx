@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import { WeaponRarity } from '../lib/weapons/weaponRarity';
 import '../styles/stageEndUI.css';
-import { PassivesManager } from '../lib/weapons/passives/passivesManager';
+import { WeaponPassivesManager } from '../lib/weapons/passives/weaponPassivesManager';
 
 const StageEndUI = () => {
   const game = useContext(GameContext);
@@ -89,7 +89,7 @@ const StageEndUI = () => {
                 <p>Rarity: {WeaponRarity[weaponReward.rarity]}</p>
                 {weaponReward.embeddedPassives.map((passive, index) => (
                   <p key={index}>
-                    Passive {index + 1}: {PassivesManager.getInstance().getPrettyPassiveName(passive)}
+                    Passive {index + 1}: {WeaponPassivesManager.getInstance().getPrettyPassiveName(passive)}
                   </p>
                 ))}
               </div>

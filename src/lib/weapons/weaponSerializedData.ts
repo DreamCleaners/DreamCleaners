@@ -1,4 +1,4 @@
-import { WeaponPassiveType } from './passives/passivesManager';
+import { WeaponPassiveType } from './passives/weaponPassivesManager';
 import { WeaponRarity } from './weaponRarity';
 import { WeaponType } from './weaponType';
 

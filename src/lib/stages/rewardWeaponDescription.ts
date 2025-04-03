@@ -1,4 +1,4 @@
-import { WeaponPassiveType } from '../weapons/passives/passivesManager';
+import { WeaponPassiveType } from '../weapons/passives/weaponPassivesManager';
 import { WeaponType } from '../weapons/weaponType';
 
 /** Contains basic information on the weapon that will be a stage reward

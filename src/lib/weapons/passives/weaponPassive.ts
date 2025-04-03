@@ -1,5 +1,5 @@
 import { Weapon } from '../weapon';
-import { WeaponPassiveType } from './passivesManager';
+import { WeaponPassiveType } from './weaponPassivesManager';
 
 export abstract class WeaponPassive {
   public abstract name: string;

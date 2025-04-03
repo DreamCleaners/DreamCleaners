@@ -1,5 +1,5 @@
 import { Weapon } from '../../weapon';
-import { WeaponPassiveT1, WeaponPassiveType } from '../passivesManager';
+import { WeaponPassiveT1, WeaponPassiveType } from '../weaponPassivesManager';
 import { WeaponPassive } from '../weaponPassive';
 
 export class LuckyShot extends WeaponPassive {

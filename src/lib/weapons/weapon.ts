@@ -18,7 +18,7 @@ import { IMetadataObject } from '../metadata/metadataObject';
 import { WeaponSerializedData } from './weaponSerializedData';
 import { WeaponData } from './weaponData';
 import { GlobalStats } from './globalStats';
-import { PassivesManager, WeaponPassiveType } from './passives/passivesManager';
+import { WeaponPassivesManager, WeaponPassiveType } from './passives/weaponPassivesManager';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -58,7 +58,7 @@ export class Weapon {
 
   // Passives related
   // We only store the names of the passives embedded in the weapon
-  // The actual instances of the passives are stored in the PassivesManager
+  // The actual instances of the passives are stored in the WeaponPassivesManager
   public embeddedPassives: WeaponPassiveType[] = [];
 
   // Lucky shot related
@@ -450,7 +450,7 @@ export class Weapon {
     // So we simply init the weapon and apply the passives
     weapon.init();
 
-    const pm = PassivesManager.getInstance();
+    const pm = WeaponPassivesManager.getInstance();
     // We need to reapply the passives to the weapon
     pm.applyPassivesToWeapon(weapon, data.embeddedPassives);
 

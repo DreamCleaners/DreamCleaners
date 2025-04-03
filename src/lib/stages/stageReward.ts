@@ -4,12 +4,12 @@ import { Weapon } from '../weapons/weapon';
 import { Player } from '../player/player';
 import { RewardWeaponDescription } from './rewardWeaponDescription';
 import {
-  PassivesManager,
+  WeaponPassivesManager,
   WeaponPassiveT1,
   WeaponPassiveT2,
   WeaponPassiveT3,
   WeaponPassiveType,
-} from '../weapons/passives/passivesManager';
+} from '../weapons/passives/weaponPassivesManager';
 
 /** The rewards linked to a stage */
 export class StageReward {
@@ -171,7 +171,7 @@ export class StageReward {
     );
     await weapon.init();
     // We also need to apply the passives to the weapon
-    PassivesManager.getInstance().applyPassivesToWeapon(
+    WeaponPassivesManager.getInstance().applyPassivesToWeapon(
       weapon,
       this.weaponReward.embeddedPassives,
     );
