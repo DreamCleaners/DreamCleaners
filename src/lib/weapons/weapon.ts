@@ -22,6 +22,8 @@ import {
   WeaponPassivesManager,
   WeaponPassiveType,
 } from './passives/weaponPassivesManager';
+import { BulletEffect } from './passives/bulletEffect.ts';
+import { Enemy } from '../enemies/enemy.ts';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -66,6 +68,9 @@ export class Weapon {
 
   // Lucky shot related
   public critChanceModifier: number = 0;
+
+  // Bullet effects
+  public bulletEffects: BulletEffect[] = [];
 
   constructor(
     private player: Player,
@@ -212,9 +217,6 @@ export class Weapon {
   /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
    * depending on the projection cone of the weapon (The most obvious example is the shotgun)
    */
-  /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
-   * depending on the projection cone of the weapon (The most obvious example is the shotgun)
-   */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
     // Determine if this shot is a critical hit
     const isCriticalHit =
@@ -296,6 +298,18 @@ export class Weapon {
 
         damageableEntity.takeDamage(damagePerBullet);
 
+        // Also need to apply the bullet effects to the entity
+        if (this.bulletEffects.length > 0) {
+          const damageableEntity = metadata.object;
+          // We obviously don't want to apply effects on damageable
+          // entities that are not enemies
+          if (this.isEnemy(damageableEntity)) {
+            for (const effect of this.bulletEffects) {
+              damageableEntity.bulletEffectManager.applyEffect(effect);
+            }
+          }
+        }
+
         console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
       }
     }
@@ -310,6 +324,10 @@ export class Weapon {
     setTimeout(() => {
       line.dispose();
     }, 50);
+  }
+
+  private isEnemy(entity: IDamageable): entity is Enemy {
+    return entity instanceof Enemy;
   }
 
   // --------------------- Ammo related ---------------------------

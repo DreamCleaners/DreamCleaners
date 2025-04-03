@@ -58,19 +58,12 @@ export class Zombie extends Enemy {
     const rootNode = this.mesh.getChildTransformNodes(true)[0];
     rootNode.scaling.scaleInPlace(0.3);
 
-    const agentParameters = {
-      radius: 0.5,
-      height: 2.5,
-      maxAcceleration: 8.0,
-      maxSpeed: this.SPEED,
-      collisionQueryRange: 0.5,
-      pathOptimizationRange: 0.5,
-      separationWeight: 1.0,
-    };
+    // Use agentParameters from the parent class
+    this.agentParameters.maxSpeed = this.SPEED;
 
     const hitbox = MeshBuilder.CreateCapsule('capsule', {
-      height: agentParameters.height,
-      radius: agentParameters.radius,
+      height: this.agentParameters.height,
+      radius: this.agentParameters.radius,
       tessellation: 16,
     });
     hitbox.name = GameEntityType.ENEMY;
@@ -84,7 +77,7 @@ export class Zombie extends Enemy {
     // navigation
     this.agentIndex = this.gameScene.navigationManager.crowd.addAgent(
       position,
-      agentParameters,
+      this.agentParameters,
       this.mesh,
     );
 
@@ -119,6 +112,7 @@ export class Zombie extends Enemy {
 
   override update(): void {
     if (!this.initialized) return;
+    super.update();
 
     this.animationController.update();
   }

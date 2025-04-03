@@ -10,6 +10,7 @@ import { AnimationController } from '../animations/animationController';
 import { ZombieState } from './zombie';
 import { IDamageable } from '../damageable';
 import { GameScene } from '../scenes/gameScene';
+import { BulletEffectManager } from '../weapons/passives/bulletEffectManager';
 
 export abstract class Enemy implements IDamageable {
   public mesh!: Mesh;
@@ -21,9 +22,20 @@ export abstract class Enemy implements IDamageable {
   protected isAttacking = false;
   protected agentIndex: number = -1;
 
+  // Moved agentParameters here
+  protected agentParameters = {
+    radius: 0.5,
+    height: 2.5,
+    maxAcceleration: 8.0,
+    maxSpeed: 1, // Default value, will be updated in initStats
+    collisionQueryRange: 0.5,
+    pathOptimizationRange: 0.5,
+    separationWeight: 1.0,
+  };
+
   protected physicsAggregate!: PhysicsAggregate;
   protected target: Vector3 = Vector3.Zero();
-  protected SPEED!: number;
+  public SPEED!: number;
   protected ATTACK_RANGE!: number;
 
   protected entries!: InstantiatedEntries;
@@ -31,6 +43,9 @@ export abstract class Enemy implements IDamageable {
   protected initialized = false;
 
   public onDeathObservable!: Observable<void>;
+
+  // Bullet effects
+  public bulletEffectManager!: BulletEffectManager;
 
   constructor(
     protected gameScene: GameScene,
@@ -42,9 +57,13 @@ export abstract class Enemy implements IDamageable {
     this.initStats(difficultyFactor);
     this.target = this.gameScene.game.player.hitbox.position;
     this.entries = entries;
+    this.bulletEffectManager = new BulletEffectManager(this);
   }
 
-  public update(): void {}
+  public update(): void {
+    this.bulletEffectManager.update();
+  }
+
   public fixedUpdate(): void {}
 
   public takeDamage(damage: number): void {
@@ -61,5 +80,18 @@ export abstract class Enemy implements IDamageable {
   public onDeath(): void {
     this.state = this.deadState;
     this.dispose();
+  }
+
+  /** Updates the enemy's speed by updating the agent parameters */
+  public updateSpeed(newSpeed: number): void {
+    this.SPEED = newSpeed;
+    this.agentParameters.maxSpeed = newSpeed;
+
+    if (this.agentIndex !== -1) {
+      this.gameScene.navigationManager.crowd.updateAgentParameters(
+        this.agentIndex,
+        this.agentParameters,
+      );
+    }
   }
 }

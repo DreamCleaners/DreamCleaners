@@ -2,7 +2,9 @@
 // More precisely, it is used to store all passives instances, and is used as a hub
 // to get information about the passives.
 import { Weapon } from '../weapon';
+import { Johnny } from './tier_one/johnny';
 import { LuckyShot } from './tier_one/luckyShot';
+import { Snail } from './tier_one/snail';
 import { WeaponPassive } from './weaponPassive';
 
 // Thus, WeaponPassivesManager acts as a factory as well as a registry.
@@ -26,6 +28,8 @@ export class WeaponPassivesManager {
     // We initialize all our passives and we store them in the map
     // Only put the passives here if they are implemented
     this.passives.set(WeaponPassiveT1.LUCKY_SHOT, new LuckyShot());
+    this.passives.set(WeaponPassiveT1.SNAIL, new Snail());
+    this.passives.set(WeaponPassiveT1.JOHNNY, new Johnny());
 
     // ... add more passives here
   }
@@ -88,6 +92,8 @@ export type WeaponPassiveType = WeaponPassiveT1 | WeaponPassiveT2 | WeaponPassiv
 // (name field in the classes)
 export enum WeaponPassiveT1 {
   LUCKY_SHOT = 'LUCKY_SHOT',
+  SNAIL = 'SNAIL',
+  JOHNNY = 'JOHNNY',
 }
 
 export enum WeaponPassiveT2 {
