@@ -9,6 +9,14 @@ import { PlayerPassiveItem } from './playerPassiveItem';
 import { randomFloat, randomInt } from '../utils/random';
 import { PlayerPassiveType } from './playerPassiveType';
 import { ISaveable } from '../saveable';
+import { WeaponPassiveItem } from './weaponPassiveItem';
+import {
+  WeaponPassivesManager,
+  WeaponPassiveT1,
+  WeaponPassiveT2,
+  WeaponPassiveT3,
+  WeaponPassiveType,
+} from '../weapons/passives/weaponPassivesManager';
 
 export class ShopManager implements ISaveable {
   private readonly ITEM_SLOT_COUNT = 3;
@@ -26,6 +34,9 @@ export class ShopManager implements ISaveable {
   private readonly PLAYER_PASSIVE_DROP_RATE = 0.7;
   private readonly playerPassiveItems = new Map<Rarity, PlayerPassiveItem[]>();
   private alreadyProposedPlayerPassives = new Map<Rarity, PlayerPassiveItem[]>();
+
+  // Weapon passives
+  private readonly WEAPON_PASSIVE_DROP_RATE = 0.1;
 
   constructor(private game: Game) {}
 
@@ -78,7 +89,16 @@ export class ShopManager implements ISaveable {
       const chance = randomFloat(0, 1);
       const rarity = this.getRandomRarity();
 
-      // player passive item
+      // WeaponPassive item (10% probability)
+      if (chance < this.WEAPON_PASSIVE_DROP_RATE) {
+        const weaponPassiveItem = this.getRandomWeaponPassiveItem(rarity);
+        if (weaponPassiveItem) {
+          this.currentShopItems.push(weaponPassiveItem);
+          continue;
+        }
+      }
+
+      // Player passive item
       if (chance < this.PLAYER_PASSIVE_DROP_RATE) {
         const playerPassiveItem = this.getRandomPlayerPassiveItem(rarity);
         if (playerPassiveItem) {
@@ -87,7 +107,7 @@ export class ShopManager implements ISaveable {
         }
       }
 
-      // generate a weapon item if the slot is empty
+      // Generate a weapon item if the slot is empty
       this.currentShopItems.push(this.getRandomWeaponItem(rarity));
     }
 
@@ -246,6 +266,77 @@ export class ShopManager implements ISaveable {
     this.game.player.inventory.replaceWeaponInInventory(weapon, inventoryIndex);
 
     this.removeItemFromShop(weaponItem);
+  }
+
+  // ------------------- Weapons passives --------------------
+  // ---------------------------------------------------------
+
+  private getRandomWeaponPassiveItem(rarity: Rarity): WeaponPassiveItem | null {
+    let correspondingWeaponPassives: string[];
+
+    // Determine the corresponding weapon passives based on rarity
+    // Needed as the weapon passives do not use the same rarity system as the rest
+    switch (rarity) {
+      case Rarity.COMMON:
+        correspondingWeaponPassives = Object.keys(WeaponPassiveT1);
+        break;
+      case Rarity.RARE:
+      case Rarity.EPIC:
+        correspondingWeaponPassives = Object.keys(WeaponPassiveT2);
+        break;
+      case Rarity.LEGENDARY:
+        correspondingWeaponPassives = Object.keys(WeaponPassiveT3);
+        break;
+      default:
+        console.log('Invalid rarity provided for weapon passive item');
+        return null;
+    }
+
+    // If no passives are available for the given rarity, return null
+    if (correspondingWeaponPassives.length === 0) {
+      return null;
+    }
+
+    // We pick a random passive from the corresponding list
+    const passiveIndex = randomInt(0, correspondingWeaponPassives.length - 1);
+    const passiveType = correspondingWeaponPassives[passiveIndex] as WeaponPassiveType;
+
+    const weaponPassivesManager = WeaponPassivesManager.getInstance();
+    const prettyName = weaponPassivesManager.getPrettyPassiveName(passiveType);
+    const description = weaponPassivesManager.getPassiveDescription(passiveType);
+
+    if (rarity === Rarity.RARE) {
+      // We don't want rare passives in the game.
+      // Only common epic legendaries
+      // This if() is not mandatory in fact, we use it in order not to have
+      // The possibility of having the same weapon passive in rare and epic
+      // Meaning the displayed color in shop UI can differ for the same passive
+      rarity = Rarity.EPIC;
+    }
+
+    return new WeaponPassiveItem(
+      prettyName,
+      description,
+      100,
+      ShopItemType.WEAPON_PASSIVE,
+      rarity,
+      passiveType,
+    );
+  }
+
+  public buyWeaponPassive(weaponPassive: WeaponPassiveItem, index: number): void {
+    this.game.moneyManager.removePlayerMoney(weaponPassive.price);
+
+    // We apply the passive to the desired weapon
+    WeaponPassivesManager.getInstance().applyPassiveToWeapon(
+      this.game.player.inventory.getWeapons()[index],
+      weaponPassive.weaponPassiveType,
+    );
+
+    // For now no handling of proposed weapon passives recurrency
+
+    // Remove the item from the shop
+    this.removeItemFromShop(weaponPassive);
   }
 
   // --------------------- Save system -----------------------

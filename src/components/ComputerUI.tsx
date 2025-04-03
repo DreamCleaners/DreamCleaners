@@ -6,6 +6,7 @@ import { Rarity } from '../lib/shop/rarity';
 import { ShopItemType } from '../lib/shop/shopItemType';
 import { PlayerPassiveItem } from '../lib/shop/playerPassiveItem';
 import { WeaponItem } from '../lib/shop/weaponItem';
+import { WeaponPassiveItem } from '../lib/shop/weaponPassiveItem';
 
 const ComputerUI = () => {
   const game = useContext(GameContext);
@@ -14,6 +15,8 @@ const ComputerUI = () => {
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
 
   const [selectedWeapon, setSelectedWeapon] = useState<WeaponItem | null>(null);
+  const [selectedWeaponPassive, setSelectedWeaponPassive] =
+    useState<WeaponPassiveItem | null>(null);
 
   const handleCloseUI = () => {
     if (!game) return;
@@ -27,6 +30,8 @@ const ComputerUI = () => {
       setSelectedWeapon(item as WeaponItem);
     } else if (item.type === ShopItemType.PLAYER_PASSIVE) {
       game.shopManager.buyPlayerPassive(item as PlayerPassiveItem);
+    } else if (item.type === ShopItemType.WEAPON_PASSIVE) {
+      setSelectedWeaponPassive(item as WeaponPassiveItem);
     }
   };
 
@@ -40,6 +45,13 @@ const ComputerUI = () => {
 
     await game.shopManager.buyWeapon(weapon, index);
     setSelectedWeapon(null);
+  };
+
+  const handleApplyWeaponPassive = (weaponPassive: WeaponPassiveItem, index: number) => {
+    if (!game) return;
+
+    game.shopManager.buyWeaponPassive(weaponPassive, index);
+    setSelectedWeaponPassive(null);
   };
 
   // debug only!
@@ -118,6 +130,38 @@ const ComputerUI = () => {
           </div>
         ))}
         <button onClick={() => setSelectedWeapon(null)}>Back</button>
+      </div>
+    );
+  }
+
+  if (selectedWeaponPassive !== null) {
+    return (
+      <div className="computer-interface-container">
+        <h1>Choose a weapon to apply the passive</h1>
+        {Array.from({ length: 2 }, (_, index) => (
+          <div key={index}>
+            {game.player.inventory.getWeapons().length <= index ? (
+              <div>Empty slot</div>
+            ) : (
+              <h3
+                style={{
+                  background: getBackgroundColor(
+                    game.player.inventory.getWeapons()[index].currentRarity,
+                  ),
+                }}
+              >
+                {game.player.inventory.getWeapons()[index].weaponData.weaponName}
+              </h3>
+            )}
+            <button
+              onClick={() => handleApplyWeaponPassive(selectedWeaponPassive, index)}
+              disabled={game.player.inventory.getWeapons().length <= index}
+            >
+              Apply to Weapon
+            </button>
+          </div>
+        ))}
+        <button onClick={() => setSelectedWeaponPassive(null)}>Back</button>
       </div>
     );
   }

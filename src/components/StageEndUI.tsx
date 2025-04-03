@@ -84,12 +84,13 @@ const StageEndUI = () => {
           <div className="weapon-reward-container">
             {!rewardUsed && (
               <div className="reward-weapon">
-              <h3>Reward Weapon</h3>
+                <h3>Reward Weapon</h3>
                 <p>Type: {weaponReward.weaponType}</p>
                 <p>Rarity: {Rarity[weaponReward.rarity]}</p>
                 {weaponReward.embeddedPassives.map((passive, index) => (
                   <p key={index}>
-                    Passive {index + 1}: {WeaponPassivesManager.getInstance().getPrettyPassiveName(passive)}
+                    Passive {index + 1}:{' '}
+                    {WeaponPassivesManager.getInstance().getPrettyPassiveName(passive)}
                   </p>
                 ))}
               </div>

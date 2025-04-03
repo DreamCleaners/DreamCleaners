@@ -18,7 +18,10 @@ import { IMetadataObject } from '../metadata/metadataObject';
 import { WeaponSerializedData } from './weaponSerializedData';
 import { WeaponData } from './weaponData';
 import { GlobalStats } from './globalStats';
-import { WeaponPassivesManager, WeaponPassiveType } from './passives/weaponPassivesManager';
+import {
+  WeaponPassivesManager,
+  WeaponPassiveType,
+} from './passives/weaponPassivesManager';
 
 export class Weapon {
   private rootMesh!: TransformNode;

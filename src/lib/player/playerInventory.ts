@@ -1,5 +1,4 @@
 import { ISaveable } from '../saveable';
-import { LuckyShot } from '../weapons/passives/tier_one/luckyShot';
 import { Weapon } from '../weapons/weapon';
 import { Rarity } from '../shop/rarity.ts';
 import { WeaponSerializedData } from '../weapons/weaponSerializedData';
@@ -50,12 +49,7 @@ export class PlayerInventory implements ISaveable {
     this.weapons = [];
     const weapon = new Weapon(this.player, WeaponType.SHOTGUN, Rarity.COMMON);
 
-    // debug lucky shot
-    const luckyShot = new LuckyShot();
     this.addWeaponToInventory(weapon);
-    luckyShot.embedPassiveToWeapon(weapon);
-    // --
-
     // We also reset the player passives
     this.playerPassives = [];
   }

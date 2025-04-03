@@ -42,7 +42,7 @@ const StageSelectionUI = () => {
           )}
         </div>
         <div className="stage-reward-container">
-        <h3 className="stage-reward-title">Stage Reward</h3>
+          <h3 className="stage-reward-title">Stage Reward</h3>
           {stageInfo ? (
             <div className="stage-reward-content">
               {stageInfo.stageReward.getWeaponReward() ? (
@@ -53,17 +53,22 @@ const StageSelectionUI = () => {
                   <div className="reward-weapon">
                     <span>
                       {`Weapon: ${
-                        stageInfo.stageReward.getWeaponReward()?.weaponType?.toUpperCase() ?? 'Unknown'
+                        stageInfo.stageReward
+                          .getWeaponReward()
+                          ?.weaponType?.toUpperCase() ?? 'Unknown'
                       } of quality: ${
                         Rarity[stageInfo.stageReward.getWeaponReward()?.rarity ?? 0]
                       }`}
                     </span>
-                    {(stageInfo.stageReward.getWeaponReward()?.embeddedPassives ?? []).length > 0 && (
+                    {(stageInfo.stageReward.getWeaponReward()?.embeddedPassives ?? [])
+                      .length > 0 && (
                       <span>
                         This weapon has{' '}
-                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives?.length ?? 0}{' '}
+                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives
+                          ?.length ?? 0}{' '}
                         hidden{' '}
-                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives?.length === 1
+                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives
+                          ?.length === 1
                           ? 'passive'
                           : 'passives'}
                         !
