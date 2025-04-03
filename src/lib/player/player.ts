@@ -18,9 +18,7 @@ import { InputAction } from '../inputs/inputAction';
 import { IDamageable } from '../damageable';
 import { HealthController } from '../healthController';
 import { GameEntityType } from '../gameEntityType';
-import { PlayerUpgradeManager } from './playerUpgradeManager';
 import { CameraManager } from './cameraManager';
-import { PlayerUpgradeType } from './playerUpgradeType';
 import { InteractiveElement } from '../interactiveElements/interactiveElement';
 import { AdvancedDynamicTexture } from '@babylonjs/gui/2D/advancedDynamicTexture';
 import { Rectangle } from '@babylonjs/gui/2D/controls/rectangle';
@@ -32,7 +30,6 @@ export class Player implements IDamageable {
   private inputs: InputState;
   public cameraManager!: CameraManager;
   public hitbox!: Mesh;
-  public playerUpgradeManager!: PlayerUpgradeManager;
 
   // gui
   private gui: AdvancedDynamicTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
@@ -45,7 +42,7 @@ export class Player implements IDamageable {
   public onWeaponChange = new Observable<Weapon>();
 
   // movement
-  private movementSpeed = 0;
+  public movementSpeed = 9;
   private moveDirection: Vector2 = Vector2.Zero();
 
   // health
@@ -56,6 +53,7 @@ export class Player implements IDamageable {
   private regenSpeed = 0; // seconds
   private lastRegenTick = 0; // ms
   private isRegenUnlocked = false;
+  private readonly BASE_HEALTH = 1000;
 
   // physics
   public physicsEngine!: PhysicsEngineV2;
@@ -106,25 +104,18 @@ export class Player implements IDamageable {
   constructor(public game: Game) {
     this.physicsEngine = game.scene.getPhysicsEngine() as PhysicsEngineV2;
     this.inputs = game.inputManager.inputState;
+
     this.healthController.onDeath.add(this.onGameOver.bind(this));
+    this.healthController.init(this.BASE_HEALTH);
+
     this.initPhysicsAggregate();
     this.cameraManager = new CameraManager(this);
 
     this.initInteractionUI();
-
-    // player upgrades
-    this.playerUpgradeManager = new PlayerUpgradeManager(game);
-    this.playerUpgradeManager.onPlayerUpgradeChange.add(
-      this.onPlayerUpgradeChange.bind(this),
-    );
-    this.playerUpgradeManager.onPlayerUpgradeUnlock.add(
-      this.onPlayerUpgradeUnlock.bind(this),
-    );
   }
 
   public async start(): Promise<void> {
     this.setPosition(new Vector3(0, 1, 0));
-    this.setPlayerUpgrades();
 
     const weapons = this.inventory.getWeapons();
 
@@ -134,6 +125,11 @@ export class Player implements IDamageable {
     if (weapons.length > 0) {
       this.equipWeapon(0, true);
     }
+
+    const playerPassives = this.inventory.getPlayerPassives();
+    playerPassives.forEach((passive) => {
+      passive.apply();
+    });
   }
 
   public setPosition(position: Vector3): void {
@@ -263,52 +259,6 @@ export class Player implements IDamageable {
 
   public resetHealth(): void {
     this.healthController.addHealth(this.healthController.getMaxHealth());
-  }
-
-  // ------------------- Player Upgrades ---------------------
-  // ---------------------------------------------------------
-
-  private onPlayerUpgradeChange(upgradeType: PlayerUpgradeType): void {
-    if (upgradeType === PlayerUpgradeType.MOVEMENT_SPEED) {
-      this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-        PlayerUpgradeType.MOVEMENT_SPEED,
-      );
-    } else if (upgradeType === PlayerUpgradeType.MAX_HEALTH) {
-      this.healthController.setMaxHealth(
-        this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
-      );
-      this.healthController.addHealth(this.healthController.getMaxHealth());
-    } else if (upgradeType === PlayerUpgradeType.REGEN_SPEED) {
-      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-        PlayerUpgradeType.REGEN_SPEED,
-      );
-    }
-  }
-
-  private onPlayerUpgradeUnlock(upgradeType: PlayerUpgradeType): void {
-    if (upgradeType === PlayerUpgradeType.REGEN_SPEED) {
-      this.isRegenUnlocked = true;
-      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-        PlayerUpgradeType.REGEN_SPEED,
-      );
-    }
-  }
-
-  private setPlayerUpgrades(): void {
-    this.healthController.init(
-      this.playerUpgradeManager.getCurrentUpgradeValue(PlayerUpgradeType.MAX_HEALTH),
-    );
-
-    this.movementSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-      PlayerUpgradeType.MOVEMENT_SPEED,
-    );
-
-    if (this.playerUpgradeManager.isUpgradeUnlocked(PlayerUpgradeType.REGEN_SPEED)) {
-      this.isRegenUnlocked = true;
-      this.regenSpeed = this.playerUpgradeManager.getCurrentUpgradeValue(
-        PlayerUpgradeType.REGEN_SPEED,
-      );
-    }
   }
 
   // --------------------- Physics --------------------------

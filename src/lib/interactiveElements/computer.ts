@@ -7,7 +7,7 @@ import { MetadataFactory } from '../metadata/metadataFactory';
 
 export class Computer extends InteractiveElement {
   override interact(): void {
-    this.gameScene.game.uiManager.displayUI(UIType.PLAYER_UPGRADES);
+    this.gameScene.game.uiManager.displayUI(UIType.COMPUTER);
   }
 
   override async create(position: Vector3): Promise<void> {

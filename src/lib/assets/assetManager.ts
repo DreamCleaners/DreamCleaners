@@ -13,13 +13,8 @@ import { GameAssetContainer } from './gameAssetContainer';
 import { UnityPhysicShapeToken, UnityTypeToken } from './unityTokens';
 import { UnityScene } from './unityScene';
 import { SpawnTrigger } from '../stages/spawnTrigger';
-import { WeaponType } from '../weapons/weaponType';
-import { WeaponData } from '../weapons/weaponData';
-import { WeaponJson } from '../weapons/weaponJson';
 
 export class AssetManager {
-  private weaponDataCache: Map<WeaponType, WeaponData> = new Map();
-
   constructor(private scene: Scene) {}
 
   public async loadGameAssetContainer(
@@ -29,44 +24,6 @@ export class AssetManager {
     const assetKey = `meshes/${assetType}/${assetName}`;
     const assetContainer = await LoadAssetContainerAsync(`${assetKey}.glb`, this.scene);
     return GameAssetContainer.createFromAssetContainer(assetContainer);
-  }
-
-  public async loadWeaponData(weaponType: WeaponType): Promise<WeaponData> {
-    let weaponData = this.weaponDataCache.get(weaponType);
-
-    if (!weaponData) {
-      try {
-        const response = await fetch(`./data/weapons/${weaponType}.json`);
-        const weaponJson = (await response.json()) as WeaponJson;
-
-        const globalStats = [];
-
-        for (let i = 0; i < weaponJson.globalStats.damage.length; i++) {
-          globalStats.push({
-            damage: weaponJson.globalStats.damage[i],
-            reloadTime: weaponJson.globalStats.reloadTime[i],
-            cadency: weaponJson.globalStats.cadency[i],
-            range: weaponJson.globalStats.range[i],
-            magazineSize: weaponJson.globalStats.magazineSize[i],
-          });
-        }
-
-        weaponData = {
-          weaponName: weaponJson.weaponName,
-          globalStats: globalStats,
-          staticStats: weaponJson.staticStats,
-          transform: weaponJson.transform,
-          firePoint: weaponJson.firePoint,
-        };
-
-        this.weaponDataCache.set(weaponType, weaponData);
-      } catch (error) {
-        console.error(`Failed to load weapon data: ${weaponType}` + error);
-        throw error;
-      }
-    }
-
-    return weaponData;
   }
 
   public async instantiateUnityScene(sceneName: string): Promise<UnityScene> {

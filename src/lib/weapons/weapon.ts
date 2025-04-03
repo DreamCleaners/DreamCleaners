@@ -1,4 +1,4 @@
-import { WeaponRarity } from './weaponRarity';
+import { Rarity } from '../shop/rarity.ts';
 import { Player } from '../player/player';
 import {
   Matrix,
@@ -35,7 +35,7 @@ export class Weapon {
   public weaponData!: WeaponData;
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
   private currentStats!: GlobalStats;
-  public currentRarity!: WeaponRarity;
+  public currentRarity!: Rarity;
 
   private lastWeaponFire = 0;
 
@@ -67,16 +67,16 @@ export class Weapon {
   constructor(
     private player: Player,
     public weaponType: WeaponType,
-    rarity: WeaponRarity,
+    rarity: Rarity,
   ) {
     this.player = player;
     this.currentRarity = rarity;
     this.physicsEngine = player.physicsEngine;
+    this.weaponData = this.player.game.weaponManager.getWeaponData(this.weaponType);
+    this.applyCurrentStats();
   }
 
   public async init(): Promise<void> {
-    this.weaponData = await this.player.game.assetManager.loadWeaponData(this.weaponType);
-    this.applyCurrentStats();
     await this.initMesh();
   }
 
@@ -174,12 +174,13 @@ export class Weapon {
     this.lastWeaponFire = currentTime;
 
     const isBurst = this.weaponData.staticStats.isBurst;
-    const bulletsPerBurst = this.weaponData.staticStats.bulletsPerBurst;
+    const bulletsPerBurst = this.weaponData.staticStats.burstCount ?? 1;
     const bulletsPerShot = this.weaponData.staticStats.bulletsPerShot;
     const projectionCone = this.weaponData.staticStats.projectionCone;
 
     if (isBurst) {
-      const delayBetweenShotsInBurst = this.weaponData.staticStats.delayBetweenBursts;
+      const delayBetweenShotsInBurst =
+        this.weaponData.staticStats.delayBetweenBursts ?? 0.1;
 
       const shotsFired = Math.min(bulletsPerBurst, this.currentAmmoRemaining);
 

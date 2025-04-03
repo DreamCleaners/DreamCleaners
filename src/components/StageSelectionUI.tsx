@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import '../styles/stageSelectionUI.css';
 import { StagesManager } from '../lib/stages/stagesManager';
 import { GameContext } from '../contexts/GameContext';
-import { WeaponRarity } from '../lib/weapons/weaponRarity';
+import { Rarity } from '../lib/shop/rarity.ts';
 import { StageInformation } from '../lib/stages/stageInformation';
 
 const StageSelectionUI = () => {
@@ -55,7 +55,7 @@ const StageSelectionUI = () => {
                       {`Weapon: ${
                         stageInfo.stageReward.getWeaponReward()?.weaponType?.toUpperCase() ?? 'Unknown'
                       } of quality: ${
-                        WeaponRarity[stageInfo.stageReward.getWeaponReward()?.rarity ?? 0]
+                        Rarity[stageInfo.stageReward.getWeaponReward()?.rarity ?? 0]
                       }`}
                     </span>
                     {(stageInfo.stageReward.getWeaponReward()?.embeddedPassives ?? []).length > 0 && (

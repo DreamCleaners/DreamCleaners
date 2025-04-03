@@ -15,10 +15,15 @@ import { RecastInjection } from './navigationManager';
 import Recast from 'recast-detour';
 import { RunManager } from './runManager';
 import { StagesManager } from './stages/stagesManager';
+import { weaponManager } from './weapons/weaponManager';
+import { ShopManager } from './shop/shopManager';
+import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
 
 export class Game {
   public scene!: Scene;
   public inputManager!: InputManager;
+
+  public readonly VERSION = '0.1.0';
 
   public isPointerLocked = false;
   public canPlayerLockPointer = true;
@@ -40,6 +45,9 @@ export class Game {
   public stageManager = StagesManager.getInstance();
   public recastInjection: RecastInjection;
   public runManager = new RunManager();
+  public weaponManager = new weaponManager();
+  public shopManager!: ShopManager;
+  public playerPassiveFactory!: PlayerPassiveFactory;
 
   private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -60,18 +68,21 @@ export class Game {
     this.recastInjection = await Recast.bind({})();
 
     this.physicsPlugin = await this.getPhysicsPlugin();
-    // const gravity = new Vector3(0, -9.81, 0);
     const gravity = Vector3.Zero();
     this.scene.enablePhysics(gravity, this.physicsPlugin);
+
+    this.playerPassiveFactory = new PlayerPassiveFactory(this);
 
     this.player = new Player(this);
     this.sceneManager = new SceneManager(this);
 
+    this.shopManager = new ShopManager(this);
+
     this.saveManager.addSaveable(this.moneyManager);
-    this.saveManager.addSaveable(this.player.playerUpgradeManager);
     this.saveManager.addSaveable(this.runManager);
     this.saveManager.addSaveable(this.player.getInventory());
     this.saveManager.addSaveable(this.stageManager);
+    this.saveManager.addSaveable(this.shopManager);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
     window.addEventListener('resize', this.onResize);

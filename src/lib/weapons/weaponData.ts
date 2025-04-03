@@ -11,8 +11,8 @@ export type WeaponData = {
 export type StaticStats = {
   isAutomatic: boolean;
   isBurst: boolean;
-  bulletsPerBurst: number;
-  delayBetweenBursts: number;
+  burstCount?: number;
+  delayBetweenBursts?: number;
   bulletsPerShot: number;
   projectionCone: number;
   knockback: number;
