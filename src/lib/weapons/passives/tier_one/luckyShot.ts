@@ -13,7 +13,5 @@ export class LuckyShot extends WeaponPassive {
     // We apply the passive to the player's weapon by modifying the weapon's crit chance modifier
     super.embedPassiveToWeapon(weapon);
     weapon.critChanceModifier = this.CRIT_CHANCE;
-    console.log('Applying ', this.name, ' to weapon ', weapon.weaponType);
-    console.log('Description: ', this.description);
   }
 }

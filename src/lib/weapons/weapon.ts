@@ -66,8 +66,14 @@ export class Weapon {
   // The actual instances of the passives are stored in the WeaponPassivesManager
   public embeddedPassives: WeaponPassiveType[] = [];
 
-  // Lucky shot related
   public critChanceModifier: number = 0;
+  public hpPerHitModifier: number = 0;
+
+  // "Don't Miss" passive related
+  public isDontMissPassiveActive: boolean = false;
+  public dontMissStackCount: number = 0;
+  public dontMissMaxStackCount!: number;
+  public dontMissDamageBonusPerStack!: number;
 
   // Bullet effects
   public bulletEffects: BulletEffect[] = [];
@@ -145,7 +151,7 @@ export class Weapon {
   /**
    * Based on the current item's rarity we update its currentStats array
    */
-  private applyCurrentStats(): void {
+  public applyCurrentStats(): void {
     this.currentStats = this.weaponData.globalStats[this.currentRarity];
     this.currentAmmoRemaining = this.currentStats.magazineSize;
   }
@@ -187,10 +193,14 @@ export class Weapon {
     const projectionCone = this.weaponData.staticStats.projectionCone;
 
     if (isBurst) {
+      console.log('IS BURST');
       const delayBetweenShotsInBurst =
         this.weaponData.staticStats.delayBetweenBursts ?? 0.1;
 
       const shotsFired = Math.min(bulletsPerBurst, this.currentAmmoRemaining);
+
+      console.log('Delay between shots in burst: ', delayBetweenShotsInBurst);
+      console.log('Shots fired: ', shotsFired);
 
       for (let i = 0; i < shotsFired; i++) {
         setTimeout(
@@ -198,6 +208,7 @@ export class Weapon {
             this.shootBullets(bulletsPerShot, projectionCone);
             this.currentAmmoRemaining--;
             this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
+            console.log('Shooting');
           },
           i * delayBetweenShotsInBurst * 1000,
         );
@@ -218,24 +229,40 @@ export class Weapon {
    * depending on the projection cone of the weapon (The most obvious example is the shotgun)
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
-    // Determine if this shot is a critical hit
+    let shotLandedOnEnemy = false;
+
     const isCriticalHit =
       this.critChanceModifier > 0 && Math.random() < this.critChanceModifier;
 
     if (projectionCone === 0) {
-      // Not a "cone" weapon, just shoot straight in the direction of the camera
       for (let i = 0; i < bulletsPerShot; i++) {
-        this.performRaycast(
+        const hit = this.performRaycast(
           this.player.cameraManager.getCamera().getForwardRay().direction,
           isCriticalHit,
         );
+        if (hit) {
+          shotLandedOnEnemy = true;
+        }
       }
     } else {
-      // Based on the projection cone, we must determine a direction for each bullet (raycast)
       for (let i = 0; i < bulletsPerShot; i++) {
         const direction = this.calculateRandomDirection(projectionCone);
-        this.performRaycast(direction, isCriticalHit);
+        const hit = this.performRaycast(direction, isCriticalHit);
+        if (hit) {
+          shotLandedOnEnemy = true;
+        }
       }
+    }
+
+    if (shotLandedOnEnemy) {
+      // The shot landed, increasing stack count for dont miss passive
+      this.dontMissStackCount = Math.min(
+        this.dontMissStackCount + 1,
+        this.dontMissMaxStackCount,
+      );
+    } else {
+      // The shot missed, resetting stack count for dont miss passive
+      this.dontMissStackCount = 0;
     }
   }
 
@@ -264,10 +291,7 @@ export class Weapon {
   }
 
   /** Performs a raycast in a given direction */
-  /** Performs a raycast in a given direction */
-  private performRaycast(direction: Vector3, crit: boolean): void {
-    // The raycasts start at the player's camera position and not at the weapon's position
-    // Thus, we need to add a small offset to the start position in order not to hit the player
+  private performRaycast(direction: Vector3, crit: boolean): boolean {
     const start = this.player.cameraManager.getCamera().globalPosition.clone();
     start.addInPlace(
       this.player.cameraManager.getCamera().getForwardRay().direction.scale(0.5),
@@ -279,41 +303,6 @@ export class Weapon {
       shouldHitTriggers: true,
     });
 
-    if (this.raycastResult.hasHit) {
-      const metadata = this.raycastResult.body?.transformNode
-        .metadata as IMetadataObject<IDamageable>;
-      if (metadata && metadata.isDamageable) {
-        const damageableEntity = metadata.object;
-
-        // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
-        const baseDamagePerBullet =
-          this.currentStats.damage / this.weaponData.staticStats.bulletsPerShot;
-
-        let damagePerBullet = baseDamagePerBullet;
-
-        // Apply critical hit if crit is true
-        if (crit) {
-          damagePerBullet *= 2;
-        }
-
-        damageableEntity.takeDamage(damagePerBullet);
-
-        // Also need to apply the bullet effects to the entity
-        if (this.bulletEffects.length > 0) {
-          const damageableEntity = metadata.object;
-          // We obviously don't want to apply effects on damageable
-          // entities that are not enemies
-          if (this.isEnemy(damageableEntity)) {
-            for (const effect of this.bulletEffects) {
-              damageableEntity.bulletEffectManager.applyEffect(effect);
-            }
-          }
-        }
-
-        console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
-      }
-    }
-
     // Debug shooting line
     const line = MeshBuilder.CreateLines(
       'lines',
@@ -324,6 +313,56 @@ export class Weapon {
     setTimeout(() => {
       line.dispose();
     }, 50);
+    // --
+
+    if (this.raycastResult.hasHit) {
+      const metadata = this.raycastResult.body?.transformNode
+        .metadata as IMetadataObject<IDamageable>;
+      if (metadata && metadata.isDamageable) {
+        const damageableEntity = metadata.object;
+        this.dealDamage(damageableEntity, crit);
+
+        if (this.isEnemy(damageableEntity)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private dealDamage(damageableEntity: IDamageable, crit: boolean): void {
+    // Base damage calculation
+    const baseDamagePerBullet =
+      this.currentStats.damage / this.weaponData.staticStats.bulletsPerShot;
+
+    let damagePerBullet = baseDamagePerBullet;
+
+    // Apply "Don't Miss" passive bonus if active
+    if (this.isDontMissPassiveActive) {
+      const bonusPercentage = this.dontMissStackCount * this.dontMissDamageBonusPerStack;
+      const bonusDamage = damagePerBullet * bonusPercentage;
+      damagePerBullet += bonusDamage;
+    }
+
+    // Apply critical hit if crit is true
+    if (crit) {
+      damagePerBullet *= 2;
+    }
+
+    damageableEntity.takeDamage(damagePerBullet);
+
+    // Apply bullet effects if any
+    if (this.bulletEffects.length > 0 && this.isEnemy(damageableEntity)) {
+      for (const effect of this.bulletEffects) {
+        damageableEntity.bulletEffectManager.applyEffect(effect);
+      }
+    }
+
+    // Apply health gain per hit
+    this.player.healthController.addHealth(this.hpPerHitModifier);
+
+    console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
   }
 
   private isEnemy(entity: IDamageable): entity is Enemy {
@@ -466,11 +505,11 @@ export class Weapon {
   public static deserialize(data: WeaponSerializedData, player: Player): Weapon {
     const weapon = new Weapon(player, data.weaponType, data.currentRarity);
 
-    // We don't need to save/load the stat arrays as we will re-get them from the json.
-    // Actually, saving them would be a bad idea as these arrays are directly
-    // affected by passives, passives that we re-apply
-    // So we simply init the weapon and apply the passives
-    weapon.init();
+    // Reset weapon data arrays. This step is mandatory, we need to reset
+    // to "factory settings" the weapon data arrays, otherwise we will apply
+    // passives to already altered stats.
+    weapon.weaponData = weapon.player.game.weaponManager.getWeaponData(weapon.weaponType);
+    weapon.applyCurrentStats();
 
     const pm = WeaponPassivesManager.getInstance();
     // We need to reapply the passives to the weapon

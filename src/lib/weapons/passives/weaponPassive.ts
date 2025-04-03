@@ -8,5 +8,7 @@ export abstract class WeaponPassive {
 
   public embedPassiveToWeapon(weapon: Weapon): void {
     weapon.embeddedPassives.push(this.enumName);
+    console.log('Applying ', this.name, ' to weapon ', weapon.weaponType);
+    console.log('Description: ', this.description);
   }
 }

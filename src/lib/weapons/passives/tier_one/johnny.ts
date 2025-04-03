@@ -18,7 +18,8 @@ export class Johnny extends WeaponPassive {
   public enumName: WeaponPassiveType = WeaponPassiveT1.JOHNNY;
 
   public override embedPassiveToWeapon(weapon: Weapon): void {
-    // We apply the passive to the player's weapon by modifying the weapon's crit chance modifier
+    // We apply the passive to the player's weapon by modifying adding to the
+    // weapon a bullet effect that burn enemies
     super.embedPassiveToWeapon(weapon);
     weapon.bulletEffects.push(
       new BulletEffect(
@@ -27,7 +28,5 @@ export class Johnny extends WeaponPassive {
         this.FIRE_DURATION,
       ),
     );
-    console.log('Applying ', this.name, ' to weapon ', weapon.weaponType);
-    console.log('Description: ', this.description);
   }
 }

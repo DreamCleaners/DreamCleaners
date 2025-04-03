@@ -5,6 +5,9 @@ import { Weapon } from '../weapon';
 import { Johnny } from './tier_one/johnny';
 import { LuckyShot } from './tier_one/luckyShot';
 import { Snail } from './tier_one/snail';
+import { DontMiss } from './tier_two/dontMiss';
+import { SleightOfHands } from './tier_two/sleightOfHands';
+import { Vampire } from './tier_two/vampire';
 import { WeaponPassive } from './weaponPassive';
 
 // Thus, WeaponPassivesManager acts as a factory as well as a registry.
@@ -30,6 +33,10 @@ export class WeaponPassivesManager {
     this.passives.set(WeaponPassiveT1.LUCKY_SHOT, new LuckyShot());
     this.passives.set(WeaponPassiveT1.SNAIL, new Snail());
     this.passives.set(WeaponPassiveT1.JOHNNY, new Johnny());
+
+    this.passives.set(WeaponPassiveT2.VAMPIRE, new Vampire());
+    this.passives.set(WeaponPassiveT2.SLEIGHT_OF_HANDS, new SleightOfHands());
+    this.passives.set(WeaponPassiveT2.DONT_MISS, new DontMiss());
 
     // ... add more passives here
   }
@@ -97,7 +104,9 @@ export enum WeaponPassiveT1 {
 }
 
 export enum WeaponPassiveT2 {
-  EXEMPLE_T2 = 'EXEMPLE_T2',
+  VAMPIRE = 'VAMPIRE',
+  SLEIGHT_OF_HANDS = 'SLEIGHT_OF_HANDS',
+  DONT_MISS = 'DONT_MISS',
 }
 
 export enum WeaponPassiveT3 {

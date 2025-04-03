@@ -4,15 +4,15 @@
     "globalStats": {
       "damage": [13, 17, 22, 27],
       "reloadTime": [2.4, 2.3, 2.2, 2.1],
-      "cadency": [0.1, 0.1, 0.1, 0.1],
+      "cadency": [0.16, 0.14, 0.12, 0.10],
       "range": [100, 100, 100, 100],
       "magazineSize": [26, 28, 30, 32]
     },
     "staticStats": {
       "isAutomatic": true,
       "isBurst": false,
-      "bulletsPerBurst": 0,
-      "delayBetweenBursts": 0,
+      "burstCount": 3,
+      "delayBetweenBursts": 0.05,
       "bulletsPerShot": 1,
       "projectionCone": 0,
       "knockback": 12
@@ -43,12 +43,14 @@
       "reloadTime": [1.5, 1.3, 1.1, 0.9],
       "cadency": [0.25, 0.2, 0.15, 0.1],
       "range": [50, 60, 70, 80],
-      "magazineSize": [10, 12, 14, 16]
+      "magazineSize": [12, 15, 18, 21]
     },
     "staticStats": {
       "isAutomatic": false,
       "isBurst": false,
-      "bulletsPerShot": 1,
+      "burstCount": 3,
+      "delayBetweenBursts": 0.1,
+      "bulletsPerShot": 3,
       "projectionCone": 0,
       "knockback": 5
     },
@@ -83,6 +85,8 @@
     "staticStats": {
       "isAutomatic": true,
       "isBurst": false,
+      "burstCount": 3,
+      "delayBetweenBursts": 0.1,
       "bulletsPerShot": 8,
       "projectionCone": 0.2,
       "knockback": 30

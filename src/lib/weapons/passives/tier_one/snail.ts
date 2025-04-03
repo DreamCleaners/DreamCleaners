@@ -18,12 +18,11 @@ export class Snail extends WeaponPassive {
   public enumName: WeaponPassiveType = WeaponPassiveT1.SNAIL;
 
   public override embedPassiveToWeapon(weapon: Weapon): void {
-    // We apply the passive to the player's weapon by modifying the weapon's crit chance modifier
+    // We apply the passive to the player's weapon by modifying adding to the
+    // weapon a bullet effect that slows enemies
     super.embedPassiveToWeapon(weapon);
     weapon.bulletEffects.push(
       new BulletEffect(BulletEffectType.SLOW, this.SLOW_AMOUNT, this.SLOW_DURATION),
     );
-    console.log('Applying ', this.name, ' to weapon ', weapon.weaponType);
-    console.log('Description: ', this.description);
   }
 }

@@ -8,7 +8,7 @@ import { PlayerPassiveItem } from '../shop/playerPassiveItem.ts';
 import { SerializedPlayerInventory } from './serializedPlayerInventory.ts';
 import {
   WeaponPassivesManager,
-  WeaponPassiveT1,
+  WeaponPassiveT2,
 } from '../weapons/passives/weaponPassivesManager.ts';
 
 /** Purely a storage class for the player weapons */
@@ -56,12 +56,7 @@ export class PlayerInventory implements ISaveable {
     this.addWeaponToInventory(weapon);
     WeaponPassivesManager.getInstance().applyPassiveToWeapon(
       weapon,
-      WeaponPassiveT1.JOHNNY,
-    );
-
-    WeaponPassivesManager.getInstance().applyPassiveToWeapon(
-      weapon,
-      WeaponPassiveT1.SNAIL,
+      WeaponPassiveT2.DONT_MISS,
     );
 
     // We also reset the player passives

@@ -123,8 +123,6 @@ export class StageReward {
 
     const selectedPassives: Set<WeaponPassiveType> = new Set();
 
-    console.log('Weapon with passives being proposed: ', numberOfPassives);
-
     // We pick random passives according to the probabilities
     // Each tier has a different chance of being selected
     while (selectedPassives.size < numberOfPassives) {
