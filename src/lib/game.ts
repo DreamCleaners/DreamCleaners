@@ -15,7 +15,7 @@ import { RecastInjection } from './navigationManager';
 import Recast from 'recast-detour';
 import { RunManager } from './runManager';
 import { StagesManager } from './stages/stagesManager';
-import { weaponManager } from './weapons/weaponManager';
+import { weaponDataManager } from './weapons/weaponDataManager';
 import { ShopManager } from './shop/shopManager';
 import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
 
@@ -45,7 +45,7 @@ export class Game {
   public stageManager = StagesManager.getInstance();
   public recastInjection: RecastInjection;
   public runManager = new RunManager();
-  public weaponManager = new weaponManager();
+  public weaponManager = new weaponDataManager();
   public shopManager!: ShopManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
 
@@ -82,7 +82,6 @@ export class Game {
     this.saveManager.addSaveable(this.runManager);
     this.saveManager.addSaveable(this.player.getInventory());
     this.saveManager.addSaveable(this.stageManager);
-    this.saveManager.addSaveable(this.shopManager);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
     window.addEventListener('resize', this.onResize);

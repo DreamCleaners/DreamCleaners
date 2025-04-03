@@ -8,7 +8,6 @@ import { Weapon } from '../weapons/weapon';
 import { PlayerPassiveItem } from './playerPassiveItem';
 import { randomFloat, randomInt } from '../utils/random';
 import { PlayerPassiveType } from './playerPassiveType';
-import { ISaveable } from '../saveable';
 import { WeaponPassiveItem } from './weaponPassiveItem';
 import {
   WeaponPassivesManager,
@@ -18,7 +17,7 @@ import {
   WeaponPassiveType,
 } from '../weapons/passives/weaponPassivesManager';
 
-export class ShopManager implements ISaveable {
+export class ShopManager {
   private readonly ITEM_SLOT_COUNT = 3;
   private currentShopItems: ShopItem[] = [];
 
@@ -33,12 +32,13 @@ export class ShopManager implements ISaveable {
   // player passives
   private readonly PLAYER_PASSIVE_DROP_RATE = 0.7;
   private readonly playerPassiveItems = new Map<Rarity, PlayerPassiveItem[]>();
-  private alreadyProposedPlayerPassives = new Map<Rarity, PlayerPassiveItem[]>();
 
   // Weapon passives
   private readonly WEAPON_PASSIVE_DROP_RATE = 0.1;
 
-  constructor(private game: Game) {}
+  constructor(private game: Game) {
+    this.initPlayerPassiveItems();
+  }
 
   /**
    * Add all the player passive items to the shop
@@ -64,16 +64,6 @@ export class ShopManager implements ISaveable {
   }
 
   public resetShop(): void {
-    // put back the proposed items into the shop
-    this.alreadyProposedPlayerPassives.forEach((proposedPlayerPassiveArray, rarity) => {
-      const playerPassives = this.playerPassiveItems.get(rarity)!;
-      this.playerPassiveItems.set(
-        rarity,
-        playerPassives.concat(proposedPlayerPassiveArray),
-      );
-    });
-    this.alreadyProposedPlayerPassives.clear();
-
     // reroll cost increases linearly with the run progression for now
     const runProgression = this.game.runManager.getStageCompletedCount();
     this.currentRerollCost = 100 + runProgression * 100;
@@ -99,7 +89,7 @@ export class ShopManager implements ISaveable {
       }
 
       // Player passive item
-      if (chance < this.PLAYER_PASSIVE_DROP_RATE) {
+      else if (chance < this.PLAYER_PASSIVE_DROP_RATE + this.WEAPON_PASSIVE_DROP_RATE) {
         const playerPassiveItem = this.getRandomPlayerPassiveItem(rarity);
         if (playerPassiveItem) {
           this.currentShopItems.push(playerPassiveItem);
@@ -164,20 +154,15 @@ export class ShopManager implements ISaveable {
   // ----------------- Player passives -----------------------
   // ---------------------------------------------------------
 
-  private getRandomPlayerPassiveItem(rarity: Rarity): PlayerPassiveItem | null {
+  private getRandomPlayerPassiveItem(rarity: Rarity): PlayerPassiveItem {
     const playerPassiveItemArray = this.playerPassiveItems.get(rarity);
 
     // there are no items of the current rarity
     if (!playerPassiveItemArray || playerPassiveItemArray.length === 0) {
-      // try to get a proposed item of the same rarity
-      const proposedPlayerPassiveItem = this.getRandomProposedPlayerPassive(rarity);
-      if (proposedPlayerPassiveItem) {
-        return proposedPlayerPassiveItem;
-      }
-
       // try to get a previous rarity item
       if (rarity === Rarity.COMMON) {
-        return null;
+        // in theory we should never reach this point
+        throw new Error('No player passive items available for the current rarity!');
       } else {
         const previousRarity = (rarity - 1) as Rarity;
         return this.getRandomPlayerPassiveItem(previousRarity);
@@ -185,54 +170,14 @@ export class ShopManager implements ISaveable {
     }
 
     const randomIndex = randomInt(0, playerPassiveItemArray.length - 1);
-    const randomItem = playerPassiveItemArray.splice(randomIndex, 1)[0];
-
-    // add the item to the proposed items of the same rarity
-    const proposedPlayerPassiveItemArray = this.alreadyProposedPlayerPassives.get(rarity);
-    if (!proposedPlayerPassiveItemArray) {
-      this.alreadyProposedPlayerPassives.set(rarity, [randomItem]);
-    } else {
-      proposedPlayerPassiveItemArray.push(randomItem);
-    }
-
-    return randomItem;
-  }
-
-  private getRandomProposedPlayerPassive(rarity: Rarity): PlayerPassiveItem | null {
-    const proposedPlayerPassiveItemArray = this.alreadyProposedPlayerPassives.get(rarity);
-
-    if (!proposedPlayerPassiveItemArray || proposedPlayerPassiveItemArray.length === 0) {
-      return null;
-    }
-
-    // filter out the items that are already in the shop
-    const proposedPassives = proposedPlayerPassiveItemArray.filter(
-      (item) => !this.currentShopItems.some((shopItem) => shopItem.name === item.name),
-    );
-    if (proposedPassives.length === 0) return null;
-
-    const randomIndex = randomInt(0, proposedPassives.length - 1);
-    const randomItem = proposedPassives[randomIndex];
+    const randomItem = playerPassiveItemArray[randomIndex];
 
     return randomItem;
   }
 
   public buyPlayerPassive(playerPassive: PlayerPassiveItem): void {
     this.game.moneyManager.removePlayerMoney(playerPassive.price);
-
     this.game.player.inventory.addPlayerPassiveItem(playerPassive);
-
-    // remove the item from the proposed items of the same rarity
-    const proposedPlayerPassiveItemArray = this.alreadyProposedPlayerPassives.get(
-      playerPassive.rarity,
-    );
-    if (proposedPlayerPassiveItemArray) {
-      const index = proposedPlayerPassiveItemArray.indexOf(playerPassive);
-      if (index !== -1) {
-        proposedPlayerPassiveItemArray.splice(index, 1);
-      }
-    }
-
     this.removeItemFromShop(playerPassive);
   }
 
@@ -337,51 +282,5 @@ export class ShopManager implements ISaveable {
 
     // Remove the item from the shop
     this.removeItemFromShop(weaponPassive);
-  }
-
-  // --------------------- Save system -----------------------
-  // ---------------------------------------------------------
-
-  public save(): string {
-    const playerPassiveTypes: PlayerPassiveType[] = [];
-
-    this.playerPassiveItems.forEach((passives) => {
-      passives.forEach((passive) => {
-        playerPassiveTypes.push(passive.playerPassiveType);
-      });
-    });
-
-    this.alreadyProposedPlayerPassives.forEach((passives) => {
-      passives.forEach((passive) => {
-        playerPassiveTypes.push(passive.playerPassiveType);
-      });
-    });
-
-    return JSON.stringify(playerPassiveTypes);
-  }
-
-  public restoreSave(data: string): void {
-    const parsedData: PlayerPassiveType[] = JSON.parse(data);
-
-    parsedData.forEach((passiveType) => {
-      const playerPassiveItem =
-        this.game.playerPassiveFactory.createPlayerPassive(passiveType);
-
-      const playerPassiveItemArray = this.playerPassiveItems.get(
-        playerPassiveItem.rarity,
-      );
-      if (!playerPassiveItemArray) {
-        this.playerPassiveItems.set(playerPassiveItem.rarity, [playerPassiveItem]);
-      } else {
-        playerPassiveItemArray.push(playerPassiveItem);
-      }
-    });
-  }
-
-  public resetSave(): void {
-    this.playerPassiveItems.clear();
-    this.alreadyProposedPlayerPassives.clear();
-
-    this.initPlayerPassiveItems();
   }
 }

@@ -42,7 +42,8 @@ export class Player implements IDamageable {
   public onWeaponChange = new Observable<Weapon>();
 
   // movement
-  public movementSpeed = 9;
+  private readonly BASE_MOVE_SPEED = 9;
+  public movementSpeed = this.BASE_MOVE_SPEED;
   private moveDirection: Vector2 = Vector2.Zero();
 
   // health
@@ -115,6 +116,8 @@ export class Player implements IDamageable {
   }
 
   public async start(): Promise<void> {
+    this.resetPlayerStatistics();
+
     this.setPosition(new Vector3(0, 1, 0));
 
     const weapons = this.inventory.getWeapons();
@@ -130,6 +133,13 @@ export class Player implements IDamageable {
     playerPassives.forEach((passive) => {
       passive.apply();
     });
+  }
+
+  public resetPlayerStatistics(): void {
+    this.healthController.setMaxHealth(this.BASE_HEALTH);
+    this.healthController.addHealth(this.BASE_HEALTH);
+
+    this.movementSpeed = this.BASE_MOVE_SPEED;
   }
 
   public setPosition(position: Vector3): void {

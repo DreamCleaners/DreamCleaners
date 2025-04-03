@@ -466,12 +466,6 @@ export class Weapon {
   public static deserialize(data: WeaponSerializedData, player: Player): Weapon {
     const weapon = new Weapon(player, data.weaponType, data.currentRarity);
 
-    // We don't need to save/load the stat arrays as we will re-get them from the json.
-    // Actually, saving them would be a bad idea as these arrays are directly
-    // affected by passives, passives that we re-apply
-    // So we simply init the weapon and apply the passives
-    weapon.init();
-
     const pm = WeaponPassivesManager.getInstance();
     // We need to reapply the passives to the weapon
     pm.applyPassivesToWeapon(weapon, data.embeddedPassives);

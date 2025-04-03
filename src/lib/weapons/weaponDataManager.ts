@@ -3,7 +3,7 @@ import { WeaponData } from './weaponData';
 import { WeaponJson } from './weaponJson';
 import { WeaponType } from './weaponType';
 
-export class weaponManager {
+export class weaponDataManager {
   private weaponsData = new Map<WeaponType, WeaponData>();
 
   constructor() {

@@ -6,14 +6,10 @@ import { WeaponType } from '../weapons/weaponType';
 import { Player } from './player';
 import { PlayerPassiveItem } from '../shop/playerPassiveItem.ts';
 import { SerializedPlayerInventory } from './serializedPlayerInventory.ts';
-import {
-  WeaponPassivesManager,
-  WeaponPassiveT1,
-} from '../weapons/passives/weaponPassivesManager.ts';
 
 /** Purely a storage class for the player weapons */
 export class PlayerInventory implements ISaveable {
-  private weapons: Array<Weapon> = [];
+  private weapons: Weapon[] = [];
   private playerPassives: PlayerPassiveItem[] = [];
 
   constructor(private player: Player) {}
@@ -42,6 +38,11 @@ export class PlayerInventory implements ISaveable {
       this.player.game.playerPassiveFactory.createPlayerPassive(passive),
     );
 
+    // dispose every weapon in the inventory in case we don't refresh the browser
+    this.weapons.forEach((weapon) => {
+      weapon.dispose();
+    });
+
     // deserialize weapons
     this.weapons = parsedData.weapons.map((weaponJson) =>
       Weapon.deserialize(weaponJson, this.player),
@@ -49,20 +50,9 @@ export class PlayerInventory implements ISaveable {
   }
 
   resetSave(): void {
-    // Base weapon is by default a common shotgun
     this.weapons = [];
-    const weapon = new Weapon(this.player, WeaponType.SHOTGUN, Rarity.COMMON);
-
+    const weapon = new Weapon(this.player, WeaponType.GLOCK, Rarity.COMMON);
     this.addWeaponToInventory(weapon);
-    WeaponPassivesManager.getInstance().applyPassiveToWeapon(
-      weapon,
-      WeaponPassiveT1.JOHNNY,
-    );
-
-    WeaponPassivesManager.getInstance().applyPassiveToWeapon(
-      weapon,
-      WeaponPassiveT1.SNAIL,
-    );
 
     // We also reset the player passives
     this.playerPassives = [];

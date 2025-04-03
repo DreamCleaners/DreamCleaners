@@ -75,7 +75,6 @@ export class WeaponPassivesManager {
 
   /** Applies multiple passives to a weapon in one-go. Used for example in weapon deserialization */
   public applyPassivesToWeapon(weapon: Weapon, passivesTypes: WeaponPassiveType[]): void {
-    console.log('Applying multiple passives to weapon: ', weapon.weaponType);
     for (const passiveType of passivesTypes) {
       this.applyPassiveToWeapon(weapon, passiveType);
     }
