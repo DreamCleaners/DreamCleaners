@@ -8,7 +8,7 @@ import { PlayerPassiveItem } from '../shop/playerPassiveItem.ts';
 import { SerializedPlayerInventory } from './serializedPlayerInventory.ts';
 import {
   WeaponPassivesManager,
-  WeaponPassiveT2,
+  WeaponPassiveT3,
 } from '../weapons/passives/weaponPassivesManager.ts';
 
 /** Purely a storage class for the player weapons */
@@ -51,12 +51,12 @@ export class PlayerInventory implements ISaveable {
   resetSave(): void {
     // Base weapon is by default a common shotgun
     this.weapons = [];
-    const weapon = new Weapon(this.player, WeaponType.SHOTGUN, Rarity.COMMON);
+    const weapon = new Weapon(this.player, WeaponType.AK, Rarity.COMMON);
 
     this.addWeaponToInventory(weapon);
     WeaponPassivesManager.getInstance().applyPassiveToWeapon(
       weapon,
-      WeaponPassiveT2.DONT_MISS,
+      WeaponPassiveT3.AKIMBO,
     );
 
     // We also reset the player passives

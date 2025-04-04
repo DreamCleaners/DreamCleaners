@@ -78,6 +78,11 @@ export class Weapon {
   // Bullet effects
   public bulletEffects: BulletEffect[] = [];
 
+  public akimboWeapon: Weapon | null = null;
+  public isAkimboWielding = false;
+  private justShotAkimbo = false; // Previous shot was akimbo
+  public delayBetweenAlternateShots!: number;
+
   constructor(
     private player: Player,
     public weaponType: WeaponType,
@@ -92,6 +97,7 @@ export class Weapon {
 
   public async init(): Promise<void> {
     await this.initMesh();
+    console.log('Wapon initialized: ', this.weaponType);
   }
 
   private async initMesh(): Promise<void> {
@@ -137,10 +143,18 @@ export class Weapon {
 
   public hideInScene(): void {
     this.rootMesh.setEnabled(false);
+
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.hideInScene();
+    }
   }
 
   public showInScene(): void {
     this.rootMesh.setEnabled(true);
+
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.showInScene();
+    }
   }
 
   public fixedUpdate(): void {
@@ -165,6 +179,13 @@ export class Weapon {
    * that describe the weapon's overall behaviour
    */
   public handlePrimaryFire(): void {
+    if (this.isAkimboWielding) {
+      // If the weapon is akimbo, the shooting logic is different and handled in
+      // a separate function
+      this.handlePrimaryFireForAkimboWeapon();
+      return;
+    }
+
     const currentTime = Date.now();
     const cadency = this.currentStats.cadency * 1000;
 
@@ -187,20 +208,72 @@ export class Weapon {
 
     this.lastWeaponFire = currentTime;
 
+    this.fireWeapon();
+
+    if (!this.weaponData.staticStats.isAutomatic) {
+      this.justShot = true;
+    }
+  }
+
+  private handlePrimaryFireForAkimboWeapon(): void {
+    const currentTime = Date.now();
+    const cadency = this.currentStats.cadency * 1000;
+    const akimboDelay = cadency / 2;
+
+    if (this.isReloading) {
+      return;
+    }
+
+    if (this.currentAmmoRemaining <= 0) {
+      return;
+    }
+
+    if (!this.weaponData.staticStats.isAutomatic) {
+      // Handle non-automatic weapon logic
+
+      if (!this.justShot && currentTime - this.lastWeaponFire >= akimboDelay) {
+        if (!this.justShotAkimbo) {
+          // Main weapon fires
+          this.fireWeapon();
+        } else {
+          // Akimbo weapon fires
+          this.akimboWeapon?.fireWeapon();
+        }
+
+        // Alternate the weapon and update the last fire time
+        this.justShotAkimbo = !this.justShotAkimbo;
+        this.lastWeaponFire = currentTime;
+        this.justShot = true; // Prevent further firing until the trigger is released
+      }
+    } else {
+      // Handle automatic weapon logic
+      if (currentTime - this.lastWeaponFire >= akimboDelay) {
+        if (!this.justShotAkimbo) {
+          // Main weapon fires
+          this.fireWeapon();
+        } else {
+          // Akimbo weapon fires
+          this.akimboWeapon?.fireWeapon();
+        }
+
+        // Alternate the weapon and update the last fire time
+        this.justShotAkimbo = !this.justShotAkimbo;
+        this.lastWeaponFire = currentTime;
+      }
+    }
+  }
+
+  private fireWeapon(): void {
     const isBurst = this.weaponData.staticStats.isBurst;
     const bulletsPerBurst = this.weaponData.staticStats.burstCount ?? 1;
     const bulletsPerShot = this.weaponData.staticStats.bulletsPerShot;
     const projectionCone = this.weaponData.staticStats.projectionCone;
 
     if (isBurst) {
-      console.log('IS BURST');
       const delayBetweenShotsInBurst =
         this.weaponData.staticStats.delayBetweenBursts ?? 0.1;
 
       const shotsFired = Math.min(bulletsPerBurst, this.currentAmmoRemaining);
-
-      console.log('Delay between shots in burst: ', delayBetweenShotsInBurst);
-      console.log('Shots fired: ', shotsFired);
 
       for (let i = 0; i < shotsFired; i++) {
         setTimeout(
@@ -208,7 +281,6 @@ export class Weapon {
             this.shootBullets(bulletsPerShot, projectionCone);
             this.currentAmmoRemaining--;
             this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
-            console.log('Shooting');
           },
           i * delayBetweenShotsInBurst * 1000,
         );
@@ -219,10 +291,6 @@ export class Weapon {
     }
 
     this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
-
-    if (!this.weaponData.staticStats.isAutomatic) {
-      this.justShot = true;
-    }
   }
 
   /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
@@ -373,6 +441,10 @@ export class Weapon {
   // ---------------------------------------------------------------
 
   public initReload(): void {
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.initReload();
+    }
+
     if (this.isReloading) {
       return;
     }
@@ -389,6 +461,10 @@ export class Weapon {
   }
 
   public updateReload(): void {
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.updateReload();
+    }
+
     if (!this.isReloading) {
       return;
     }
@@ -400,6 +476,7 @@ export class Weapon {
       this.currentAmmoRemaining = this.currentStats.magazineSize;
       this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
       this.isReloading = false;
+      this.justShotAkimbo = false;
       this.reloadProgress = 0;
       this.onReload.notifyObservers(false);
     }
@@ -410,6 +487,11 @@ export class Weapon {
 
   /** Moves up and down the weapon's mesh when the player is moving to produce a speed and moving effect */
   public updatePosition(playerVelocity: Vector3): void {
+    if (this.isAkimboWielding) {
+      // If akimbo then we also need to update the other weapon
+      this.akimboWeapon?.updatePosition(playerVelocity);
+    }
+
     if (playerVelocity.length() > 0) {
       // Player is moving
       if (!this.isPlayingMovingAnimating) {
@@ -480,6 +562,9 @@ export class Weapon {
   }
 
   public dispose(): void {
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.dispose();
+    }
     this.rootMesh.dispose();
     this.firePoint.dispose();
     this.gameAssetContainer.dispose();
@@ -516,5 +601,14 @@ export class Weapon {
     pm.applyPassivesToWeapon(weapon, data.embeddedPassives);
 
     return weapon;
+  }
+
+  /** Returns a new instance of a weapon, copied from this one */
+  public cloneWeapon(): Weapon {
+    const newWeapon = new Weapon(this.player, this.weaponType, this.currentRarity);
+    newWeapon.weaponData = structuredClone(this.weaponData);
+    newWeapon.applyCurrentStats();
+
+    return newWeapon;
   }
 }

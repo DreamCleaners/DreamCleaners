@@ -5,6 +5,7 @@ import { Weapon } from '../weapon';
 import { Johnny } from './tier_one/johnny';
 import { LuckyShot } from './tier_one/luckyShot';
 import { Snail } from './tier_one/snail';
+import { Akimbo } from './tier_three/akimbo';
 import { DontMiss } from './tier_two/dontMiss';
 import { SleightOfHands } from './tier_two/sleightOfHands';
 import { Vampire } from './tier_two/vampire';
@@ -37,6 +38,8 @@ export class WeaponPassivesManager {
     this.passives.set(WeaponPassiveT2.VAMPIRE, new Vampire());
     this.passives.set(WeaponPassiveT2.SLEIGHT_OF_HANDS, new SleightOfHands());
     this.passives.set(WeaponPassiveT2.DONT_MISS, new DontMiss());
+
+    this.passives.set(WeaponPassiveT3.AKIMBO, new Akimbo());
 
     // ... add more passives here
   }
@@ -75,6 +78,11 @@ export class WeaponPassivesManager {
     const passive = this.passives.get(passiveType);
     if (passive) {
       passive.embedPassiveToWeapon(weapon);
+      if (weapon.isAkimboWielding && passiveType !== WeaponPassiveT3.AKIMBO) {
+        // If the weapon is akimbo, we need to apply the passive to the akimbo weapon too
+        console.log('Also applying passive to akimbo weapon');
+        passive.embedPassiveToWeapon(weapon.akimboWeapon!);
+      }
     } else {
       console.log('Passive not found: ', passiveType);
     }
@@ -110,5 +118,5 @@ export enum WeaponPassiveT2 {
 }
 
 export enum WeaponPassiveT3 {
-  EXEMPLE_T3 = 'EXEMPLE_T3',
+  AKIMBO = 'AKIMBO',
 }
