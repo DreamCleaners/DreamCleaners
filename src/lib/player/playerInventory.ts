@@ -6,10 +6,6 @@ import { WeaponType } from '../weapons/weaponType';
 import { Player } from './player';
 import { PlayerPassiveItem } from '../shop/playerPassiveItem.ts';
 import { SerializedPlayerInventory } from './serializedPlayerInventory.ts';
-import {
-  WeaponPassivesManager,
-  WeaponPassiveT3,
-} from '../weapons/passives/weaponPassivesManager.ts';
 
 /** Purely a storage class for the player weapons */
 export class PlayerInventory implements ISaveable {
@@ -54,10 +50,6 @@ export class PlayerInventory implements ISaveable {
     const weapon = new Weapon(this.player, WeaponType.AK, Rarity.COMMON);
 
     this.addWeaponToInventory(weapon);
-    WeaponPassivesManager.getInstance().applyPassiveToWeapon(
-      weapon,
-      WeaponPassiveT3.AKIMBO,
-    );
 
     // We also reset the player passives
     this.playerPassives = [];

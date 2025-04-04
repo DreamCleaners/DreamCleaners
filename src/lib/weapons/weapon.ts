@@ -157,6 +157,11 @@ export class Weapon {
     }
   }
 
+  public isVisible(): boolean {
+    return this.rootMesh.isEnabled();
+  }
+
+
   public fixedUpdate(): void {
     this.updateReload();
   }

@@ -20,7 +20,13 @@ export class Akimbo extends WeaponPassive {
     // We will initialize the mesh but first we modify its position
     newWeapon.weaponData.transform.position.x =
       -newWeapon.weaponData.transform.position.x;
-    newWeapon.init();
+    newWeapon.init().then(() => {
+        // We force actualization of mesh visibility only if it is already visible
+        if(weapon.isVisible()){
+            weapon.hideInScene();
+            weapon.showInScene();
+        }
+    });
 
     const pm = WeaponPassivesManager.getInstance();
 

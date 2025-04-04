@@ -47,7 +47,7 @@
     },
     "staticStats": {
       "isAutomatic": false,
-      "isBurst": true,
+      "isBurst": false,
       "burstCount": 3,
       "delayBetweenBursts": 0.1,
       "bulletsPerShot": 3,

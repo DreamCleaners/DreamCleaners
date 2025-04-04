@@ -6,6 +6,8 @@ import { Johnny } from './tier_one/johnny';
 import { LuckyShot } from './tier_one/luckyShot';
 import { Snail } from './tier_one/snail';
 import { Akimbo } from './tier_three/akimbo';
+import { MoreBullets } from './tier_three/moreBullets';
+import { Ratata } from './tier_three/ratata';
 import { DontMiss } from './tier_two/dontMiss';
 import { SleightOfHands } from './tier_two/sleightOfHands';
 import { Vampire } from './tier_two/vampire';
@@ -31,17 +33,22 @@ export class WeaponPassivesManager {
   private constructor() {
     // We initialize all our passives and we store them in the map
     // Only put the passives here if they are implemented
+
+    // T1
     this.passives.set(WeaponPassiveT1.LUCKY_SHOT, new LuckyShot());
     this.passives.set(WeaponPassiveT1.SNAIL, new Snail());
     this.passives.set(WeaponPassiveT1.JOHNNY, new Johnny());
 
+    // T2
     this.passives.set(WeaponPassiveT2.VAMPIRE, new Vampire());
     this.passives.set(WeaponPassiveT2.SLEIGHT_OF_HANDS, new SleightOfHands());
     this.passives.set(WeaponPassiveT2.DONT_MISS, new DontMiss());
 
+    // T3
     this.passives.set(WeaponPassiveT3.AKIMBO, new Akimbo());
+    this.passives.set(WeaponPassiveT3.I_NEED_MORE_BULLETS, new MoreBullets());
+    this.passives.set(WeaponPassiveT3.RATATA, new Ratata()); 
 
-    // ... add more passives here
   }
 
   /** Returns the passive specified hard-coded name. This name can be different from
@@ -119,4 +126,6 @@ export enum WeaponPassiveT2 {
 
 export enum WeaponPassiveT3 {
   AKIMBO = 'AKIMBO',
+  RATATA = 'RATATA',
+  I_NEED_MORE_BULLETS = 'I_NEED_MORE_BULLETS',
 }
