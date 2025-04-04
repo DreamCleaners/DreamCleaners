@@ -35,7 +35,7 @@ export class Player implements IDamageable {
   // gui
   private gui: AdvancedDynamicTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
   private container!: Control;
-  private readonly INTERACTION_UI_OFFSET_Y = 250;
+  private readonly INTERACTION_UI_OFFSET_Y = 0;
   private isInteractionUIVisible = false;
 
   // observables
@@ -688,7 +688,7 @@ export class Player implements IDamageable {
 
     this.isInteractionUIVisible = true;
     this.gui.addControl(this.container);
-    this.container.linkWithMesh(interactiveObject.mesh);
+    this.container.linkWithMesh(interactiveObject.mesh.getChildMeshes()[0] as Mesh);
     this.container.linkOffsetY = -this.INTERACTION_UI_OFFSET_Y;
   }
 

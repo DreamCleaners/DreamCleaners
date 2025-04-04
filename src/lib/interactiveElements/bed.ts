@@ -32,9 +32,8 @@ export class Bed extends InteractiveElement {
 
     this.mesh = this.gameAssetContainer.addAssetsToScene();
     this.mesh.position = position;
-    this.mesh.scaling.scaleInPlace(0.13);
 
-    const bedHitbox = this.mesh.getChildMeshes()[2] as Mesh;
+    const bedHitbox = this.mesh.getChildMeshes()[0] as Mesh;
     bedHitbox.metadata = MetadataFactory.createMetadataObject<InteractiveElement>(this, {
       isInteractive: true,
     });

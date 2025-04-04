@@ -66,11 +66,22 @@ export class Weapon {
   // The actual instances of the passives are stored in the WeaponPassivesManager
   public embeddedPassives: WeaponPassiveType[] = [];
 
-  // Lucky shot related
   public critChanceModifier: number = 0;
+  public hpPerHitModifier: number = 0;
+
+  // "Don't Miss" passive related
+  public isDontMissPassiveActive: boolean = false;
+  public dontMissStackCount: number = 0;
+  public dontMissMaxStackCount!: number;
+  public dontMissDamageBonusPerStack!: number;
 
   // Bullet effects
   public bulletEffects: BulletEffect[] = [];
+
+  public akimboWeapon: Weapon | null = null;
+  public isAkimboWielding = false;
+  private justShotAkimbo = false; // Previous shot was akimbo
+  public delayBetweenAlternateShots!: number;
 
   constructor(
     private player: Player,
@@ -86,6 +97,7 @@ export class Weapon {
 
   public async init(): Promise<void> {
     await this.initMesh();
+    console.log('Wapon initialized: ', this.weaponType);
   }
 
   private async initMesh(): Promise<void> {
@@ -131,10 +143,22 @@ export class Weapon {
 
   public hideInScene(): void {
     this.rootMesh.setEnabled(false);
+
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.hideInScene();
+    }
   }
 
   public showInScene(): void {
     this.rootMesh.setEnabled(true);
+
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.showInScene();
+    }
+  }
+
+  public isVisible(): boolean {
+    return this.rootMesh.isEnabled();
   }
 
   public fixedUpdate(): void {
@@ -145,7 +169,7 @@ export class Weapon {
   /**
    * Based on the current item's rarity we update its currentStats array
    */
-  private applyCurrentStats(): void {
+  public applyCurrentStats(): void {
     this.currentStats = this.weaponData.globalStats[this.currentRarity];
     this.currentAmmoRemaining = this.currentStats.magazineSize;
   }
@@ -159,6 +183,13 @@ export class Weapon {
    * that describe the weapon's overall behaviour
    */
   public handlePrimaryFire(): void {
+    if (this.isAkimboWielding) {
+      // If the weapon is akimbo, the shooting logic is different and handled in
+      // a separate function
+      this.handlePrimaryFireForAkimboWeapon();
+      return;
+    }
+
     const currentTime = Date.now();
     const cadency = this.currentStats.cadency * 1000;
 
@@ -181,6 +212,62 @@ export class Weapon {
 
     this.lastWeaponFire = currentTime;
 
+    this.fireWeapon();
+
+    if (!this.weaponData.staticStats.isAutomatic) {
+      this.justShot = true;
+    }
+  }
+
+  private handlePrimaryFireForAkimboWeapon(): void {
+    const currentTime = Date.now();
+    const cadency = this.currentStats.cadency * 1000;
+    const akimboDelay = cadency / 2;
+
+    if (this.isReloading) {
+      return;
+    }
+
+    if (this.currentAmmoRemaining <= 0) {
+      return;
+    }
+
+    if (!this.weaponData.staticStats.isAutomatic) {
+      // Handle non-automatic weapon logic
+
+      if (!this.justShot && currentTime - this.lastWeaponFire >= akimboDelay) {
+        if (!this.justShotAkimbo) {
+          // Main weapon fires
+          this.fireWeapon();
+        } else {
+          // Akimbo weapon fires
+          this.akimboWeapon?.fireWeapon();
+        }
+
+        // Alternate the weapon and update the last fire time
+        this.justShotAkimbo = !this.justShotAkimbo;
+        this.lastWeaponFire = currentTime;
+        this.justShot = true; // Prevent further firing until the trigger is released
+      }
+    } else {
+      // Handle automatic weapon logic
+      if (currentTime - this.lastWeaponFire >= akimboDelay) {
+        if (!this.justShotAkimbo) {
+          // Main weapon fires
+          this.fireWeapon();
+        } else {
+          // Akimbo weapon fires
+          this.akimboWeapon?.fireWeapon();
+        }
+
+        // Alternate the weapon and update the last fire time
+        this.justShotAkimbo = !this.justShotAkimbo;
+        this.lastWeaponFire = currentTime;
+      }
+    }
+  }
+
+  private fireWeapon(): void {
     const isBurst = this.weaponData.staticStats.isBurst;
     const bulletsPerBurst = this.weaponData.staticStats.burstCount ?? 1;
     const bulletsPerShot = this.weaponData.staticStats.bulletsPerShot;
@@ -208,34 +295,46 @@ export class Weapon {
     }
 
     this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
-
-    if (!this.weaponData.staticStats.isAutomatic) {
-      this.justShot = true;
-    }
   }
 
   /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
    * depending on the projection cone of the weapon (The most obvious example is the shotgun)
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
-    // Determine if this shot is a critical hit
+    let shotLandedOnEnemy = false;
+
     const isCriticalHit =
       this.critChanceModifier > 0 && Math.random() < this.critChanceModifier;
 
     if (projectionCone === 0) {
-      // Not a "cone" weapon, just shoot straight in the direction of the camera
       for (let i = 0; i < bulletsPerShot; i++) {
-        this.performRaycast(
+        const hit = this.performRaycast(
           this.player.cameraManager.getCamera().getForwardRay().direction,
           isCriticalHit,
         );
+        if (hit) {
+          shotLandedOnEnemy = true;
+        }
       }
     } else {
-      // Based on the projection cone, we must determine a direction for each bullet (raycast)
       for (let i = 0; i < bulletsPerShot; i++) {
         const direction = this.calculateRandomDirection(projectionCone);
-        this.performRaycast(direction, isCriticalHit);
+        const hit = this.performRaycast(direction, isCriticalHit);
+        if (hit) {
+          shotLandedOnEnemy = true;
+        }
       }
+    }
+
+    if (shotLandedOnEnemy) {
+      // The shot landed, increasing stack count for dont miss passive
+      this.dontMissStackCount = Math.min(
+        this.dontMissStackCount + 1,
+        this.dontMissMaxStackCount,
+      );
+    } else {
+      // The shot missed, resetting stack count for dont miss passive
+      this.dontMissStackCount = 0;
     }
   }
 
@@ -264,10 +363,7 @@ export class Weapon {
   }
 
   /** Performs a raycast in a given direction */
-  /** Performs a raycast in a given direction */
-  private performRaycast(direction: Vector3, crit: boolean): void {
-    // The raycasts start at the player's camera position and not at the weapon's position
-    // Thus, we need to add a small offset to the start position in order not to hit the player
+  private performRaycast(direction: Vector3, crit: boolean): boolean {
     const start = this.player.cameraManager.getCamera().globalPosition.clone();
     start.addInPlace(
       this.player.cameraManager.getCamera().getForwardRay().direction.scale(0.5),
@@ -279,41 +375,6 @@ export class Weapon {
       shouldHitTriggers: true,
     });
 
-    if (this.raycastResult.hasHit) {
-      const metadata = this.raycastResult.body?.transformNode
-        .metadata as IMetadataObject<IDamageable>;
-      if (metadata && metadata.isDamageable) {
-        const damageableEntity = metadata.object;
-
-        // We deal damage to the entity, based on the weapon damage and the amount of bullets in one shot
-        const baseDamagePerBullet =
-          this.currentStats.damage / this.weaponData.staticStats.bulletsPerShot;
-
-        let damagePerBullet = baseDamagePerBullet;
-
-        // Apply critical hit if crit is true
-        if (crit) {
-          damagePerBullet *= 2;
-        }
-
-        damageableEntity.takeDamage(damagePerBullet);
-
-        // Also need to apply the bullet effects to the entity
-        if (this.bulletEffects.length > 0) {
-          const damageableEntity = metadata.object;
-          // We obviously don't want to apply effects on damageable
-          // entities that are not enemies
-          if (this.isEnemy(damageableEntity)) {
-            for (const effect of this.bulletEffects) {
-              damageableEntity.bulletEffectManager.applyEffect(effect);
-            }
-          }
-        }
-
-        console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
-      }
-    }
-
     // Debug shooting line
     const line = MeshBuilder.CreateLines(
       'lines',
@@ -324,6 +385,56 @@ export class Weapon {
     setTimeout(() => {
       line.dispose();
     }, 50);
+    // --
+
+    if (this.raycastResult.hasHit) {
+      const metadata = this.raycastResult.body?.transformNode
+        .metadata as IMetadataObject<IDamageable>;
+      if (metadata && metadata.isDamageable) {
+        const damageableEntity = metadata.object;
+        this.dealDamage(damageableEntity, crit);
+
+        if (this.isEnemy(damageableEntity)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private dealDamage(damageableEntity: IDamageable, crit: boolean): void {
+    // Base damage calculation
+    const baseDamagePerBullet =
+      this.currentStats.damage / this.weaponData.staticStats.bulletsPerShot;
+
+    let damagePerBullet = baseDamagePerBullet;
+
+    // Apply "Don't Miss" passive bonus if active
+    if (this.isDontMissPassiveActive) {
+      const bonusPercentage = this.dontMissStackCount * this.dontMissDamageBonusPerStack;
+      const bonusDamage = damagePerBullet * bonusPercentage;
+      damagePerBullet += bonusDamage;
+    }
+
+    // Apply critical hit if crit is true
+    if (crit) {
+      damagePerBullet *= 2;
+    }
+
+    damageableEntity.takeDamage(damagePerBullet);
+
+    // Apply bullet effects if any
+    if (this.bulletEffects.length > 0 && this.isEnemy(damageableEntity)) {
+      for (const effect of this.bulletEffects) {
+        damageableEntity.bulletEffectManager.applyEffect(effect);
+      }
+    }
+
+    // Apply health gain per hit
+    this.player.healthController.addHealth(this.hpPerHitModifier);
+
+    console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
   }
 
   private isEnemy(entity: IDamageable): entity is Enemy {
@@ -334,6 +445,10 @@ export class Weapon {
   // ---------------------------------------------------------------
 
   public initReload(): void {
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.initReload();
+    }
+
     if (this.isReloading) {
       return;
     }
@@ -350,6 +465,10 @@ export class Weapon {
   }
 
   public updateReload(): void {
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.updateReload();
+    }
+
     if (!this.isReloading) {
       return;
     }
@@ -361,6 +480,7 @@ export class Weapon {
       this.currentAmmoRemaining = this.currentStats.magazineSize;
       this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
       this.isReloading = false;
+      this.justShotAkimbo = false;
       this.reloadProgress = 0;
       this.onReload.notifyObservers(false);
     }
@@ -371,6 +491,11 @@ export class Weapon {
 
   /** Moves up and down the weapon's mesh when the player is moving to produce a speed and moving effect */
   public updatePosition(playerVelocity: Vector3): void {
+    if (this.isAkimboWielding) {
+      // If akimbo then we also need to update the other weapon
+      this.akimboWeapon?.updatePosition(playerVelocity);
+    }
+
     if (playerVelocity.length() > 0) {
       // Player is moving
       if (!this.isPlayingMovingAnimating) {
@@ -441,6 +566,9 @@ export class Weapon {
   }
 
   public dispose(): void {
+    if (this.isAkimboWielding) {
+      this.akimboWeapon?.dispose();
+    }
     this.rootMesh.dispose();
     this.firePoint.dispose();
     this.gameAssetContainer.dispose();
@@ -471,5 +599,14 @@ export class Weapon {
     pm.applyPassivesToWeapon(weapon, data.embeddedPassives);
 
     return weapon;
+  }
+
+  /** Returns a new instance of a weapon, copied from this one */
+  public cloneWeapon(): Weapon {
+    const newWeapon = new Weapon(this.player, this.weaponType, this.currentRarity);
+    newWeapon.weaponData = structuredClone(this.weaponData);
+    newWeapon.applyCurrentStats();
+
+    return newWeapon;
   }
 }

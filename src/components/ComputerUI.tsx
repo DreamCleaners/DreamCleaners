@@ -7,6 +7,10 @@ import { ShopItemType } from '../lib/shop/shopItemType';
 import { PlayerPassiveItem } from '../lib/shop/playerPassiveItem';
 import { WeaponItem } from '../lib/shop/weaponItem';
 import { WeaponPassiveItem } from '../lib/shop/weaponPassiveItem';
+import {
+  WeaponPassivesManager,
+  WeaponPassiveT3,
+} from '../lib/weapons/passives/weaponPassivesManager';
 
 const ComputerUI = () => {
   const game = useContext(GameContext);
@@ -180,29 +184,61 @@ const ComputerUI = () => {
     return (
       <div className="computer-interface-container">
         <h1>Choose a weapon to apply the passive</h1>
-        {Array.from({ length: 2 }, (_, index) => (
-          <div key={index}>
-            {game.player.inventory.getWeapons().length <= index ? (
-              <div>Empty slot</div>
-            ) : (
-              <h3
-                style={{
-                  background: getBackgroundColor(
-                    game.player.inventory.getWeapons()[index].currentRarity,
-                  ),
-                }}
+        {Array.from({ length: 2 }, (_, index) => {
+          const weapon = game.player.inventory.getWeapons()[index];
+          const isSlotEmpty = game.player.inventory.getWeapons().length <= index;
+
+          // Check if the weapon already has the same passive
+          const hasSamePassive =
+            weapon?.embeddedPassives.some(
+              (passive) => passive === selectedWeaponPassive.weaponPassiveType,
+            ) ?? false;
+
+          // Check if the weapon already has a legendary passive
+          const hasLegendaryPassive =
+            weapon?.embeddedPassives.some((passive) =>
+              Object.values(WeaponPassiveT3).includes(passive as WeaponPassiveT3),
+            ) ?? false;
+          // Determine if the button should be disabled
+          const isDisabled =
+            isSlotEmpty ||
+            hasSamePassive ||
+            (selectedWeaponPassive.rarity === Rarity.LEGENDARY && hasLegendaryPassive);
+
+          // Determine the message to display
+          let message = '';
+          if (hasSamePassive) {
+            message = `This weapon already possesses "${WeaponPassivesManager.getInstance().getPrettyPassiveName(selectedWeaponPassive.weaponPassiveType)}"! Can't apply twice!`;
+          } else if (
+            selectedWeaponPassive.rarity === Rarity.LEGENDARY &&
+            hasLegendaryPassive
+          ) {
+            message = 'One weapon cannot have more than one legendary passive.';
+          }
+
+          return (
+            <div key={index}>
+              {isSlotEmpty ? (
+                <div>Empty slot</div>
+              ) : (
+                <h3
+                  style={{
+                    background: getBackgroundColor(weapon.currentRarity),
+                  }}
+                >
+                  {weapon.weaponData.weaponName}
+                </h3>
+              )}
+              <button
+                onClick={() => handleApplyWeaponPassive(selectedWeaponPassive, index)}
+                disabled={isDisabled}
               >
-                {game.player.inventory.getWeapons()[index].weaponData.weaponName}
-              </h3>
-            )}
-            <button
-              onClick={() => handleApplyWeaponPassive(selectedWeaponPassive, index)}
-              disabled={game.player.inventory.getWeapons().length <= index}
-            >
-              Apply to Weapon
-            </button>
-          </div>
-        ))}
+                Apply to Weapon
+              </button>
+              {message && <p style={{ color: 'red' }}>{message}</p>}
+            </div>
+          );
+        })}
         <button onClick={() => setSelectedWeaponPassive(null)}>Back</button>
       </div>
     );

@@ -44,6 +44,6 @@ export class weaponDataManager {
       throw new Error(`Weapon type ${weaponType} not found`);
     }
 
-    return weaponData;
+    return structuredClone(weaponData); // Return a deep copy of the weapon data
   }
 }

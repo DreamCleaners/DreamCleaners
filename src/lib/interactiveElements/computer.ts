@@ -13,15 +13,14 @@ export class Computer extends InteractiveElement {
   override async create(position: Vector3): Promise<void> {
     this.gameAssetContainer =
       await this.gameScene.game.assetManager.loadGameAssetContainer(
-        'scifi_pc',
+        'computer',
         AssetType.OBJECT,
       );
 
     this.mesh = this.gameAssetContainer.addAssetsToScene();
     this.mesh.position = position;
-    this.mesh.scaling.scaleInPlace(2);
 
-    const pcHitbox = this.mesh.getChildMeshes()[2] as Mesh;
+    const pcHitbox = this.mesh.getChildMeshes()[0] as Mesh;
 
     pcHitbox.metadata = MetadataFactory.createMetadataObject<InteractiveElement>(this, {
       isInteractive: true,

@@ -5,6 +5,12 @@ import { Weapon } from '../weapon';
 import { Johnny } from './tier_one/johnny';
 import { LuckyShot } from './tier_one/luckyShot';
 import { Snail } from './tier_one/snail';
+import { Akimbo } from './tier_three/akimbo';
+import { MoreBullets } from './tier_three/moreBullets';
+import { Ratata } from './tier_three/ratata';
+import { DontMiss } from './tier_two/dontMiss';
+import { SleightOfHands } from './tier_two/sleightOfHands';
+import { Vampire } from './tier_two/vampire';
 import { WeaponPassive } from './weaponPassive';
 
 // Thus, WeaponPassivesManager acts as a factory as well as a registry.
@@ -27,11 +33,21 @@ export class WeaponPassivesManager {
   private constructor() {
     // We initialize all our passives and we store them in the map
     // Only put the passives here if they are implemented
+
+    // T1
     this.passives.set(WeaponPassiveT1.LUCKY_SHOT, new LuckyShot());
     this.passives.set(WeaponPassiveT1.SNAIL, new Snail());
     this.passives.set(WeaponPassiveT1.JOHNNY, new Johnny());
 
-    // ... add more passives here
+    // T2
+    this.passives.set(WeaponPassiveT2.VAMPIRE, new Vampire());
+    this.passives.set(WeaponPassiveT2.SLEIGHT_OF_HANDS, new SleightOfHands());
+    this.passives.set(WeaponPassiveT2.DONT_MISS, new DontMiss());
+
+    // T3
+    this.passives.set(WeaponPassiveT3.AKIMBO, new Akimbo());
+    this.passives.set(WeaponPassiveT3.I_NEED_MORE_BULLETS, new MoreBullets());
+    this.passives.set(WeaponPassiveT3.RATATA, new Ratata());
   }
 
   /** Returns the passive specified hard-coded name. This name can be different from
@@ -68,6 +84,11 @@ export class WeaponPassivesManager {
     const passive = this.passives.get(passiveType);
     if (passive) {
       passive.embedPassiveToWeapon(weapon);
+      if (weapon.isAkimboWielding && passiveType !== WeaponPassiveT3.AKIMBO) {
+        // If the weapon is akimbo, we need to apply the passive to the akimbo weapon too
+        console.log('Also applying passive to akimbo weapon');
+        passive.embedPassiveToWeapon(weapon.akimboWeapon!);
+      }
     } else {
       console.log('Passive not found: ', passiveType);
     }
@@ -96,9 +117,13 @@ export enum WeaponPassiveT1 {
 }
 
 export enum WeaponPassiveT2 {
-  EXEMPLE_T2 = 'EXEMPLE_T2',
+  VAMPIRE = 'VAMPIRE',
+  SLEIGHT_OF_HANDS = 'SLEIGHT_OF_HANDS',
+  DONT_MISS = 'DONT_MISS',
 }
 
 export enum WeaponPassiveT3 {
-  EXEMPLE_T3 = 'EXEMPLE_T3',
+  AKIMBO = 'AKIMBO',
+  RATATA = 'RATATA',
+  I_NEED_MORE_BULLETS = 'I_NEED_MORE_BULLETS',
 }

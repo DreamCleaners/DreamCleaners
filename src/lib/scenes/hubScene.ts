@@ -1,4 +1,6 @@
-import { Vector3 } from '@babylonjs/core';
+import {
+  Vector3,
+} from '@babylonjs/core';
 import { GameScene } from './gameScene';
 import { FixedStageLayout } from './fixedStageLayout';
 import { Bed } from '../interactiveElements/bed';
@@ -29,13 +31,13 @@ export class HubScene extends GameScene {
     );
 
     const bedPositions = [
-      new Vector3(5, 0, 5),
-      new Vector3(-5, 0, 5),
-      new Vector3(3, 0, 5),
+      new Vector3(0, 0, 0),
+      new Vector3(0, 0, -6),
+      new Vector3(0, 0, 6),
     ];
 
     // We create multiple beds in the hub by hand
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < bedPositions.length; i++) {
       const bed = new Bed(this);
       await bed.create(bedPositions[i]);
       this.beds.push(bed);
@@ -48,7 +50,7 @@ export class HubScene extends GameScene {
     );
 
     this.computer = new Computer(this);
-    await this.computer.create(new Vector3(0, 1, 15));
+    await this.computer.create(new Vector3(0, 0, 0));
 
     this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
     this.game.scoreManager.reset();
@@ -58,6 +60,9 @@ export class HubScene extends GameScene {
     this.game.player.resetHealth();
 
     this.game.saveManager.save();
+
+    // TP player to 0,1,0
+    this.game.player.setPosition(new Vector3(0, 1, 0));
   }
 
   public dispose(): void {
