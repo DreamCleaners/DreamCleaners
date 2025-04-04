@@ -161,7 +161,6 @@ export class Weapon {
     return this.rootMesh.isEnabled();
   }
 
-
   public fixedUpdate(): void {
     this.updateReload();
   }

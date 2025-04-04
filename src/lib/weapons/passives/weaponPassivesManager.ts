@@ -47,8 +47,7 @@ export class WeaponPassivesManager {
     // T3
     this.passives.set(WeaponPassiveT3.AKIMBO, new Akimbo());
     this.passives.set(WeaponPassiveT3.I_NEED_MORE_BULLETS, new MoreBullets());
-    this.passives.set(WeaponPassiveT3.RATATA, new Ratata()); 
-
+    this.passives.set(WeaponPassiveT3.RATATA, new Ratata());
   }
 
   /** Returns the passive specified hard-coded name. This name can be different from
