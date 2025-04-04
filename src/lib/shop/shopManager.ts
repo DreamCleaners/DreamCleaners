@@ -31,12 +31,12 @@ export class ShopManager implements ISaveable {
   private rerollCount = 0;
 
   // player passives
-  private readonly PLAYER_PASSIVE_DROP_RATE = 0;
+  private readonly PLAYER_PASSIVE_DROP_RATE = 0.7;
   private readonly playerPassiveItems = new Map<Rarity, PlayerPassiveItem[]>();
   private alreadyProposedPlayerPassives = new Map<Rarity, PlayerPassiveItem[]>();
 
   // Weapon passives
-  private readonly WEAPON_PASSIVE_DROP_RATE = 1;
+  private readonly WEAPON_PASSIVE_DROP_RATE = 0.1;
 
   constructor(private game: Game) {}
 

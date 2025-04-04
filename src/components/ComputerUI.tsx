@@ -7,7 +7,10 @@ import { ShopItemType } from '../lib/shop/shopItemType';
 import { PlayerPassiveItem } from '../lib/shop/playerPassiveItem';
 import { WeaponItem } from '../lib/shop/weaponItem';
 import { WeaponPassiveItem } from '../lib/shop/weaponPassiveItem';
-import { WeaponPassivesManager, WeaponPassiveT3 } from '../lib/weapons/passives/weaponPassivesManager';
+import {
+  WeaponPassivesManager,
+  WeaponPassiveT3,
+} from '../lib/weapons/passives/weaponPassivesManager';
 
 const ComputerUI = () => {
   const game = useContext(GameContext);
@@ -146,14 +149,14 @@ const ComputerUI = () => {
           // Check if the weapon already has the same passive
           const hasSamePassive =
             weapon?.embeddedPassives.some(
-              (passive) => passive === selectedWeaponPassive.weaponPassiveType
+              (passive) => passive === selectedWeaponPassive.weaponPassiveType,
             ) ?? false;
 
           // Check if the weapon already has a legendary passive
           const hasLegendaryPassive =
-          weapon?.embeddedPassives.some((passive) =>
-            Object.values(WeaponPassiveT3).includes(passive as WeaponPassiveT3)
-          ) ?? false;
+            weapon?.embeddedPassives.some((passive) =>
+              Object.values(WeaponPassiveT3).includes(passive as WeaponPassiveT3),
+            ) ?? false;
           // Determine if the button should be disabled
           const isDisabled =
             isSlotEmpty ||
