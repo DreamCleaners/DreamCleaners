@@ -4,20 +4,21 @@ import { Rarity } from '../rarity';
 import { ShopItemType } from '../shopItemType';
 import { PlayerPassiveType } from '../playerPassiveType';
 
-export class MoveSpeed extends PlayerPassiveItem {
+export class Mask extends PlayerPassiveItem {
   constructor(game: Game, playerPassiveType: PlayerPassiveType) {
     super(
-      'Move Speed',
-      'Increases your move speed by 50%',
-      100,
+      'Mask',
+      'Increases your max health by 200 and decreases your speed by 1%',
+      250,
       ShopItemType.PLAYER_PASSIVE,
-      Rarity.RARE,
+      Rarity.COMMON,
       game,
       playerPassiveType,
     );
   }
 
   public apply(): void {
-    this.game.player.movementSpeed *= 1.5;
+    this.game.player.addMaxHealth(200);
+    this.game.player.addSpeedPercentage(-0.01);
   }
 }

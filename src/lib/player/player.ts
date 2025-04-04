@@ -25,6 +25,7 @@ import { Rectangle } from '@babylonjs/gui/2D/controls/rectangle';
 import { Control } from '@babylonjs/gui/2D/controls/control';
 import { TextBlock } from '@babylonjs/gui/2D/controls/textBlock';
 import { PlayerInventory } from './playerInventory';
+import { randomFloat } from '../utils/random';
 
 export class Player implements IDamageable {
   private inputs: InputState;
@@ -40,21 +41,32 @@ export class Player implements IDamageable {
   // observables
   public onDamageTakenObservable = new Observable<number>();
   public onWeaponChange = new Observable<Weapon>();
+  public onRegenSpeedPercentageChange = new Observable<number>();
+  public onMaxHealthChange = new Observable<number>();
+  public onSpeedPercentageChange = new Observable<number>();
+  public onDodgeChancePercentageChange = new Observable<number>();
+  public onSlideSpeedPercentageChange = new Observable<number>();
 
   // movement
+  public moveSpeedPercentageIncrease = 0;
   private readonly BASE_MOVE_SPEED = 9;
   public movementSpeed = this.BASE_MOVE_SPEED;
   private moveDirection: Vector2 = Vector2.Zero();
+
+  public dodgeChancePercentageIncrease = 0;
+  private dodgeChance = 0;
 
   // health
   public readonly healthController = new HealthController();
   private timeSinceLastDamage = 0; // ms
   private readonly REGEN_DELAY = 3; // seconds
   private readonly REGEN_AMOUNT = 5;
-  private regenSpeed = 0; // seconds
+  private readonly BASE_REGEN_SPEED = 0.5; // seconds
+  public regenSpeedPercentageIncrease = 0;
+  private regenSpeed = this.BASE_REGEN_SPEED; // seconds
   private lastRegenTick = 0; // ms
-  private isRegenUnlocked = false;
   private readonly BASE_HEALTH = 1000;
+  public maxHealthIncrease = 0;
 
   // physics
   public physicsEngine!: PhysicsEngineV2;
@@ -83,6 +95,7 @@ export class Player implements IDamageable {
   private wasCrouchingBeforeFalling = false; // used to prevent the player from gaining speed after falling while he was crouching
   public isSliding = false;
   private lastMoveDirection: Vector2 = Vector2.Zero(); // last direction before sliding
+  public slideSpeedPercentageIncrease = 0;
   // By how much we multiply the player's velocity during the current slide
   private currentSlidingSpeedFactor = 0;
   // The final speed by which the player moves when sliding
@@ -139,7 +152,17 @@ export class Player implements IDamageable {
     this.healthController.setMaxHealth(this.BASE_HEALTH);
     this.healthController.addHealth(this.BASE_HEALTH);
 
+    this.moveSpeedPercentageIncrease = 0;
     this.movementSpeed = this.BASE_MOVE_SPEED;
+
+    this.regenSpeedPercentageIncrease = 0;
+    this.regenSpeed = this.BASE_REGEN_SPEED;
+
+    this.dodgeChancePercentageIncrease = 0;
+    this.dodgeChance = 0;
+
+    this.slideSpeedPercentageIncrease = 0;
+    this.currentSlidingSpeedFactor = 0;
   }
 
   public setPosition(position: Vector3): void {
@@ -227,7 +250,7 @@ export class Player implements IDamageable {
 
     this.checkForInteractables();
 
-    if (this.isRegenUnlocked) this.handleRegen();
+    this.handleRegen();
 
     this.updateVelocity();
 
@@ -243,9 +266,26 @@ export class Player implements IDamageable {
   }
 
   public takeDamage(damage: number): void {
+    const isDodged = randomFloat(0, 1) < this.dodgeChance;
+    if (isDodged) return;
+
     this.timeSinceLastDamage = 0;
     this.onDamageTakenObservable.notifyObservers(damage);
     this.healthController.removeHealth(damage);
+  }
+
+  public addSpeedPercentage(percentage: number): void {
+    this.moveSpeedPercentageIncrease += percentage;
+    this.movementSpeed = this.BASE_MOVE_SPEED * (1 + this.moveSpeedPercentageIncrease);
+    this.onSpeedPercentageChange.notifyObservers(this.moveSpeedPercentageIncrease);
+  }
+
+  public addDodgeChancePercentage(percentage: number): void {
+    this.dodgeChancePercentageIncrease += percentage;
+    this.dodgeChance = this.dodgeChancePercentageIncrease;
+    this.onDodgeChancePercentageChange.notifyObservers(
+      this.dodgeChancePercentageIncrease,
+    );
   }
 
   // ----------------------- Health --------------------------
@@ -269,6 +309,19 @@ export class Player implements IDamageable {
 
   public resetHealth(): void {
     this.healthController.addHealth(this.healthController.getMaxHealth());
+  }
+
+  public addRegenSpeedPercentage(percentage: number): void {
+    this.regenSpeedPercentageIncrease += percentage;
+    this.regenSpeed = this.BASE_REGEN_SPEED * (1 + this.regenSpeedPercentageIncrease);
+    this.onRegenSpeedPercentageChange.notifyObservers(this.regenSpeedPercentageIncrease);
+  }
+
+  public addMaxHealth(percentage: number): void {
+    this.maxHealthIncrease += percentage;
+    this.healthController.setMaxHealth(this.BASE_HEALTH + this.maxHealthIncrease);
+    this.healthController.addHealth(this.healthController.getMaxHealth());
+    this.onMaxHealthChange.notifyObservers(this.maxHealthIncrease);
   }
 
   // --------------------- Physics --------------------------
@@ -329,8 +382,6 @@ export class Player implements IDamageable {
       this.lastJumpTime = performance.now();
 
       const jumpingSpeed = Math.max(this.movementSpeed, this.currentSlidingSpeed);
-      // console.log("Move speed: ", this.movementSpeed, "Sliding speed: ", this.currentSlidingSpeed);
-      // console.log("Jumping speed: ", jumpingSpeed);
 
       this.velocity.x = this.moveDirection.x * jumpingSpeed;
       this.velocity.y = this.JUMP_FORCE;
@@ -512,7 +563,8 @@ export class Player implements IDamageable {
     if (this.isMoving() && this.isGrounded) {
       // We try to crouch while moving, we initiate a slide
       this.isSliding = true;
-      this.currentSlidingSpeedFactor = this.INITIAL_SLIDING_SPEED_FACTOR;
+      this.currentSlidingSpeedFactor =
+        this.INITIAL_SLIDING_SPEED_FACTOR * (1 + this.slideSpeedPercentageIncrease);
       this.lastMoveDirection = this.moveDirection;
     } else {
       // The player was not crouching but sliding
@@ -578,6 +630,11 @@ export class Player implements IDamageable {
     };
 
     requestAnimationFrame(animate);
+  }
+
+  public addSlideSpeedPercentage(percentage: number): void {
+    this.slideSpeedPercentageIncrease += percentage;
+    this.onSlideSpeedPercentageChange.notifyObservers(this.slideSpeedPercentageIncrease);
   }
 
   // -------------------- Interaction ------------------------

@@ -18,6 +18,17 @@ const ComputerUI = () => {
   const [selectedWeaponPassive, setSelectedWeaponPassive] =
     useState<WeaponPassiveItem | null>(null);
 
+  // player stats
+  const [regenSpeedPercentageIncrease, setRegenSpeedPercentageIncrease] =
+    useState<number>(0);
+  const [chancePercentageIncrease, setChancePercentageIncrease] = useState<number>(0);
+  const [maxHealthIncrease, setMaxHealthIncrease] = useState<number>(0);
+  const [speedPercentageIncrease, setSpeedPercentageIncrease] = useState<number>(0);
+  const [dodgeChancePercentageIncrease, setDodgeChancePercentageIncrease] =
+    useState<number>(0);
+  const [slideSpeedPercentageIncrease, setSlideSpeedPercentageIncrease] =
+    useState<number>(0);
+
   const handleCloseUI = () => {
     if (!game) return;
     game.uiManager.hideUI();
@@ -87,6 +98,14 @@ const ComputerUI = () => {
     setPlayerMoney(game.moneyManager.getPlayerMoney());
     setShopItems(game.shopManager.getShopItems());
 
+    // player stats
+    setRegenSpeedPercentageIncrease(game.player.regenSpeedPercentageIncrease);
+    setChancePercentageIncrease(game.shopManager.chancePercentageIncrease);
+    setMaxHealthIncrease(game.player.maxHealthIncrease);
+    setSpeedPercentageIncrease(game.player.moveSpeedPercentageIncrease);
+    setDodgeChancePercentageIncrease(game.player.dodgeChancePercentageIncrease);
+    setSlideSpeedPercentageIncrease(game.player.slideSpeedPercentageIncrease);
+
     // initialize observers
     const onPlayerMoneyChangeObserver =
       game.moneyManager.onPlayerMoneyChange.add(setPlayerMoney);
@@ -94,12 +113,35 @@ const ComputerUI = () => {
     const onShopItemsChangeObserver =
       game.shopManager.onShopItemsChange.add(setShopItems);
 
+    // player stats observers
+    const onRegenSpeedChangeObserver = game.player.onRegenSpeedPercentageChange.add(
+      setRegenSpeedPercentageIncrease,
+    );
+    const onChancePercentageChangeObserver =
+      game.shopManager.onChancePercentageChange.add(setChancePercentageIncrease);
+    const onMaxHealthChangeObserver =
+      game.player.onMaxHealthChange.add(setMaxHealthIncrease);
+    const onSpeedPercentageChangeObserver = game.player.onSpeedPercentageChange.add(
+      setSpeedPercentageIncrease,
+    );
+    const onDodgeChancePercentageChangeObserver =
+      game.player.onDodgeChancePercentageChange.add(setDodgeChancePercentageIncrease);
+    const onSlideSpeedPercentageChangeObserver =
+      game.player.onSlideSpeedPercentageChange.add(setSlideSpeedPercentageIncrease);
+
     return () => {
       if (!game) return;
 
       // remove observers when component unmounts
       onPlayerMoneyChangeObserver.remove();
       onShopItemsChangeObserver.remove();
+
+      onRegenSpeedChangeObserver.remove();
+      onChancePercentageChangeObserver.remove();
+      onMaxHealthChangeObserver.remove();
+      onSpeedPercentageChangeObserver.remove();
+      onDodgeChancePercentageChangeObserver.remove();
+      onSlideSpeedPercentageChangeObserver.remove();
     };
   }, [game]);
 
@@ -189,6 +231,33 @@ const ComputerUI = () => {
           </button>
         </div>
       ))}
+      <h2>Player Statistics</h2>
+      <ul>
+        <li>
+          Regen speed : {regenSpeedPercentageIncrease >= 0 ? '+' : ''}
+          {Math.floor(regenSpeedPercentageIncrease * 100)}%
+        </li>
+        <li>
+          Chance : {chancePercentageIncrease >= 0 ? '+' : ''}
+          {Math.floor(chancePercentageIncrease * 100)}%
+        </li>
+        <li>
+          Max health : {maxHealthIncrease >= 0 ? '+' : ''}
+          {Math.floor(maxHealthIncrease)}
+        </li>
+        <li>
+          Speed : {speedPercentageIncrease >= 0 ? '+' : ''}
+          {Math.floor(speedPercentageIncrease * 100)}%
+        </li>
+        <li>
+          Dodge chance : {dodgeChancePercentageIncrease >= 0 ? '+' : ''}
+          {Math.floor(dodgeChancePercentageIncrease * 100)}%
+        </li>
+        <li>
+          Slide speed : {slideSpeedPercentageIncrease >= 0 ? '+' : ''}
+          {Math.floor(slideSpeedPercentageIncrease * 100)}%
+        </li>
+      </ul>
     </div>
   );
 };

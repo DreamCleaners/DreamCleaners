@@ -23,6 +23,7 @@ export class ShopManager {
 
   // observables
   public readonly onShopItemsChange = new Observable<ShopItem[]>();
+  public readonly onChancePercentageChange = new Observable<number>();
 
   // reroll
   private readonly REROLL_MULTIPLIER = 1.5;
@@ -35,6 +36,8 @@ export class ShopManager {
 
   // Weapon passives
   private readonly WEAPON_PASSIVE_DROP_RATE = 0.1;
+
+  public chancePercentageIncrease = 0;
 
   constructor(private game: Game) {
     this.initPlayerPassiveItems();
@@ -76,11 +79,11 @@ export class ShopManager {
     this.currentShopItems = [];
 
     for (let i = 0; i < this.ITEM_SLOT_COUNT; i++) {
-      const chance = randomFloat(0, 1);
+      const itemChance = randomFloat(0, 1);
       const rarity = this.getRandomRarity();
 
       // WeaponPassive item (10% probability)
-      if (chance < this.WEAPON_PASSIVE_DROP_RATE) {
+      if (itemChance < this.WEAPON_PASSIVE_DROP_RATE) {
         const weaponPassiveItem = this.getRandomWeaponPassiveItem(rarity);
         if (weaponPassiveItem) {
           this.currentShopItems.push(weaponPassiveItem);
@@ -89,12 +92,13 @@ export class ShopManager {
       }
 
       // Player passive item
-      else if (chance < this.PLAYER_PASSIVE_DROP_RATE + this.WEAPON_PASSIVE_DROP_RATE) {
+      else if (
+        itemChance <
+        this.PLAYER_PASSIVE_DROP_RATE + this.WEAPON_PASSIVE_DROP_RATE
+      ) {
         const playerPassiveItem = this.getRandomPlayerPassiveItem(rarity);
-        if (playerPassiveItem) {
-          this.currentShopItems.push(playerPassiveItem);
-          continue;
-        }
+        this.currentShopItems.push(playerPassiveItem);
+        continue;
       }
 
       // Generate a weapon item if the slot is empty
@@ -109,19 +113,26 @@ export class ShopManager {
   }
 
   public removeItemFromShop(item: ShopItem): void {
-    this.currentShopItems = this.currentShopItems.filter((shopItem) => shopItem !== item);
+    const index = this.currentShopItems.indexOf(item);
+    if (index === -1) {
+      throw new Error('Item not found in the shop!');
+    }
+    this.currentShopItems.splice(index, 1);
+
     this.onShopItemsChange.notifyObservers(this.currentShopItems);
     this.game.saveManager.save();
   }
 
   private getRandomRarity(): Rarity {
-    const rarityChance = randomFloat(0, 1);
+    let rarityChance = randomFloat(0, 1);
+    rarityChance += this.chancePercentageIncrease;
+
     // fixed rarities drop rates for now
-    if (rarityChance < 0.55) {
+    if (rarityChance < 0.6) {
       return Rarity.COMMON;
-    } else if (rarityChance < 0.85) {
+    } else if (rarityChance < 0.91) {
       return Rarity.RARE;
-    } else if (rarityChance < 0.95) {
+    } else if (rarityChance < 0.97) {
       return Rarity.EPIC;
     } else {
       return Rarity.LEGENDARY;
@@ -149,6 +160,11 @@ export class ShopManager {
 
     // the money changes so we need to save
     this.game.saveManager.save();
+  }
+
+  public addChancePercentageIncrease(percentage: number): void {
+    this.chancePercentageIncrease += percentage;
+    this.onChancePercentageChange.notifyObservers(this.chancePercentageIncrease);
   }
 
   // ----------------- Player passives -----------------------

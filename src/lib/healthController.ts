@@ -36,6 +36,12 @@ export class HealthController {
 
   public setMaxHealth(value: number): void {
     this.maxHealth = value;
+
+    if (this.health > this.maxHealth) {
+      this.health = this.maxHealth;
+      this.onHealthChange.notifyObservers(this.health);
+    }
+
     this.onMaxHealthChange.notifyObservers(this.maxHealth);
   }
 
