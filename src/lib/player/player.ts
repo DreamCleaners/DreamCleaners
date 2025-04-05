@@ -86,7 +86,7 @@ export class Player implements IDamageable {
   // Inventory (weapons) related
   public inventory: PlayerInventory = new PlayerInventory(this);
   public equippedWeapon!: Weapon;
-  private currentWeaponIndex = -1;
+  public currentWeaponIndex = -1;
   private readonly WEAPON_SWITCH_DELAY = 500;
   private lastWeaponSwitch = 0;
 

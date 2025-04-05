@@ -2,7 +2,10 @@ import { useContext, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import '../styles/workbenchUI.css';
 import { Rarity } from '../lib/shop/rarity';
-import { WeaponPassivesManager, WeaponPassiveType } from '../lib/weapons/passives/weaponPassivesManager';
+import {
+  WeaponPassivesManager,
+  WeaponPassiveType,
+} from '../lib/weapons/passives/weaponPassivesManager';
 
 const WorkbenchUI = () => {
   const game = useContext(GameContext);
@@ -69,34 +72,66 @@ const WorkbenchUI = () => {
                   <li style={{ color: getRarityColor(weapons[0].currentRarity) }}>
                     Quality: {Rarity[weapons[0].currentRarity]}
                   </li>
-                  <li>Damage: {weapons[0].weaponData.globalStats[weapons[0].currentRarity].damage}</li>
-                  <li>Fire Rate: {Math.round((1 / weapons[0].weaponData.globalStats[weapons[0].currentRarity].cadency) * 100) / 100} shots/sec</li>
-                  <li>Ammo: {weapons[0].weaponData.globalStats[weapons[0].currentRarity].magazineSize}</li>
-                  <li>Reload time: {weapons[0].weaponData.globalStats[weapons[0].currentRarity].reloadTime}</li>
+                  <li>
+                    Damage:{' '}
+                    {weapons[0].weaponData.globalStats[weapons[0].currentRarity].damage}
+                  </li>
+                  <li>
+                    Fire Rate:{' '}
+                    {Math.round(
+                      (1 /
+                        weapons[0].weaponData.globalStats[weapons[0].currentRarity]
+                          .cadency) *
+                        100,
+                    ) / 100}{' '}
+                    shots/sec
+                  </li>
+                  <li>
+                    Ammo:{' '}
+                    {
+                      weapons[0].weaponData.globalStats[weapons[0].currentRarity]
+                        .magazineSize
+                    }
+                  </li>
+                  <li>
+                    Reload time:{' '}
+                    {
+                      weapons[0].weaponData.globalStats[weapons[0].currentRarity]
+                        .reloadTime
+                    }
+                  </li>
                 </ul>
                 <div className="upgrade-container">
                   <button
                     onClick={() => handleImproveQuality(0)}
                     disabled={
                       weapons[0].currentRarity === Rarity.LEGENDARY ||
-                      (game?.moneyManager.getPlayerMoney() ?? 0) < (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? Infinity)
+                      (game?.moneyManager.getPlayerMoney() ?? 0) <
+                        (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ??
+                          Infinity)
                     }
                     style={{
                       backgroundColor:
                         weapons[0].currentRarity === Rarity.LEGENDARY ||
-                        (game?.moneyManager.getPlayerMoney() ?? 0) < (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? 0)
+                        (game?.moneyManager.getPlayerMoney() ?? 0) <
+                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ??
+                            0)
                           ? '#666'
                           : '#444',
                       cursor:
                         weapons[0].currentRarity === Rarity.LEGENDARY ||
-                        (game?.moneyManager.getPlayerMoney() ?? 0) < (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? 0)
+                        (game?.moneyManager.getPlayerMoney() ?? 0) <
+                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ??
+                            0)
                           ? 'not-allowed'
                           : 'pointer',
                     }}
                   >
                     Improve Quality
                   </button>
-                  <p>Cost: {game?.workbenchManager.getCostForQualityUpgrade(weapons[0])}$</p>
+                  <p>
+                    Cost: {game?.workbenchManager.getCostForQualityUpgrade(weapons[0])}$
+                  </p>
                 </div>
               </div>
               <h3>Passives:</h3>
@@ -122,34 +157,65 @@ const WorkbenchUI = () => {
                   <li style={{ color: getRarityColor(weapons[1].currentRarity) }}>
                     Quality: {Rarity[weapons[1].currentRarity]}
                   </li>
-                  <li>Damage: {weapons[1].weaponData.globalStats[weapons[1].currentRarity].damage}</li>
-                  <li>Fire Rate: {Math.round((1 / weapons[1].weaponData.globalStats[weapons[1].currentRarity].cadency) * 100) / 100} shots/sec</li>
-                  <li>Ammo: {weapons[1].weaponData.globalStats[weapons[1].currentRarity].magazineSize}</li>
-                  <li>Reload time: {weapons[1].weaponData.globalStats[weapons[1].currentRarity].reloadTime}</li>
+                  <li>
+                    Damage:{' '}
+                    {weapons[1].weaponData.globalStats[weapons[1].currentRarity].damage}
+                  </li>
+                  <li>
+                    Fire Rate:{' '}
+                    {Math.round(
+                      (1 /
+                        weapons[1].weaponData.globalStats[weapons[1].currentRarity]
+                          .cadency) *
+                        100,
+                    ) / 100}{' '}
+                    shots/sec
+                  </li>
+                  <li>
+                    Ammo:{' '}
+                    {
+                      weapons[1].weaponData.globalStats[weapons[1].currentRarity]
+                        .magazineSize
+                    }
+                  </li>
+                  <li>
+                    Reload time:{' '}
+                    {
+                      weapons[1].weaponData.globalStats[weapons[1].currentRarity]
+                        .reloadTime
+                    }
+                  </li>
                 </ul>
                 <div className="upgrade-container">
                   <button
                     onClick={() => handleImproveQuality(1)}
                     disabled={
                       weapons[1].currentRarity === Rarity.LEGENDARY ||
-                      (game?.moneyManager.getPlayerMoney() ?? 0) < (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? 0)
+                      (game?.moneyManager.getPlayerMoney() ?? 0) <
+                        (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? 0)
                     }
                     style={{
                       backgroundColor:
                         weapons[1].currentRarity === Rarity.LEGENDARY ||
-                        (game?.moneyManager.getPlayerMoney() ?? 0) < (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? 0)
+                        (game?.moneyManager.getPlayerMoney() ?? 0) <
+                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ??
+                            0)
                           ? '#666'
                           : '#444',
                       cursor:
                         weapons[1].currentRarity === Rarity.LEGENDARY ||
-                        (game?.moneyManager.getPlayerMoney() ?? 0) < (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? 0)
+                        (game?.moneyManager.getPlayerMoney() ?? 0) <
+                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ??
+                            0)
                           ? 'not-allowed'
                           : 'pointer',
                     }}
                   >
                     Improve Quality
                   </button>
-                  <p>Cost: {game?.workbenchManager.getCostForQualityUpgrade(weapons[1])}$</p>
+                  <p>
+                    Cost: {game?.workbenchManager.getCostForQualityUpgrade(weapons[1])}$
+                  </p>
                 </div>
               </div>
               <h3>Passives:</h3>

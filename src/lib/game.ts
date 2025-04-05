@@ -48,7 +48,7 @@ export class Game {
   public runManager = new RunManager();
   public weaponManager = new weaponDataManager();
   public shopManager!: ShopManager;
-  public workbenchManager !: WorkbenchManager;
+  public workbenchManager!: WorkbenchManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
 
   private fixedUpdateTimer = 0;

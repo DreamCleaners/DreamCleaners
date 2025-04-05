@@ -1,6 +1,4 @@
-import {
-  Vector3,
-} from '@babylonjs/core';
+import { Vector3 } from '@babylonjs/core';
 import { GameScene } from './gameScene';
 import { FixedStageLayout } from './fixedStageLayout';
 import { Bed } from '../interactiveElements/bed';
@@ -16,7 +14,7 @@ export class HubScene extends GameScene {
   // Array of the beds in the hub
   private beds: Bed[] = [];
   private computer!: Computer;
-  private workbench !: Workbench;
+  private workbench!: Workbench;
 
   public async load(): Promise<void> {
     const unityScene = await this.game.assetManager.instantiateUnityScene(
@@ -76,5 +74,6 @@ export class HubScene extends GameScene {
       bed.dispose();
     }
     this.computer.dispose();
+    this.workbench.dispose();
   }
 }

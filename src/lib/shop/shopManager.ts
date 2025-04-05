@@ -224,7 +224,15 @@ export class ShopManager {
 
     const weapon = new Weapon(this.game.player, weaponItem.weaponType, weaponItem.rarity);
     await weapon.init();
-    this.game.player.inventory.replaceWeaponInInventory(weapon, inventoryIndex);
+
+    const oldWeapon = this.game.player.getInventory().getWeapons()[inventoryIndex];
+
+    // Dispose of old weapon if the slot was taken
+    if (oldWeapon) {
+      oldWeapon.dispose();
+    }
+
+    this.game.player.replaceWeaponAtIndex(inventoryIndex, weapon);
 
     this.removeItemFromShop(weaponItem);
   }
