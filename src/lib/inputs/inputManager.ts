@@ -75,6 +75,11 @@ export class InputManager {
       this.inputState.actions.set(InputAction.INTERACT, isKeydown);
     }
 
+    // FLASHLIGHT
+    else if (event.code === 'KeyF') {
+      this.inputState.actions.set(InputAction.FLASHLIGHT, isKeydown);
+    }
+
     // Update the direction
     this.inputState.directions.x = 0;
     this.inputState.directions.y = 0;

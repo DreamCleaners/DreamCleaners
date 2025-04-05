@@ -1,6 +1,4 @@
-import {
-  Vector3,
-} from '@babylonjs/core';
+import { Vector3 } from '@babylonjs/core';
 import { GameScene } from './gameScene';
 import { FixedStageLayout } from './fixedStageLayout';
 import { Bed } from '../interactiveElements/bed';

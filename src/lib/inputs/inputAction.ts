@@ -11,4 +11,5 @@ export enum InputAction {
   RELOAD,
   ESCAPE,
   INTERACT,
+  FLASHLIGHT,
 }

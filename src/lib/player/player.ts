@@ -1,4 +1,6 @@
 import {
+  Color3,
+  Light,
   Mesh,
   MeshBuilder,
   Observable,
@@ -8,6 +10,7 @@ import {
   PhysicsShapeType,
   Quaternion,
   ShapeCastResult,
+  SpotLight,
   Vector2,
   Vector3,
 } from '@babylonjs/core';
@@ -31,6 +34,10 @@ export class Player implements IDamageable {
   private inputs: InputState;
   public cameraManager!: CameraManager;
   public hitbox!: Mesh;
+
+  private flashlight!: Light;
+  private canToggleFlashlight = true;
+  private readonly FLASHLIGHT_INTENSITY = 50;
 
   // gui
   private gui: AdvancedDynamicTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
@@ -124,6 +131,7 @@ export class Player implements IDamageable {
 
     this.initPhysicsAggregate();
     this.cameraManager = new CameraManager(this);
+    this.initFlashlight();
 
     this.initInteractionUI();
   }
@@ -192,9 +200,25 @@ export class Player implements IDamageable {
     this.physicsAggregate.body.setMassProperties({ inertia: new Vector3(0, 0, 0) });
   }
 
+  private initFlashlight(): void {
+    this.flashlight = new SpotLight(
+      'flashlight',
+      new Vector3(0, 0, 0),
+      new Vector3(0, 0, 1),
+      Math.PI / 4,
+      100,
+      this.game.scene,
+    );
+    this.flashlight.intensity = this.FLASHLIGHT_INTENSITY;
+    this.flashlight.parent = this.cameraManager.getCamera();
+    this.flashlight.diffuse = new Color3(1, 0.7, 0);
+    this.flashlight.specular = new Color3(1, 0.7, 0);
+  }
+
   public update(): void {
     if (!this.game.isPointerLocked) return;
 
+    // weapons
     if (this.equippedWeapon != undefined) {
       if (this.inputs.actions.get(InputAction.SHOOT)) {
         this.equippedWeapon.handlePrimaryFire();
@@ -217,6 +241,7 @@ export class Player implements IDamageable {
       }
     }
 
+    // crouch / slide
     if (this.inputs.actions.get(InputAction.CROUCH)) {
       if (!this.isCrouching && this.isGrounded) {
         this.crouch();
@@ -227,6 +252,7 @@ export class Player implements IDamageable {
       }
     }
 
+    // interaction
     if (this.interactiveObject !== null) {
       this.displayInteractionUI(this.interactiveObject);
 
@@ -240,6 +266,16 @@ export class Player implements IDamageable {
 
     if (!this.inputs.actions.get(InputAction.INTERACT)) {
       this.canInteract = true;
+    }
+
+    // flashlight
+    if (this.inputs.actions.get(InputAction.FLASHLIGHT) && this.canToggleFlashlight) {
+      this.canToggleFlashlight = false;
+      this.toggleFlashlight();
+    }
+
+    if (!this.canToggleFlashlight && !this.inputs.actions.get(InputAction.FLASHLIGHT)) {
+      this.canToggleFlashlight = true;
     }
 
     this.cameraManager.updateCamera(this.inputs);
@@ -286,6 +322,11 @@ export class Player implements IDamageable {
     this.onDodgeChancePercentageChange.notifyObservers(
       this.dodgeChancePercentageIncrease,
     );
+  }
+
+  public toggleFlashlight(): void {
+    this.flashlight.intensity =
+      this.flashlight.intensity === 0 ? this.FLASHLIGHT_INTENSITY : 0;
   }
 
   // ----------------------- Health --------------------------
