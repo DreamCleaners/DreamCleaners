@@ -97,7 +97,7 @@ export class Weapon {
 
   public async init(): Promise<void> {
     await this.initMesh();
-    console.log('Wapon initialized: ', this.weaponType);
+    console.log('Weapon initialized: ', this.weaponType);
   }
 
   private async initMesh(): Promise<void> {
