@@ -33,7 +33,7 @@
     "firePoint": {
       "x": -0.03,
       "y": 0.3,
-      "z": 1.8
+      "z": 2
     }
   },
   "glock": {
@@ -70,7 +70,7 @@
     "firePoint": {
       "x": 0,
       "y": 0.05,
-      "z": 0.3
+      "z": 0.4
     }
   },
   "shotgun": {
@@ -80,7 +80,7 @@
       "reloadTime": [4.0, 3.7, 3.3, 2.4],
       "cadency": [1, 0.9, 0.8, 0.7],
       "range": [20, 30, 40, 50],
-      "magazineSize": [5, 7, 8, 9]
+      "magazineSize": [5, 7, 8, 9000]
     },
     "staticStats": {
       "isAutomatic": false,
@@ -107,7 +107,7 @@
     "firePoint": {
       "x": 0,
       "y": 0.05,
-      "z": 1.2
+      "z": 1.3
     }
   }
 }

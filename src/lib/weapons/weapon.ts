@@ -1,12 +1,16 @@
 import { Rarity } from '../shop/rarity.ts';
 import { Player } from '../player/player';
 import {
+  Color4,
   Matrix,
+  Mesh,
   MeshBuilder,
   Observable,
+  ParticleSystem,
   PhysicsEngineV2,
   PhysicsRaycastResult,
   Quaternion,
+  Texture,
   TransformNode,
   Vector3,
 } from '@babylonjs/core';
@@ -27,7 +31,7 @@ import { Enemy } from '../enemies/enemy.ts';
 
 export class Weapon {
   private rootMesh!: TransformNode;
-  private firePoint!: TransformNode;
+  private firePoint!: Mesh;
   private gameAssetContainer!: GameAssetContainer;
 
   // physics
@@ -83,6 +87,9 @@ export class Weapon {
   private justShotAkimbo = false; // Previous shot was akimbo
   public delayBetweenAlternateShots!: number;
 
+  // particle system
+  private particleSystem!: ParticleSystem;
+
   constructor(
     private player: Player,
     public weaponType: WeaponType,
@@ -97,7 +104,8 @@ export class Weapon {
 
   public async init(): Promise<void> {
     await this.initMesh();
-    console.log('Wapon initialized: ', this.weaponType);
+    this.initParticleSystem();
+    this.player.fireLight.parent = this.firePoint;
   }
 
   private async initMesh(): Promise<void> {
@@ -130,7 +138,7 @@ export class Weapon {
       weaponTransform.scale,
     );
 
-    this.firePoint = new TransformNode('firePoint', this.player.game.scene);
+    this.firePoint = new Mesh('firePoint', this.player.game.scene);
     this.rootMesh.addChild(this.firePoint);
     this.firePoint.position = new Vector3(
       this.weaponData.firePoint.x,
@@ -141,7 +149,44 @@ export class Weapon {
     this.hideInScene();
   }
 
+  private initParticleSystem(): void {
+    this.particleSystem = new ParticleSystem('particles', 2000, this.player.game.scene);
+    this.particleSystem.particleTexture = new Texture(
+      '/img/smoke.png',
+      this.player.game.scene,
+    );
+
+    this.particleSystem.emitter = this.firePoint;
+    this.particleSystem.minEmitBox = Vector3.Zero();
+    this.particleSystem.maxEmitBox = Vector3.Zero();
+
+    this.particleSystem.direction1 = new Vector3(1, 1, 1);
+    this.particleSystem.direction2 = new Vector3(-1, -1, 1);
+
+    this.particleSystem.emitRate = 2000;
+    this.particleSystem.targetStopDuration = 0.01;
+    this.particleSystem.updateSpeed = 0.01;
+
+    this.particleSystem.minLifeTime = 0.01;
+    this.particleSystem.maxLifeTime = 0.01;
+
+    this.particleSystem.blendMode = ParticleSystem.BLENDMODE_ADD;
+
+    this.particleSystem.color1 = new Color4(1, 0.92, 0);
+    this.particleSystem.color2 = new Color4(1, 0.83, 0.15);
+    this.particleSystem.colorDead = new Color4(1, 0.82, 0.43);
+
+    this.particleSystem.minEmitPower = 20;
+    this.particleSystem.maxEmitPower = 20;
+
+    this.particleSystem.minSize = 0.3;
+    this.particleSystem.maxSize = 0.3;
+
+    this.gameAssetContainer.addParticleSystem(this.particleSystem);
+  }
+
   public hideInScene(): void {
+    this.player.fireLight.parent = null;
     this.rootMesh.setEnabled(false);
 
     if (this.isAkimboWielding) {
@@ -151,6 +196,7 @@ export class Weapon {
 
   public showInScene(): void {
     this.rootMesh.setEnabled(true);
+    this.player.fireLight.parent = this.firePoint;
 
     if (this.isAkimboWielding) {
       this.akimboWeapon?.showInScene();
@@ -301,6 +347,8 @@ export class Weapon {
    * depending on the projection cone of the weapon (The most obvious example is the shotgun)
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
+    this.displayVFX();
+
     let shotLandedOnEnemy = false;
 
     const isCriticalHit =
@@ -608,5 +656,14 @@ export class Weapon {
     newWeapon.applyCurrentStats();
 
     return newWeapon;
+  }
+
+  public displayVFX(): void {
+    this.particleSystem.start();
+
+    this.player.fireLight.intensity = 0.5;
+    setTimeout(() => {
+      this.player.fireLight.intensity = 0;
+    }, 50);
   }
 }

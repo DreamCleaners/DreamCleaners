@@ -8,6 +8,7 @@ import {
   PhysicsEngineV2,
   PhysicsRaycastResult,
   PhysicsShapeType,
+  PointLight,
   Quaternion,
   ShapeCastResult,
   SpotLight,
@@ -35,6 +36,10 @@ export class Player implements IDamageable {
   public cameraManager!: CameraManager;
   public hitbox!: Mesh;
 
+  // firelight
+  public fireLight!: Light;
+
+  // flashlight
   private flashlight!: Light;
   private canToggleFlashlight = true;
   private readonly FLASHLIGHT_INTENSITY = 50;
@@ -132,6 +137,7 @@ export class Player implements IDamageable {
     this.initPhysicsAggregate();
     this.cameraManager = new CameraManager(this);
     this.initFlashlight();
+    this.initFireLight();
 
     this.initInteractionUI();
   }
@@ -213,6 +219,13 @@ export class Player implements IDamageable {
     this.flashlight.parent = this.cameraManager.getCamera();
     this.flashlight.diffuse = new Color3(1, 0.7, 0);
     this.flashlight.specular = new Color3(1, 0.7, 0);
+  }
+
+  private initFireLight(): void {
+    this.fireLight = new PointLight('fireLight', Vector3.Zero(), this.game.scene);
+    this.fireLight.diffuse = new Color3(1, 0.92, 0);
+    this.fireLight.specular = new Color3(1, 0.92, 0);
+    this.fireLight.intensity = 0;
   }
 
   public update(): void {

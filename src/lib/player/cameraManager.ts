@@ -7,7 +7,7 @@ export class CameraManager {
   private readonly FOV = 0.9;
 
   // tilt
-  private readonly MAX_TILT_ANGLE = 0.6; // degrees
+  private readonly MAX_TILT_ANGLE = 0.65; // degrees
   private readonly TILT_TRANSITION_SPEED = 6;
 
   constructor(private player: Player) {

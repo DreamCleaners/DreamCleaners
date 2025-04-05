@@ -4,6 +4,7 @@ import {
   InstantiatedEntries,
   Light,
   Mesh,
+  ParticleSystem,
   PhysicsAggregate,
   Scene,
 } from '@babylonjs/core';
@@ -59,6 +60,10 @@ export class GameAssetContainer {
 
   public addPhysicsAggregate(physicsAggregate: PhysicsAggregate): void {
     this.physicsAggregates.push(physicsAggregate);
+  }
+
+  public addParticleSystem(particleSystem: ParticleSystem): void {
+    this.assetContainer.particleSystems.push(particleSystem);
   }
 
   public dispose(): void {
