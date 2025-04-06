@@ -419,27 +419,43 @@ export class Weapon {
 
     const end = start.add(direction.scale(this.currentStats.range));
 
+    // Debug shooting line
+    // const line = MeshBuilder.CreateLines(
+    //   'lines',
+    //   { points: [this.firePoint.absolutePosition, end] },
+    //   this.player.game.scene,
+    // );
+
+    // setTimeout(() => {
+    //   line.dispose();
+    // }, 50);
+
     this.physicsEngine.raycastToRef(start, end, this.raycastResult, {
       shouldHitTriggers: true,
     });
 
     if (this.raycastResult.hasHit) {
-      this.showImpactEffects(
-        this.raycastResult.hitPointWorld.clone(),
-        this.raycastResult.hitNormalWorld.clone(),
-      );
-
       const metadata = this.raycastResult.body?.transformNode
         .metadata as IMetadataObject<IDamageable>;
+
       if (metadata && metadata.isDamageable) {
         const damageableEntity = metadata.object;
         this.dealDamage(damageableEntity, crit);
 
         if (this.isEnemy(damageableEntity)) {
+          this.showBloodImpactEffects(
+            this.raycastResult.hitPointWorld.clone(),
+            this.raycastResult.hitNormalWorld.clone(),
+          );
           this.raycastResult.reset();
           return true;
         }
       }
+
+      this.showSurfaceImpactEffects(
+        this.raycastResult.hitPointWorld.clone(),
+        this.raycastResult.hitNormalWorld.clone(),
+      );
     }
 
     this.raycastResult.reset();
@@ -656,7 +672,10 @@ export class Weapon {
   // --------------------- VFX related ---------------------------
   // ---------------------------------------------------------------
 
-  private showImpactEffects(impactPosition: Vector3, surfaceNormal: Vector3): void {
+  private showSurfaceImpactEffects(
+    impactPosition: Vector3,
+    surfaceNormal: Vector3,
+  ): void {
     const hitPoint = new Mesh('hitPoint', this.player.game.scene);
     hitPoint.position = impactPosition;
     const quaternion = Quaternion.Identity();
@@ -737,6 +756,58 @@ export class Weapon {
 
     impactParticleSystem.start();
     smokeImpactParticleSystem.start(50);
+  }
+
+  private showBloodImpactEffects(impactPosition: Vector3, surfaceNormal: Vector3): void {
+    const hitPoint = new Mesh('hitPoint', this.player.game.scene);
+    hitPoint.position = impactPosition;
+    const quaternion = Quaternion.Identity();
+    Quaternion.FromUnitVectorsToRef(Vector3.Forward(), surfaceNormal, quaternion);
+    hitPoint.rotationQuaternion = quaternion;
+
+    // blood impact
+    const bloodImpactParticleSystem = new ParticleSystem(
+      'bloodImpactParticles',
+      10,
+      this.player.game.scene,
+    );
+    bloodImpactParticleSystem.particleTexture =
+      this.player.game.assetManager.getTexture('circle');
+
+    bloodImpactParticleSystem.emitter = hitPoint;
+    bloodImpactParticleSystem.minEmitBox = Vector3.Zero();
+    bloodImpactParticleSystem.maxEmitBox = Vector3.Zero();
+
+    bloodImpactParticleSystem.direction1 = new Vector3(1, 1, 1);
+    bloodImpactParticleSystem.direction2 = new Vector3(-1, -1, 1);
+
+    bloodImpactParticleSystem.emitRate = 1000;
+    bloodImpactParticleSystem.targetStopDuration = 0.1;
+    bloodImpactParticleSystem.updateSpeed = 0.01;
+
+    bloodImpactParticleSystem.minLifeTime = 0.1;
+    bloodImpactParticleSystem.maxLifeTime = 0.27;
+
+    bloodImpactParticleSystem.blendMode = ParticleSystem.BLENDMODE_MULTIPLY;
+
+    bloodImpactParticleSystem.color1 = new Color4(0.9, 0, 0, 1);
+    bloodImpactParticleSystem.color2 = new Color4(0.8, 0, 0, 1);
+    bloodImpactParticleSystem.colorDead = new Color4(0.1, 0, 0, 1);
+
+    bloodImpactParticleSystem.addVelocityGradient(0, 0.3);
+    bloodImpactParticleSystem.addVelocityGradient(1, 0.1);
+
+    bloodImpactParticleSystem.gravity = new Vector3(0, -10, 0);
+
+    bloodImpactParticleSystem.addSizeGradient(0, 0.25);
+    bloodImpactParticleSystem.addSizeGradient(1, 0);
+
+    bloodImpactParticleSystem.addVelocityGradient(0, 5);
+    bloodImpactParticleSystem.addVelocityGradient(1, 0);
+
+    bloodImpactParticleSystem.disposeOnStop = true;
+
+    bloodImpactParticleSystem.start();
   }
 
   public showMuzzleFlashEffects(): void {
