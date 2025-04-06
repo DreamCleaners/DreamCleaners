@@ -5,6 +5,7 @@ import {
   PhysicsAggregate,
   PhysicsShapeType,
   Scene,
+  Texture,
   TransformNode,
 } from '@babylonjs/core';
 import '@babylonjs/loaders';
@@ -24,6 +25,10 @@ export class AssetManager {
     const assetKey = `meshes/${assetType}/${assetName}`;
     const assetContainer = await LoadAssetContainerAsync(`${assetKey}.glb`, this.scene);
     return GameAssetContainer.createFromAssetContainer(assetContainer);
+  }
+
+  public getTexture(name: string): Texture {
+    return new Texture(`img/textures/${name}.png`, this.scene);
   }
 
   public async instantiateUnityScene(sceneName: string): Promise<UnityScene> {

@@ -4,13 +4,11 @@ import {
   Color4,
   Matrix,
   Mesh,
-  MeshBuilder,
   Observable,
   ParticleSystem,
   PhysicsEngineV2,
   PhysicsRaycastResult,
   Quaternion,
-  Texture,
   TransformNode,
   Vector3,
 } from '@babylonjs/core';
@@ -87,8 +85,8 @@ export class Weapon {
   private justShotAkimbo = false; // Previous shot was akimbo
   public delayBetweenAlternateShots!: number;
 
-  // particle system
-  private particleSystem!: ParticleSystem;
+  // muzzle flash particle system
+  private muzzleFlashParticleSystem!: ParticleSystem;
 
   constructor(
     private player: Player,
@@ -104,7 +102,7 @@ export class Weapon {
 
   public async init(): Promise<void> {
     await this.initMesh();
-    this.initParticleSystem();
+    this.initMuzzleFlashParticleSystem();
     this.player.fireLight.parent = this.firePoint;
   }
 
@@ -149,40 +147,42 @@ export class Weapon {
     this.hideInScene();
   }
 
-  private initParticleSystem(): void {
-    this.particleSystem = new ParticleSystem('particles', 2000, this.player.game.scene);
-    this.particleSystem.particleTexture = new Texture(
-      '/img/smoke.png',
+  private initMuzzleFlashParticleSystem(): void {
+    this.muzzleFlashParticleSystem = new ParticleSystem(
+      'muzzle flash particles',
+      2000,
       this.player.game.scene,
     );
+    this.muzzleFlashParticleSystem.particleTexture =
+      this.player.game.assetManager.getTexture('smoke');
 
-    this.particleSystem.emitter = this.firePoint;
-    this.particleSystem.minEmitBox = Vector3.Zero();
-    this.particleSystem.maxEmitBox = Vector3.Zero();
+    this.muzzleFlashParticleSystem.emitter = this.firePoint;
+    this.muzzleFlashParticleSystem.minEmitBox = Vector3.Zero();
+    this.muzzleFlashParticleSystem.maxEmitBox = Vector3.Zero();
 
-    this.particleSystem.direction1 = new Vector3(1, 1, 1);
-    this.particleSystem.direction2 = new Vector3(-1, -1, 1);
+    this.muzzleFlashParticleSystem.direction1 = new Vector3(1, 1, 1);
+    this.muzzleFlashParticleSystem.direction2 = new Vector3(-1, -1, 1);
 
-    this.particleSystem.emitRate = 2000;
-    this.particleSystem.targetStopDuration = 0.01;
-    this.particleSystem.updateSpeed = 0.01;
+    this.muzzleFlashParticleSystem.emitRate = 2000;
+    this.muzzleFlashParticleSystem.targetStopDuration = 0.01;
+    this.muzzleFlashParticleSystem.updateSpeed = 0.01;
 
-    this.particleSystem.minLifeTime = 0.01;
-    this.particleSystem.maxLifeTime = 0.01;
+    this.muzzleFlashParticleSystem.minLifeTime = 0.01;
+    this.muzzleFlashParticleSystem.maxLifeTime = 0.01;
 
-    this.particleSystem.blendMode = ParticleSystem.BLENDMODE_ADD;
+    this.muzzleFlashParticleSystem.blendMode = ParticleSystem.BLENDMODE_ADD;
 
-    this.particleSystem.color1 = new Color4(1, 0.92, 0);
-    this.particleSystem.color2 = new Color4(1, 0.83, 0.15);
-    this.particleSystem.colorDead = new Color4(1, 0.82, 0.43);
+    this.muzzleFlashParticleSystem.color1 = new Color4(1, 0.92, 0);
+    this.muzzleFlashParticleSystem.color2 = new Color4(1, 0.83, 0.15);
+    this.muzzleFlashParticleSystem.colorDead = new Color4(1, 0.82, 0.43);
 
-    this.particleSystem.minEmitPower = 20;
-    this.particleSystem.maxEmitPower = 20;
+    this.muzzleFlashParticleSystem.minEmitPower = 20;
+    this.muzzleFlashParticleSystem.maxEmitPower = 20;
 
-    this.particleSystem.minSize = 0.3;
-    this.particleSystem.maxSize = 0.3;
+    this.muzzleFlashParticleSystem.minSize = 0.3;
+    this.muzzleFlashParticleSystem.maxSize = 0.3;
 
-    this.gameAssetContainer.addParticleSystem(this.particleSystem);
+    this.gameAssetContainer.addParticleSystem(this.muzzleFlashParticleSystem);
   }
 
   public hideInScene(): void {
@@ -347,7 +347,7 @@ export class Weapon {
    * depending on the projection cone of the weapon (The most obvious example is the shotgun)
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
-    this.displayVFX();
+    this.showMuzzleFlashEffects();
 
     let shotLandedOnEnemy = false;
 
@@ -423,19 +423,12 @@ export class Weapon {
       shouldHitTriggers: true,
     });
 
-    // Debug shooting line
-    const line = MeshBuilder.CreateLines(
-      'lines',
-      { points: [this.firePoint.absolutePosition, end] },
-      this.player.game.scene,
-    );
-
-    setTimeout(() => {
-      line.dispose();
-    }, 50);
-    // --
-
     if (this.raycastResult.hasHit) {
+      this.showImpactEffects(
+        this.raycastResult.hitPointWorld.clone(),
+        this.raycastResult.hitNormalWorld.clone(),
+      );
+
       const metadata = this.raycastResult.body?.transformNode
         .metadata as IMetadataObject<IDamageable>;
       if (metadata && metadata.isDamageable) {
@@ -443,11 +436,13 @@ export class Weapon {
         this.dealDamage(damageableEntity, crit);
 
         if (this.isEnemy(damageableEntity)) {
+          this.raycastResult.reset();
           return true;
         }
       }
     }
 
+    this.raycastResult.reset();
     return false;
   }
 
@@ -658,8 +653,94 @@ export class Weapon {
     return newWeapon;
   }
 
-  public displayVFX(): void {
-    this.particleSystem.start();
+  // --------------------- VFX related ---------------------------
+  // ---------------------------------------------------------------
+
+  private showImpactEffects(impactPosition: Vector3, surfaceNormal: Vector3): void {
+    const hitPoint = new Mesh('hitPoint', this.player.game.scene);
+    hitPoint.position = impactPosition;
+    const quaternion = Quaternion.Identity();
+    Quaternion.FromUnitVectorsToRef(Vector3.Forward(), surfaceNormal, quaternion);
+    hitPoint.rotationQuaternion = quaternion;
+
+    // bullet impact
+    const impactParticleSystem = new ParticleSystem(
+      'impact particles',
+      2,
+      this.player.game.scene,
+    );
+    impactParticleSystem.particleTexture =
+      this.player.game.assetManager.getTexture('circle');
+
+    impactParticleSystem.emitter = hitPoint;
+    impactParticleSystem.minEmitBox = Vector3.Zero();
+    impactParticleSystem.maxEmitBox = Vector3.Zero();
+
+    impactParticleSystem.direction1 = new Vector3(1, 1, 1);
+    impactParticleSystem.direction2 = new Vector3(-1, -1, 1);
+
+    impactParticleSystem.emitRate = 120;
+    impactParticleSystem.targetStopDuration = 0.04;
+    impactParticleSystem.updateSpeed = 0.01;
+
+    impactParticleSystem.minLifeTime = 0.04;
+    impactParticleSystem.maxLifeTime = 0.04;
+
+    impactParticleSystem.blendMode = ParticleSystem.BLENDMODE_ADD;
+
+    impactParticleSystem.color1 = new Color4(1, 0.92, 0);
+    impactParticleSystem.color2 = new Color4(1, 0.83, 0.15);
+    impactParticleSystem.colorDead = new Color4(1, 0.82, 0.43);
+
+    impactParticleSystem.minEmitPower = 10;
+    impactParticleSystem.maxEmitPower = 10;
+
+    impactParticleSystem.minSize = 0.2;
+    impactParticleSystem.maxSize = 0.2;
+
+    impactParticleSystem.disposeOnStop = true;
+
+    // smoke impact
+    const smokeImpactParticleSystem = new ParticleSystem(
+      'smokeImpactParticles',
+      10,
+      this.player.game.scene,
+    );
+    smokeImpactParticleSystem.particleTexture =
+      this.player.game.assetManager.getTexture('smoke');
+
+    smokeImpactParticleSystem.emitter = hitPoint;
+    smokeImpactParticleSystem.minEmitBox = new Vector3(0.1, 0.1, 0.1);
+    smokeImpactParticleSystem.maxEmitBox = new Vector3(-0.1, -0.1, -0.1);
+
+    smokeImpactParticleSystem.direction1 = new Vector3(1, 1, 1);
+    smokeImpactParticleSystem.direction2 = new Vector3(-1, -1, 1);
+
+    smokeImpactParticleSystem.emitRate = 120;
+    smokeImpactParticleSystem.targetStopDuration = 0.7;
+    smokeImpactParticleSystem.updateSpeed = 0.01;
+
+    smokeImpactParticleSystem.minLifeTime = 0.7;
+    smokeImpactParticleSystem.maxLifeTime = 0.7;
+
+    smokeImpactParticleSystem.addColorGradient(0, new Color4(0, 0, 0, 0.5));
+    smokeImpactParticleSystem.addColorGradient(0.5, new Color4(0.01, 0.01, 0.01, 0.5));
+    smokeImpactParticleSystem.addColorGradient(1, new Color4(0, 0, 0, 0.5));
+
+    smokeImpactParticleSystem.minEmitPower = 1;
+    smokeImpactParticleSystem.maxEmitPower = 1;
+
+    smokeImpactParticleSystem.addSizeGradient(0, 0.3);
+    smokeImpactParticleSystem.addSizeGradient(1, 1);
+
+    smokeImpactParticleSystem.disposeOnStop = true;
+
+    impactParticleSystem.start();
+    smokeImpactParticleSystem.start(50);
+  }
+
+  public showMuzzleFlashEffects(): void {
+    this.muzzleFlashParticleSystem.start();
 
     this.player.fireLight.intensity = 0.5;
     setTimeout(() => {
