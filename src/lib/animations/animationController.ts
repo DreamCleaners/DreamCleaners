@@ -1,14 +1,22 @@
 import { AnimationGroup, Scalar } from '@babylonjs/core';
 import { AnimationOptions } from './animationOptions';
 
+type AnimationData = {
+  group: AnimationGroup;
+  baseLength: number;
+};
+
 export class AnimationController {
-  private readonly animations: Map<string, AnimationGroup> = new Map();
+  private readonly animations: Map<string, AnimationData> = new Map();
   private transitionAnimation: AnimationGroup | null = null;
   private DEFAULT_TRANSITION_SPEED = 0.1;
   private transitionSpeed = this.DEFAULT_TRANSITION_SPEED;
 
   public addAnimation(name: string, animation: AnimationGroup): void {
-    this.animations.set(name, animation);
+    this.animations.set(name, {
+      group: animation,
+      baseLength: animation.getLength(),
+    });
   }
 
   /**
@@ -19,15 +27,19 @@ export class AnimationController {
    * @param options.speedRatio - Speed ratio of the animation (default: 1)
    * @param options.smoothTransition - Should the animation transition smoothly (default: false)
    * @param options.transitionSpeed - Speed of the transition (default: 0.1)
+   * @param options.maxDuration - Max duration of the animation in seconds (default: animation length)
    */
   public startAnimation(
     animationName: string,
     options: AnimationOptions,
   ): AnimationGroup {
-    const animation = this.animations.get(animationName);
-    if (!animation) {
+    const animationData = this.animations.get(animationName);
+    if (!animationData) {
       throw new Error(`Animation ${animationName} not found`);
     }
+
+    const animation = animationData.group;
+    const baseLength = animationData.baseLength;
 
     if (options.smoothTransition !== undefined && options.smoothTransition) {
       this.transitionSpeed = options.transitionSpeed || this.DEFAULT_TRANSITION_SPEED;
@@ -37,6 +49,7 @@ export class AnimationController {
       if (this.transitionAnimation) {
         this.transitionAnimation.stop();
       }
+      animation.stop();
       animation.weight = 1;
     }
 
@@ -44,7 +57,13 @@ export class AnimationController {
     const animationLoop: boolean = options?.loop ?? false;
     const animationFrom: number = options?.from ?? animation.from;
     const animationTo: number = options?.to ?? animation.to;
-    const speedRatio: number = options?.speedRatio ?? 1;
+    let speedRatio: number = options?.speedRatio ?? 1;
+
+    if (options.maxDuration) {
+      const maxDurationSpeedRatio = baseLength / options.maxDuration;
+      speedRatio = Math.max(speedRatio, maxDurationSpeedRatio);
+    }
+
     return animation.start(animationLoop, speedRatio, animationFrom, animationTo);
   }
 
@@ -65,7 +84,8 @@ export class AnimationController {
       1,
     );
 
-    this.animations.forEach((animation) => {
+    this.animations.forEach((animationData) => {
+      const animation = animationData.group;
       if (animation.name !== currentAnimation.name && animation.isPlaying) {
         animation.weight = Scalar.Clamp(animation.weight - this.transitionSpeed, 0, 1);
         if (animation.weight === 0) animation.stop();

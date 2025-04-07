@@ -20,6 +20,10 @@ export class Akimbo extends WeaponPassive {
     // We will initialize the mesh but first we modify its position
     newWeapon.weaponData.transform.position.x =
       -newWeapon.weaponData.transform.position.x;
+
+    // we also need to flip the scale of the weapon for animations
+    newWeapon.weaponData.transform.scale.x = -newWeapon.weaponData.transform.scale.x;
+
     newWeapon.init().then(() => {
       // We force actualization of mesh visibility only if it is already visible
       if (weapon.isVisible()) {

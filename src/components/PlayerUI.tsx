@@ -15,8 +15,6 @@ const PlayerHUD = () => {
   const [playerWeapon, setPlayerWeapon] = useState<Weapon | null>(null);
   const [ammo, setAmmo] = useState<number>(0);
   const onAmmoChangeObserverRef = useRef<Observer<number> | null>(null);
-  const [isReloading, setIsReloading] = useState<boolean>(false);
-  const onReloadObserverRef = useRef<Observer<boolean> | null>(null);
 
   const [playerMoney, setPlayerMoney] = useState<number>(0);
 
@@ -27,15 +25,11 @@ const PlayerHUD = () => {
     if (weapon === undefined) return;
     // remove previous observer so we don't have multiple observers
     onAmmoChangeObserverRef.current?.remove();
-    onReloadObserverRef.current?.remove();
 
     setPlayerWeapon(weapon);
 
     setAmmo(weapon.currentAmmoRemaining);
     onAmmoChangeObserverRef.current = weapon.onAmmoChange.add(setAmmo);
-
-    setIsReloading(weapon.isReloading);
-    onReloadObserverRef.current = weapon.onReload.add(setIsReloading);
   };
 
   useEffect(() => {
@@ -70,7 +64,6 @@ const PlayerHUD = () => {
       onPlayerMoneyChangeObserver.remove();
       onStageCompletedObserver.remove();
       onAmmoChangeObserverRef.current?.remove();
-      onReloadObserverRef.current?.remove();
     };
   }, [game]);
 
@@ -81,7 +74,6 @@ const PlayerHUD = () => {
       </p>
       <p>Weapon: {playerWeapon?.weaponType}</p>
       <p>Ammo: {ammo}</p>
-      <p>Is reloading: {isReloading ? 'true' : 'false'}</p>
       <p>Money: {playerMoney}$</p>
       <p>Stages cleared: {stageCompletedCount}</p>
     </div>

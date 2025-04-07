@@ -28,6 +28,7 @@ export class weaponDataManager {
         staticStats: weaponJson.staticStats,
         transform: weaponJson.transform,
         firePoint: weaponJson.firePoint,
+        animationsSpeed: weaponJson.animationsSpeed,
       };
 
       this.weaponsData.set(weaponType as WeaponType, weaponData);

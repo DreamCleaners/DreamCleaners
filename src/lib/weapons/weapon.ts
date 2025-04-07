@@ -26,6 +26,7 @@ import {
 } from './passives/weaponPassivesManager';
 import { BulletEffect } from './passives/bulletEffect.ts';
 import { Enemy } from '../enemies/enemy.ts';
+import { AnimationController } from '../animations/animationController.ts';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -36,8 +37,9 @@ export class Weapon {
   private raycastResult: PhysicsRaycastResult = new PhysicsRaycastResult();
   private physicsEngine!: PhysicsEngineV2;
 
-  public onReload: Observable<boolean> = new Observable<boolean>();
   public onAmmoChange: Observable<number> = new Observable<number>();
+
+  private animationController = new AnimationController();
 
   public weaponData!: WeaponData;
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
@@ -58,7 +60,7 @@ export class Weapon {
   private initialYPosition: number | null = null;
   private isPlayingMovingAnimating: boolean = false;
   // The speed at which the weapon moves up and down
-  private readonly MOVING_ANIMATION_SPEED = 9;
+  private readonly MOVING_ANIMATION_SPEED = 10;
   // The height at which the weapon moves up and down
   private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
@@ -96,12 +98,13 @@ export class Weapon {
     this.player = player;
     this.currentRarity = rarity;
     this.physicsEngine = player.physicsEngine;
-    this.weaponData = this.player.game.weaponManager.getWeaponData(this.weaponType);
+    this.weaponData = this.player.game.weaponDataManager.getWeaponData(this.weaponType);
     this.applyCurrentStats();
   }
 
   public async init(): Promise<void> {
     await this.initMesh();
+    this.initAnimations();
     this.initMuzzleFlashParticleSystem();
     this.player.fireLight.parent = this.firePoint;
   }
@@ -131,9 +134,9 @@ export class Weapon {
       weaponTransform.rotation.z * (Math.PI / 180),
     );
     weaponMesh.scaling = new Vector3(
-      weaponTransform.scale,
-      weaponTransform.scale,
-      weaponTransform.scale,
+      weaponTransform.scale.x,
+      weaponTransform.scale.y,
+      weaponTransform.scale.z,
     );
 
     this.firePoint = new Mesh('firePoint', this.player.game.scene);
@@ -145,6 +148,14 @@ export class Weapon {
     );
 
     this.hideInScene();
+  }
+
+  private initAnimations(): void {
+    const animationGroups = this.gameAssetContainer.getAnimationsGroup();
+    animationGroups.forEach((animationGroup) => {
+      animationGroup.stop();
+      this.animationController.addAnimation(animationGroup.name, animationGroup);
+    });
   }
 
   private initMuzzleFlashParticleSystem(): void {
@@ -210,6 +221,11 @@ export class Weapon {
   public fixedUpdate(): void {
     this.updateReload();
   }
+
+  public update(): void {
+    this.animationController.update();
+  }
+
   // ---------------------------------------------------------------
 
   /**
@@ -348,6 +364,10 @@ export class Weapon {
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
     this.showMuzzleFlashEffects();
+    this.animationController.startAnimation('Shoot', {
+      speedRatio: this.weaponData.animationsSpeed.shoot,
+      maxDuration: this.currentStats.cadency,
+    });
 
     let shotLandedOnEnemy = false;
 
@@ -517,10 +537,14 @@ export class Weapon {
       return;
     }
 
+    this.animationController.startAnimation('Reload', {
+      speedRatio: this.weaponData.animationsSpeed.reload,
+      maxDuration: this.currentStats.reloadTime,
+    });
+
     this.isReloading = true;
     this.reloadProgress = 0;
     this.reloadDuration = this.currentStats.reloadTime * 1000;
-    this.onReload.notifyObservers(true);
   }
 
   public updateReload(): void {
@@ -541,7 +565,6 @@ export class Weapon {
       this.isReloading = false;
       this.justShotAkimbo = false;
       this.reloadProgress = 0;
-      this.onReload.notifyObservers(false);
     }
   }
 
@@ -754,6 +777,11 @@ export class Weapon {
 
     smokeImpactParticleSystem.disposeOnStop = true;
 
+    smokeImpactParticleSystem.onDisposeObservable.add(() => {
+      console.log('smoke impact particle system disposed');
+      hitPoint.dispose();
+    });
+
     impactParticleSystem.start();
     smokeImpactParticleSystem.start(50);
   }
@@ -806,6 +834,10 @@ export class Weapon {
     bloodImpactParticleSystem.addVelocityGradient(1, 0);
 
     bloodImpactParticleSystem.disposeOnStop = true;
+
+    bloodImpactParticleSystem.onDisposeObservable.add(() => {
+      hitPoint.dispose();
+    });
 
     bloodImpactParticleSystem.start();
   }

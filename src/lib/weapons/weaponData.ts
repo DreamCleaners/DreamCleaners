@@ -6,6 +6,7 @@ export type WeaponData = {
   staticStats: StaticStats;
   transform: WeaponTransform;
   firePoint: Vec3;
+  animationsSpeed: WeaponAnimationsSpeed;
 };
 
 export type StaticStats = {
@@ -21,7 +22,12 @@ export type StaticStats = {
 export type WeaponTransform = {
   position: Vec3;
   rotation: Vec3;
-  scale: number;
+  scale: Vec3;
+};
+
+export type WeaponAnimationsSpeed = {
+  shoot?: number;
+  reload?: number;
 };
 
 export type Vec3 = {

@@ -45,7 +45,7 @@ export class Game {
   public stageManager = StagesManager.getInstance();
   public recastInjection: RecastInjection;
   public runManager = new RunManager();
-  public weaponManager = new weaponDataManager();
+  public weaponDataManager = new weaponDataManager();
   public shopManager!: ShopManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
 

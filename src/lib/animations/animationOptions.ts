@@ -5,4 +5,5 @@ export type AnimationOptions = {
   speedRatio?: number;
   smoothTransition?: boolean;
   transitionSpeed?: number;
+  maxDuration?: number;
 };

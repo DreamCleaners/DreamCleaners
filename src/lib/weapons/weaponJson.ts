@@ -1,5 +1,5 @@
 import { GlobalStatsJson } from './globalStats';
-import { StaticStats, Vec3, WeaponTransform } from './weaponData';
+import { StaticStats, Vec3, WeaponAnimationsSpeed, WeaponTransform } from './weaponData';
 
 export type WeaponJson = {
   weaponName: string;
@@ -7,4 +7,5 @@ export type WeaponJson = {
   staticStats: StaticStats;
   transform: WeaponTransform;
   firePoint: Vec3;
+  animationsSpeed: WeaponAnimationsSpeed;
 };

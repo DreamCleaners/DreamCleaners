@@ -1,4 +1,5 @@
 import {
+  AnimationGroup,
   AssetContainer,
   InstancedMesh,
   InstantiatedEntries,
@@ -35,6 +36,10 @@ export class GameAssetContainer {
       true,
       { doNotInstantiate: true },
     );
+  }
+
+  public getAnimationsGroup(): AnimationGroup[] {
+    return this.assetContainer.animationGroups;
   }
 
   /**

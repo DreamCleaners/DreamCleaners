@@ -18,7 +18,11 @@
       "knockback": 12
     },
     "transform": {
-      "scale": 0.5,
+      "scale": {
+        "x": 0.5,
+        "y": 0.5,
+        "z": 0.5
+      },
       "position": {
         "x": 0.5,
         "y": -0.7,
@@ -26,7 +30,7 @@
       },
       "rotation": {
         "x": 0,
-        "y": -91,
+        "y": -1,
         "z": 0
       }
     },
@@ -34,6 +38,9 @@
       "x": -0.03,
       "y": 0.3,
       "z": 2
+    },
+    "animationsSpeed": {
+      "reload": 0.1
     }
   },
   "glock": {
@@ -41,7 +48,7 @@
     "globalStats": {
       "damage": [20, 25, 30, 35],
       "reloadTime": [1.5, 1.3, 1.1, 0.9],
-      "cadency": [0.35, 0.25, 0.20, 0.15],
+      "cadency": [0.35, 0.25, 0.2, 0.15],
       "range": [50, 60, 70, 80],
       "magazineSize": [12, 15, 18, 21]
     },
@@ -55,7 +62,11 @@
       "knockback": 5
     },
     "transform": {
-      "scale": 0.18,
+      "scale": {
+        "x": 0.18,
+        "y": 0.18,
+        "z": 0.18
+      },
       "position": {
         "x": 0.5,
         "y": -0.5,
@@ -71,6 +82,9 @@
       "x": 0,
       "y": 0.05,
       "z": 0.4
+    },
+    "animationsSpeed": {
+      "shoot": 2
     }
   },
   "shotgun": {
@@ -92,7 +106,11 @@
       "knockback": 30
     },
     "transform": {
-      "scale": 1.3,
+      "scale": {
+        "x": 1.3,
+        "y": 1.3,
+        "z": 1.3
+      },
       "position": {
         "x": 0.5,
         "y": -0.4,
@@ -100,14 +118,17 @@
       },
       "rotation": {
         "x": 0,
-        "y": 180,
-        "z": -90
+        "y": 0,
+        "z": 0
       }
     },
     "firePoint": {
       "x": 0,
       "y": 0.05,
       "z": 1.3
+    },
+    "animationsSpeed": {
+      "reload": 0.1
     }
   }
 }

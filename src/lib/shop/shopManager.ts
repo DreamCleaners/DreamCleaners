@@ -201,7 +201,7 @@ export class ShopManager {
   // ---------------------------------------------------------
 
   private getRandomWeaponItem(rarity: Rarity): WeaponItem {
-    const weaponsData = this.game.weaponManager.getWeaponsData();
+    const weaponsData = this.game.weaponDataManager.getWeaponsData();
     const weaponTypes = Array.from(weaponsData.keys());
 
     const randomIndex = randomInt(0, weaponsData.size - 1);

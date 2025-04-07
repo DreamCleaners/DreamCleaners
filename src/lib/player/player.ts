@@ -42,7 +42,7 @@ export class Player implements IDamageable {
   // flashlight
   private flashlight!: Light;
   private canToggleFlashlight = true;
-  private readonly FLASHLIGHT_INTENSITY = 50;
+  private readonly FLASHLIGHT_INTENSITY = 100;
 
   // gui
   private gui: AdvancedDynamicTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
@@ -232,7 +232,7 @@ export class Player implements IDamageable {
     if (!this.game.isPointerLocked) return;
 
     // weapons
-    if (this.equippedWeapon != undefined) {
+    if (this.equippedWeapon !== undefined) {
       if (this.inputs.actions.get(InputAction.SHOOT)) {
         this.equippedWeapon.handlePrimaryFire();
       } else {
@@ -252,6 +252,8 @@ export class Player implements IDamageable {
       if (this.inputs.actions.get(InputAction.RELOAD)) {
         this.equippedWeapon.initReload();
       }
+
+      this.equippedWeapon.update();
     }
 
     // crouch / slide
@@ -303,7 +305,7 @@ export class Player implements IDamageable {
 
     this.updateVelocity();
 
-    if (this.equippedWeapon != undefined) {
+    if (this.equippedWeapon !== undefined) {
       this.equippedWeapon.fixedUpdate();
       this.equippedWeapon.updatePosition(this.velocity);
     }
