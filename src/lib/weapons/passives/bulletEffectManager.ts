@@ -12,7 +12,7 @@ export class BulletEffectManager {
   private initialEnemySpeed!: number;
 
   constructor(public enemy: Enemy) {
-    this.initialEnemySpeed = enemy.SPEED;
+    this.initialEnemySpeed = enemy.speed;
   }
 
   public applyEffect(bulletEffect: BulletEffect) {

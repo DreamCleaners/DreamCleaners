@@ -778,7 +778,6 @@ export class Weapon {
     smokeImpactParticleSystem.disposeOnStop = true;
 
     smokeImpactParticleSystem.onDisposeObservable.add(() => {
-      console.log('smoke impact particle system disposed');
       hitPoint.dispose();
     });
 
@@ -821,9 +820,6 @@ export class Weapon {
     bloodImpactParticleSystem.color1 = new Color4(0.9, 0, 0, 1);
     bloodImpactParticleSystem.color2 = new Color4(0.8, 0, 0, 1);
     bloodImpactParticleSystem.colorDead = new Color4(0.1, 0, 0, 1);
-
-    bloodImpactParticleSystem.addVelocityGradient(0, 0.3);
-    bloodImpactParticleSystem.addVelocityGradient(1, 0.1);
 
     bloodImpactParticleSystem.gravity = new Vector3(0, -10, 0);
 
