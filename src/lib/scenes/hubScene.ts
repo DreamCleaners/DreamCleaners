@@ -5,6 +5,7 @@ import { Bed } from '../interactiveElements/bed';
 import { Computer } from '../interactiveElements/computer';
 import { StagesManager } from '../stages/stagesManager';
 import { NavigationManager } from '../navigationManager';
+import { Workbench } from '../interactiveElements/workbench';
 
 export class HubScene extends GameScene {
   // The entity responsible for determining which stages will be proposed to the player
@@ -13,6 +14,7 @@ export class HubScene extends GameScene {
   // Array of the beds in the hub
   private beds: Bed[] = [];
   private computer!: Computer;
+  private workbench!: Workbench;
 
   public async load(): Promise<void> {
     const unityScene = await this.game.assetManager.instantiateUnityScene(
@@ -48,7 +50,10 @@ export class HubScene extends GameScene {
     );
 
     this.computer = new Computer(this);
-    await this.computer.create(new Vector3(0, 0, 0));
+    await this.computer.create(new Vector3(0, -0.07, 0));
+
+    this.workbench = new Workbench(this);
+    await this.workbench.create(new Vector3(0, 0, 0));
 
     this.game.moneyManager.convertScoreToMoney(this.game.scoreManager.getScore());
     this.game.scoreManager.reset();
@@ -69,5 +74,6 @@ export class HubScene extends GameScene {
       bed.dispose();
     }
     this.computer.dispose();
+    this.workbench.dispose();
   }
 }

@@ -48,7 +48,7 @@ export class Zombie extends Enemy {
 
   override initStats(difficultyFactor: number): void {
     this.healthController.init(200 + 15 * difficultyFactor);
-    this.SPEED = 1 * difficultyFactor;
+    this.speed = 1 * difficultyFactor;
     this.ATTACK_RANGE = 100;
   }
 
@@ -59,7 +59,7 @@ export class Zombie extends Enemy {
     rootNode.scaling.scaleInPlace(0.3);
 
     // Use agentParameters from the parent class
-    this.agentParameters.maxSpeed = this.SPEED;
+    this.agentParameters.maxSpeed = this.speed;
 
     const hitbox = MeshBuilder.CreateCapsule('capsule', {
       height: this.agentParameters.height,

@@ -100,6 +100,22 @@ export class WeaponPassivesManager {
       this.applyPassiveToWeapon(weapon, passiveType);
     }
   }
+
+  /** Returns an index indicating the rarity/quality/power of a passive */
+  public getQualityIndexForPassive(passiveType: WeaponPassiveType): number {
+    // We need to check from what enum the passive is coming from
+    // T1 will be 0 and T3 will be 2
+    if (Object.values(WeaponPassiveT1).includes(passiveType as WeaponPassiveT1)) {
+      return 0;
+    } else if (Object.values(WeaponPassiveT2).includes(passiveType as WeaponPassiveT2)) {
+      return 1;
+    } else if (Object.values(WeaponPassiveT3).includes(passiveType as WeaponPassiveT3)) {
+      return 2;
+    } else {
+      console.log('Unknown passive type: ', passiveType);
+      return -1; // Unknown passive
+    }
+  }
 }
 
 // Enums ---------------

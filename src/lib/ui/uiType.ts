@@ -5,4 +5,5 @@ export enum UIType {
   SCORE,
   STAGE_SELECTION,
   GAME_OVER,
+  WORKBENCH,
 }

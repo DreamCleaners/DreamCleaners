@@ -18,6 +18,7 @@ import { StagesManager } from './stages/stagesManager';
 import { weaponDataManager } from './weapons/weaponDataManager';
 import { ShopManager } from './shop/shopManager';
 import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
+import { WorkbenchManager } from './shop/workbench/workbenchManager';
 
 export class Game {
   public scene!: Scene;
@@ -47,6 +48,7 @@ export class Game {
   public runManager = new RunManager();
   public weaponDataManager = new weaponDataManager();
   public shopManager!: ShopManager;
+  public workbenchManager!: WorkbenchManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
 
   private fixedUpdateTimer = 0;
@@ -77,6 +79,7 @@ export class Game {
     this.sceneManager = new SceneManager(this);
 
     this.shopManager = new ShopManager(this);
+    this.workbenchManager = new WorkbenchManager(this);
 
     this.saveManager.addSaveable(this.moneyManager);
     this.saveManager.addSaveable(this.runManager);
@@ -95,6 +98,7 @@ export class Game {
   public start(isNewGame: boolean): void {
     if (isNewGame) {
       this.saveManager.reset();
+      this.moneyManager.addPlayerMoney(1000000);
     } else {
       this.saveManager.restore();
     }

@@ -47,7 +47,7 @@ export class Player implements IDamageable {
   // gui
   private gui: AdvancedDynamicTexture = AdvancedDynamicTexture.CreateFullscreenUI('UI');
   private container!: Control;
-  private readonly INTERACTION_UI_OFFSET_Y = 0;
+  private readonly INTERACTION_UI_OFFSET_Y = 50;
   private isInteractionUIVisible = false;
 
   // observables
@@ -98,7 +98,7 @@ export class Player implements IDamageable {
   // Inventory (weapons) related
   public inventory: PlayerInventory = new PlayerInventory(this);
   public equippedWeapon!: Weapon;
-  private currentWeaponIndex = -1;
+  public currentWeaponIndex = -1;
   private readonly WEAPON_SWITCH_DELAY = 500;
   private lastWeaponSwitch = 0;
 
