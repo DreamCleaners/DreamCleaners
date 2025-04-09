@@ -8,12 +8,21 @@ import { StageInformation } from '../lib/stages/stageInformation';
 const StageSelectionUI = () => {
   const game = useContext(GameContext);
   const [stageInfo, setStageInfo] = useState<StageInformation | null>(null);
+  const [stageImagePath, setStageImagePath] = useState<string | null>(null);
 
   useEffect(() => {
     const stagesManager = StagesManager.getInstance();
     const selectedBedInfo = stagesManager.getSelectedBedInformation();
     setStageInfo(selectedBedInfo);
-  }, []);
+
+    // Get the image path for the stage if available
+    if (selectedBedInfo && game?.stageInformationManager) {
+      const imagePath = game.stageInformationManager.getStageImagePath(
+        selectedBedInfo.proposedFixedStageLayout || 'procedural',
+      );
+      setStageImagePath(imagePath);
+    }
+  }, [game?.stageInformationManager]);
 
   const handleHideUI = () => {
     game?.uiManager.hideUI();
@@ -88,9 +97,23 @@ const StageSelectionUI = () => {
         </div>
       </div>
       <div className="stage-description-container">
-        <div className="stage-image-container">Stage Image Container</div>
+        <div className="stage-image-container">
+          {stageImagePath ? (
+            <img
+              src={stageImagePath}
+              alt={`Stage ${stageInfo?.proposedFixedStageLayout || 'image'}`}
+              className="stage-image"
+            />
+          ) : (
+            'Loading stage image...'
+          )}
+        </div>
         <div className="stage-description-text-container">
-          Stage Description Text Container
+          <p>
+            {stageInfo && game?.stageInformationManager
+              ? game.stageInformationManager.buildStageDescription(stageInfo.enemyTypes)
+              : 'Loading stage description...'}
+          </p>
         </div>
       </div>
       <div className="select-button-container">

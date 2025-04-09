@@ -116,7 +116,26 @@
     width: 100%;
 }
 
-.stage-image-container,
+.stage-image-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* This prevents content from overflowing */
+    position: relative; /* Adding position relative for absolute positioning of image */
+}
+
+.stage-image {
+    position: absolute; /* Position absolutely within container */
+    width: 100%; /* Allow for the padding */
+    height: 100%; /* Allow for the padding */
+    object-fit: cover; /* Cover will fill the container */
+    object-position: center; /* Center the image */
+}
+
 .stage-description-text-container {
     background-color: rgba(255, 255, 255, 0.1);
     display: flex;

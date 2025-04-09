@@ -19,6 +19,7 @@ import { weaponDataManager } from './weapons/weaponDataManager';
 import { ShopManager } from './shop/shopManager';
 import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
 import { WorkbenchManager } from './shop/workbench/workbenchManager';
+import { StageInformationManager } from './ui/stageInfoManager';
 
 export class Game {
   public scene!: Scene;
@@ -42,6 +43,7 @@ export class Game {
   public scoreManager = new ScoreManager();
   public moneyManager = new MoneyManager();
   public uiManager = new UIManager(this);
+  public stageInformationManager = new StageInformationManager();
   public saveManager = new SaveManager();
   public stageManager = StagesManager.getInstance();
   public recastInjection: RecastInjection;
