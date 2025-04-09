@@ -84,7 +84,7 @@ export class Player implements IDamageable {
   public physicsEngine!: PhysicsEngineV2;
   private readonly PLAYER_GRAVITY = 0.3;
   private readonly MAX_FALL_SPEED = 10;
-  private isGrounded = true;
+  public isGrounded = true;
   private velocity: Vector3 = Vector3.Zero();
   private physicsAggregate!: PhysicsAggregate;
   private surfaceNormal: Vector3 = Vector3.Zero(); // the normal of the surface the player is standing on

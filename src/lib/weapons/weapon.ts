@@ -57,6 +57,7 @@ export class Weapon {
   public justShot = false;
 
   // Weapon's mesh moving related
+  private baseYPosition: number | null = null;
   private initialYPosition: number | null = null;
   private isPlayingMovingAnimating: boolean = false;
   // The speed at which the weapon moves up and down
@@ -64,6 +65,14 @@ export class Weapon {
   // The height at which the weapon moves up and down
   private readonly MOVING_ANIMATION_AMPLITUDE = 0.04;
   private readonly VELOCITY_IMPACT_ON_ANIMATION_SPEED = 0.11;
+  private currentVelocity: Vector3 = Vector3.Zero();
+
+  // Mesh movements in the air
+  private isPlayingFloatingAnimation: boolean = false;
+  private readonly FLOATING_AMPLITUDE = 0.08; // Higher amplitude than normal walking
+  private readonly FLOATING_SPEED = 1.2;
+  private floatingStartTime: number = 0;
+  private currentLandingAnimationId: number | null = null;
 
   // Passives related
   // We only store the names of the passives embedded in the weapon
@@ -578,32 +587,283 @@ export class Weapon {
       this.akimboWeapon?.updatePosition(playerVelocity);
     }
 
-    if (playerVelocity.length() > 0) {
-      // Player is moving
+    this.currentVelocity = playerVelocity.clone();
+
+    if (this.baseYPosition === null) {
+      this.baseYPosition = this.rootMesh.position.y;
+    }
+
+    // Check if player is in the air (jumping or falling)
+    const isInAir = !this.player.isGrounded;
+
+    if (isInAir) {
+      // Player is in the air so we show the floating animation, not the running one
+      if (!this.isPlayingFloatingAnimation) {
+        this.stopAnimation(); // Stop any running animations
+        this.animateWeaponFloating();
+      }
+    } else if (playerVelocity.length() > 0) {
+      // Player is moving on ground
+      this.stopFloatingAnimation();
       if (!this.isPlayingMovingAnimating) {
-        this.animateWeaponMovement(playerVelocity);
+        this.animateWeaponMovement();
       }
     } else {
       // Player stopped moving
+      this.stopFloatingAnimation();
       this.stopAnimation();
     }
 
     if (this.player.isSliding) {
+      this.stopFloatingAnimation();
       this.stopAnimation();
     }
   }
 
-  /** Continuously moves the weapon up and down to match the player's movements */
-  private animateWeaponMovement(velocity: Vector3): void {
-    if (this.initialYPosition === null) {
-      this.initialYPosition = this.rootMesh.position.y;
+  private animateWeaponFloating(): void {
+    this.isPlayingFloatingAnimation = true;
+    this.floatingStartTime = performance.now();
+
+    let previousVerticalVelocity = this.currentVelocity.y;
+    let timeInAir = 0;
+    let transitionStartTime = 0;
+    let transitionFromY = 0;
+    let transitionToY = 0;
+    let isTransitioning = false;
+    let lastOffsetY = 0;
+    let descentStartingY = 0; // Correctly track the Y position at the end of the ascending phase
+
+    const animate = () => {
+      if (!this.isPlayingFloatingAnimation) {
+        return;
+      }
+
+      const verticalVelocity = this.currentVelocity.y;
+      const elapsedTime = performance.now() - this.floatingStartTime;
+      timeInAir += 16.67;
+
+      // Handle transition between ascending and descending
+      if (previousVerticalVelocity > 0 && verticalVelocity <= 0) {
+        isTransitioning = true;
+        transitionStartTime = performance.now();
+        transitionFromY = lastOffsetY;
+
+        // Set descentStartingY to the last offset at the end of the ascending phase
+        descentStartingY = lastOffsetY;
+
+        transitionToY = lastOffsetY;
+      }
+
+      const isAscending = verticalVelocity > 0;
+      const isDescending = verticalVelocity < 0;
+
+      let targetOffsetY = 0;
+      let tiltAngle = 0;
+
+      if (isAscending) {
+        const ascensionDuration = Math.min(timeInAir / 1000, 1.5);
+        const ascensionProgress = 1 - Math.exp(-ascensionDuration * 3);
+        const velocityOffset = -verticalVelocity * 0.05 * (1 - ascensionProgress);
+        const transitionOffset = ascensionProgress * 0.3;
+        targetOffsetY = velocityOffset + transitionOffset;
+
+        const normalizedVelocity = Math.min(verticalVelocity / 10, 1);
+        tiltAngle = 0.15 * (normalizedVelocity / (1 + Math.abs(normalizedVelocity)));
+
+      } else if (isDescending) {
+        targetOffsetY = descentStartingY;
+
+        const velocityFactor = Math.min(Math.abs(verticalVelocity) / 15, 1);
+        const bounceFactor = Math.sin(elapsedTime / 200) * 0.05 * velocityFactor;
+        targetOffsetY += bounceFactor;
+
+        tiltAngle = -0.2 * velocityFactor;
+      }
+
+      let offsetY = targetOffsetY;
+
+      if (isTransitioning) {
+        const transitionDuration = 200;
+        const transitionProgress = Math.min(
+          (performance.now() - transitionStartTime) / transitionDuration,
+          1,
+        );
+        const t = 1 - Math.pow(1 - transitionProgress, 2);
+        offsetY = transitionFromY + (transitionToY - transitionFromY) * t;
+
+        if (transitionProgress >= 1) {
+          isTransitioning = false;
+        }
+      }
+
+      if (elapsedTime < 200) {
+        const startProgress = Math.min(elapsedTime / 200, 1);
+        const t = 1 - Math.pow(1 - startProgress, 3);
+        offsetY = offsetY * t;
+      }
+
+      if (!isTransitioning && elapsedTime > 200) {
+        const microOscillation = Math.sin(elapsedTime / 150) * 0.005;
+        offsetY += microOscillation;
+      }
+
+      lastOffsetY = offsetY;
+      previousVerticalVelocity = verticalVelocity;
+
+      this.rootMesh.position.y = this.baseYPosition! + offsetY;
+      this.rootMesh.rotation.x = tiltAngle;
+
+      requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  /** Stops the floating animation with an enhanced landing effect */
+  private stopFloatingAnimation(): void {
+    if (this.isPlayingFloatingAnimation) {
+      // Store an ID for this specific landing animation to track it
+      const landingAnimationId = Date.now();
+      this.currentLandingAnimationId = landingAnimationId;
+
+      this.isPlayingFloatingAnimation = false;
+
+      // Reset rotation gradually
+      const currentRotation = this.rootMesh.rotation.x;
+
+      // Return to base position with a landing bounce effect
+      const currentYPosition = this.rootMesh.position.y;
+      const targetYPosition = this.baseYPosition!;
+
+      // Determine if we're landing from a significant height
+      const fallingVelocity = Math.abs(this.currentVelocity.y);
+      const isHardLanding = fallingVelocity > 5;
+
+      // Calculate bounce parameters based on falling velocity
+      // Higher velocity = bigger bounce and longer duration
+      const bounceIntensity = Math.min(fallingVelocity * 0.015, 0.12);
+
+      // Reduce duration when the player is rapidly jumping to ensure animations complete faster
+      const duration = isHardLanding ? 250 : 150; // Reduced from 350/200 to 250/150
+      const startTime = performance.now();
+
+      // Forward tilt on impact
+      const forwardTiltAmount = isHardLanding ? 0.15 : 0.08;
+
+      const smoothReset = (time: number) => {
+        // If a new landing animation has started, abort this one
+        if (this.currentLandingAnimationId !== landingAnimationId) {
+          return;
+        }
+
+        const elapsed = time - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Custom landing curve with bounce
+        let positionY;
+        let rotationX;
+
+        if (isHardLanding) {
+          // For hard landings, apply a more pronounced bounce effect
+          if (progress < 0.25) {
+            // Initial impact - quick movement slightly below target with forward tilt
+            const t = progress / 0.25;
+            const easeIn = t * t; // Quadratic ease-in for faster initial impact
+            const overshoot = bounceIntensity * Math.sin(t * Math.PI);
+            positionY =
+              currentYPosition +
+              easeIn * (targetYPosition - currentYPosition) -
+              overshoot;
+
+            // Forward tilt on impact (weapon points down)
+            rotationX = currentRotation + forwardTiltAmount * easeIn;
+          } else if (progress < 0.6) {
+            // Primary bounce up with slight backward tilt
+            const t = (progress - 0.25) / 0.35;
+            const bounce = bounceIntensity * Math.sin(t * Math.PI);
+            positionY = targetYPosition + bounce;
+
+            // Weapon tilts backward slightly during bounce up
+            rotationX =
+              forwardTiltAmount - forwardTiltAmount * 1.2 * Math.sin(t * Math.PI);
+          } else if (progress < 0.85) {
+            // Secondary smaller bounce
+            const t = (progress - 0.6) / 0.25;
+            const smallBounce = bounceIntensity * 0.3 * Math.sin(t * Math.PI);
+            positionY = targetYPosition + smallBounce;
+
+            // Small rotation oscillation for secondary bounce
+            rotationX = forwardTiltAmount * 0.2 * Math.sin(t * Math.PI * 0.5);
+          } else {
+            // Final tiny settle
+            const t = (progress - 0.85) / 0.15;
+            const tinyBounce = bounceIntensity * 0.1 * Math.sin(t * Math.PI);
+            positionY = targetYPosition + tinyBounce;
+            rotationX = 0;
+          }
+        } else {
+          // For soft landings, smaller and simpler bounce with accelerated timing
+          if (progress < 0.5) {
+            // Changed from 0.4 to 0.5 for better flow
+            // Gentle impact with slight overshoot
+            const t = progress / 0.5;
+            const easeInOut = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            const smallOvershoot = bounceIntensity * 0.7 * Math.sin(t * Math.PI);
+            positionY =
+              currentYPosition +
+              easeInOut * (targetYPosition - currentYPosition) -
+              smallOvershoot;
+
+            // Slight forward tilt
+            rotationX = currentRotation + forwardTiltAmount * 0.7 * easeInOut;
+          } else {
+            // Simple settle with tiny bounce
+            const t = (progress - 0.5) / 0.5; // Changed from 0.6 to 0.5
+            const easeOut = 1 - Math.pow(1 - t, 3);
+            const tinyBounce = bounceIntensity * 0.2 * Math.sin(t * Math.PI);
+            positionY = targetYPosition + tinyBounce;
+
+            // Return rotation to neutral
+            rotationX = forwardTiltAmount * 0.7 * (1 - easeOut);
+          }
+        }
+
+        // Add a subtle side-to-side sway based on horizontal velocity
+        const sideVelocity = Math.sqrt(
+          this.currentVelocity.x * this.currentVelocity.x +
+            this.currentVelocity.z * this.currentVelocity.z,
+        );
+        const sideSwayAmount = Math.min(sideVelocity * 0.01, 0.05) * (1 - progress);
+        const sideSway = Math.sin(progress * Math.PI * 3) * sideSwayAmount;
+
+        // Apply position and rotation
+        this.rootMesh.position.y = positionY;
+        this.rootMesh.rotation.x = rotationX;
+        this.rootMesh.rotation.z = sideSway; // Add side-to-side sway
+
+        if (progress < 1) {
+          requestAnimationFrame(smoothReset);
+        } else {
+          // Ensure we end at exactly the right position and rotation
+          this.rootMesh.position.y = targetYPosition;
+          this.rootMesh.rotation.x = 0;
+          this.rootMesh.rotation.z = 0;
+
+          // Clear the animation ID since this animation is complete
+          if (this.currentLandingAnimationId === landingAnimationId) {
+            this.currentLandingAnimationId = null;
+          }
+        }
+      };
+
+      requestAnimationFrame(smoothReset);
     }
-    const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
-    const frequency =
-      this.MOVING_ANIMATION_SPEED *
-      (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
+  }
+
+  /** Continuously moves the weapon up and down to match the player's movements */
+  private animateWeaponMovement(): void {
+    // Use the consistent base position rather than the current position
     this.isPlayingMovingAnimating = true;
-    const initialYPosition = this.rootMesh.position.y;
     const startTime = performance.now();
 
     const animate = () => {
@@ -611,10 +871,18 @@ export class Weapon {
         return;
       }
 
+      // Calculate the frequency based on current velocity each frame
+      const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
+      const frequency =
+        this.MOVING_ANIMATION_SPEED *
+        (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * this.currentVelocity.length());
+
       const elapsedTime = performance.now() - startTime;
       const time = (elapsedTime / 1000) * frequency;
       const offsetY = Math.sin(time) * amplitude;
-      this.rootMesh.position.y = initialYPosition + offsetY;
+
+      // Always use the base position as reference
+      this.rootMesh.position.y = this.baseYPosition! + offsetY;
       requestAnimationFrame(animate);
     };
 
@@ -626,7 +894,7 @@ export class Weapon {
     if (this.isPlayingMovingAnimating) {
       this.isPlayingMovingAnimating = false;
       const currentYPosition = this.rootMesh.position.y;
-      const targetYPosition = this.initialYPosition!;
+      const targetYPosition = this.baseYPosition!; // Changed from initialYPosition to baseYPosition
       const duration = 300;
       const startTime = performance.now();
 
