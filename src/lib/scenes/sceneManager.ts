@@ -57,6 +57,7 @@ export class SceneManager {
     await scene.load();
     this.game.engine.hideLoadingUI();
     this.currentScene = scene;
+    this.game.soundManager.stopAllSounds();
   }
 
   public async changeSceneToProceduralStage(): Promise<void> {

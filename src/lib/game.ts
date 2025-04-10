@@ -20,6 +20,7 @@ import { ShopManager } from './shop/shopManager';
 import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
 import { WorkbenchManager } from './shop/workbench/workbenchManager';
 import { StageInformationManager } from './ui/stageInfoManager';
+import { SoundCategory, SoundManager } from './sound/soundManager';
 
 export class Game {
   public scene!: Scene;
@@ -52,6 +53,7 @@ export class Game {
   public shopManager!: ShopManager;
   public workbenchManager!: WorkbenchManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
+  public soundManager!: SoundManager;
 
   private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -80,6 +82,10 @@ export class Game {
     this.player = new Player(this);
     this.sceneManager = new SceneManager(this);
 
+    this.soundManager = new SoundManager();
+    await this.soundManager.init();
+    this.soundManager.playBackgroundMusic('placeholder');
+
     this.shopManager = new ShopManager(this);
     this.workbenchManager = new WorkbenchManager(this);
 
@@ -105,6 +111,7 @@ export class Game {
       this.saveManager.restore();
     }
 
+    this.soundManager.stopSound('placeholder', SoundCategory.MUSIC);
     this.player.start();
     this.sceneManager.start();
     this.stageManager.start(isNewGame);
