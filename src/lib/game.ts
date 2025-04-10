@@ -19,6 +19,7 @@ import { weaponDataManager } from './weapons/weaponDataManager';
 import { ShopManager } from './shop/shopManager';
 import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
 import { WorkbenchManager } from './shop/workbench/workbenchManager';
+import { SoundManager } from './sound/soundManager';
 
 export class Game {
   public scene!: Scene;
@@ -50,6 +51,7 @@ export class Game {
   public shopManager!: ShopManager;
   public workbenchManager!: WorkbenchManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
+  public soundManager = SoundManager.getInstance();
 
   private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -68,6 +70,9 @@ export class Game {
     this.assetManager = new AssetManager(this.scene);
     this.inputManager = new InputManager(this.engine);
     this.recastInjection = await Recast.bind({})();
+    this.soundManager.init().then(() => {
+      this.soundManager.playBackgroundMusic('placeholder', { volume: 0.3, loop: true });
+    });
 
     this.physicsPlugin = await this.getPhysicsPlugin();
     const gravity = Vector3.Zero();
@@ -103,6 +108,12 @@ export class Game {
       this.saveManager.restore();
     }
 
+    this.soundManager
+      .getAudioEngine()
+      ?.unlockAsync()
+      .then(() => {
+        console.log('Audio engine unlocked, playing music');
+      });
     this.player.start();
     this.sceneManager.start();
     this.stageManager.start(isNewGame);

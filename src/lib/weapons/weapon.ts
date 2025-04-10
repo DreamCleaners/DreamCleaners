@@ -669,7 +669,6 @@ export class Weapon {
 
         const normalizedVelocity = Math.min(verticalVelocity / 10, 1);
         tiltAngle = 0.15 * (normalizedVelocity / (1 + Math.abs(normalizedVelocity)));
-
       } else if (isDescending) {
         targetOffsetY = descentStartingY;
 
