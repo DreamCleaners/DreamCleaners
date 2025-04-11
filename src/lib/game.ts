@@ -20,7 +20,7 @@ import { ShopManager } from './shop/shopManager';
 import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
 import { WorkbenchManager } from './shop/workbench/workbenchManager';
 import { StageInformationManager } from './ui/stageInfoManager';
-import { SoundCategory, SoundManager } from './sound/soundManager';
+import { SoundManager } from './sound/soundManager';
 
 export class Game {
   public scene!: Scene;
@@ -111,7 +111,6 @@ export class Game {
       this.saveManager.restore();
     }
 
-    this.soundManager.pauseSound('main-menu-default', SoundCategory.MUSIC);
     this.player.start();
     this.sceneManager.start();
     this.stageManager.start(isNewGame);
@@ -127,6 +126,7 @@ export class Game {
   }
 
   public pause(): void {
+    this.soundManager.pauseAllSounds();
     this.engine.stopRenderLoop();
     this.startPauseTime = performance.now();
     this.uiManager.displayPauseMenu();
@@ -136,6 +136,7 @@ export class Game {
    * Resume the game from the pause menu
    */
   public resume(): void {
+    this.soundManager.resumeAllSounds();
     this.isFirstFrameAfterPause = true;
     this.endPauseTime = performance.now();
     this.engine.runRenderLoop(this.update.bind(this));

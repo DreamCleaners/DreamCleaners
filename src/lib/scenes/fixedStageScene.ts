@@ -81,6 +81,7 @@ export class FixedStageScene extends GameScene {
     this.game.player.setPosition(new Vector3(0, 1, 0));
 
     this.game.scoreManager.startStage();
+    this.game.soundManager.playStageBackgroundMusic();
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
@@ -188,6 +189,7 @@ export class FixedStageScene extends GameScene {
     this.game.scoreManager.endStage();
     this.game.runManager.incrementStageCompleted();
     this.attributeRewards();
+    this.game.soundManager.stopStageBackgroundMusic();
 
     this.game.uiManager.displayUI(UIType.SCORE);
     this.onUIChangeObserver = this.game.uiManager.onUIChange.add(

@@ -25,6 +25,7 @@ export enum SoundCategory {
 export class SoundSystem {
   private loadedMusics: Map<string, StreamingSound>;
   private loadedSounds: Map<string, StaticSound>;
+  private loadedUISounds: Map<string, StaticSound>;
   private audioEngine!: AudioEngineV2;
 
   // Sound pool related properties
@@ -35,6 +36,7 @@ export class SoundSystem {
   constructor() {
     this.loadedMusics = new Map<string, StreamingSound>();
     this.loadedSounds = new Map<string, StaticSound>();
+    this.loadedUISounds = new Map<string, StaticSound>();
     this.soundPools = new Map<string, StaticSound[]>();
     this.poolSizes = new Map<string, number>();
     this.currentPoolIndexes = new Map<string, number>();
@@ -142,8 +144,10 @@ export class SoundSystem {
         this.loadedMusics.set(name, sound as StreamingSound);
         break;
       case SoundCategory.EFFECT:
-      case SoundCategory.UI:
         this.loadedSounds.set(name, sound as StaticSound);
+        break;
+      case SoundCategory.UI:
+        this.loadedUISounds.set(name, sound as StaticSound);
         break;
       default:
         console.error('Unknown sound type: ' + type);
@@ -175,8 +179,9 @@ export class SoundSystem {
       case SoundCategory.AMBIENT:
         return this.loadedMusics.get(name);
       case SoundCategory.EFFECT:
-      case SoundCategory.UI:
         return this.loadedSounds.get(name);
+      case SoundCategory.UI:
+        return this.loadedUISounds.get(name);
       default:
         console.error('Unknown sound type: ' + type);
         return undefined;
@@ -297,6 +302,7 @@ export class SoundSystem {
     sound.resume();
   }
 
+  /** Stops all sounds (expect UI) */
   public stopAllSounds(): void {
     this.loadedMusics.forEach((sound) => sound.stop());
     this.loadedSounds.forEach((sound) => sound.stop());
@@ -309,10 +315,10 @@ export class SoundSystem {
 
   public resumeAllSounds(): void {
     this.loadedMusics.forEach((sound) => {
-        sound.resume();
+      sound.resume();
     });
     this.loadedSounds.forEach((sound) => {
-        sound.resume();
+      sound.resume();
     });
   }
 
@@ -373,8 +379,4 @@ export class SoundSystem {
       ...partialOptions,
     } as T;
   }
-
-
-
-  
 }

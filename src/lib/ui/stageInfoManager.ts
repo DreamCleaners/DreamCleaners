@@ -2,8 +2,6 @@ import { EnemyType } from '../enemies/enemyType';
 
 export class StageInformationManager {
   public getStageImagePath(stageName: string): string {
-    console.log('Received stage name: ', stageName);
-    console.log('Returning stage image path: ', `stage-images/${stageName}.png`);
     return `img/stage-images/${stageName}.png`;
   }
 

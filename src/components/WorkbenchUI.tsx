@@ -6,6 +6,7 @@ import {
   WeaponPassivesManager,
   WeaponPassiveType,
 } from '../lib/weapons/passives/weaponPassivesManager';
+import { withClickSound } from './Utils';
 
 const WorkbenchUI = () => {
   const game = useContext(GameContext);
@@ -103,7 +104,7 @@ const WorkbenchUI = () => {
                 </ul>
                 <div className="upgrade-container">
                   <button
-                    onClick={() => handleImproveQuality(0)}
+                    onClick={withClickSound(game, () => handleImproveQuality(0))}
                     disabled={
                       weapons[0].currentRarity === Rarity.LEGENDARY ||
                       (game?.moneyManager.getPlayerMoney() ?? 0) <
@@ -188,24 +189,24 @@ const WorkbenchUI = () => {
                 </ul>
                 <div className="upgrade-container">
                   <button
-                    onClick={() => handleImproveQuality(1)}
+                    onClick={withClickSound(game, () => handleImproveQuality(1))}
                     disabled={
                       weapons[1].currentRarity === Rarity.LEGENDARY ||
                       (game?.moneyManager.getPlayerMoney() ?? 0) <
-                        (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ?? 0)
+                        (game?.workbenchManager.getCostForQualityUpgrade(weapons[1]) ?? 0)
                     }
                     style={{
                       backgroundColor:
                         weapons[1].currentRarity === Rarity.LEGENDARY ||
                         (game?.moneyManager.getPlayerMoney() ?? 0) <
-                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ??
+                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[1]) ??
                             0)
                           ? '#666'
                           : '#444',
                       cursor:
                         weapons[1].currentRarity === Rarity.LEGENDARY ||
                         (game?.moneyManager.getPlayerMoney() ?? 0) <
-                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[0]) ??
+                          (game?.workbenchManager.getCostForQualityUpgrade(weapons[1]) ??
                             0)
                           ? 'not-allowed'
                           : 'pointer',
@@ -230,7 +231,7 @@ const WorkbenchUI = () => {
           )}
         </div>
       </div>
-      <button onClick={handleCloseUI}>Back</button>
+      <button onClick={withClickSound(game, handleCloseUI)}>Back</button>
     </div>
   );
 };

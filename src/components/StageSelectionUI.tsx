@@ -4,6 +4,7 @@ import { StagesManager } from '../lib/stages/stagesManager';
 import { GameContext } from '../contexts/GameContext';
 import { Rarity } from '../lib/shop/rarity.ts';
 import { StageInformation } from '../lib/stages/stageInformation';
+import { withClickSound } from './Utils';
 
 const StageSelectionUI = () => {
   const game = useContext(GameContext);
@@ -28,10 +29,15 @@ const StageSelectionUI = () => {
     game?.uiManager.hideUI();
   };
 
+  const handleEnterStage = () => {
+    handleHideUI(); // Hide the UI
+    StagesManager.getInstance().enterStage(); // Call enterStage() method
+  };
+
   return (
     <div className="stage-selection-container">
       <div className="back-button-container">
-        <button onClick={handleHideUI}>Back</button>
+        <button onClick={withClickSound(game, handleHideUI)}>Back</button>
       </div>
       <div className="stage-title-container">
         {stageInfo?.proposedFixedStageLayout || 'Procedural Stage'}
@@ -117,14 +123,7 @@ const StageSelectionUI = () => {
         </div>
       </div>
       <div className="select-button-container">
-        <button
-          onClick={() => {
-            handleHideUI(); // Hide the UI
-            StagesManager.getInstance().enterStage(); // Call enterStage() method
-          }}
-        >
-          Enter Stage
-        </button>
+        <button onClick={withClickSound(game, handleEnterStage)}>Enter Stage</button>
       </div>
     </div>
   );

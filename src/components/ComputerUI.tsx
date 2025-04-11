@@ -11,6 +11,7 @@ import {
   WeaponPassivesManager,
   WeaponPassiveT3,
 } from '../lib/weapons/passives/weaponPassivesManager';
+import { withClickSound } from './Utils';
 
 const ComputerUI = () => {
   const game = useContext(GameContext);
@@ -170,12 +171,18 @@ const ComputerUI = () => {
                 {game.player.inventory.getWeapons()[index].weaponData.weaponName}
               </h3>
             )}
-            <button onClick={() => handleReplaceWeapon(selectedWeapon, index)}>
+            <button
+              onClick={withClickSound(game, () =>
+                handleReplaceWeapon(selectedWeapon, index),
+              )}
+            >
               Replace
             </button>
           </div>
         ))}
-        <button onClick={() => setSelectedWeapon(null)}>Back</button>
+        <button onClick={withClickSound(game, () => setSelectedWeapon(null))}>
+          Back
+        </button>
       </div>
     );
   }
@@ -230,7 +237,9 @@ const ComputerUI = () => {
                 </h3>
               )}
               <button
-                onClick={() => handleApplyWeaponPassive(selectedWeaponPassive, index)}
+                onClick={withClickSound(game, () =>
+                  handleApplyWeaponPassive(selectedWeaponPassive, index),
+                )}
                 disabled={isDisabled}
               >
                 Apply to Weapon
@@ -239,7 +248,9 @@ const ComputerUI = () => {
             </div>
           );
         })}
-        <button onClick={() => setSelectedWeaponPassive(null)}>Back</button>
+        <button onClick={withClickSound(game, () => setSelectedWeaponPassive(null))}>
+          Back
+        </button>
       </div>
     );
   }
@@ -247,10 +258,10 @@ const ComputerUI = () => {
   return (
     <div className="computer-interface-container">
       <h1>SHOP</h1>
-      <button onClick={handleCloseUI}>Close</button>
+      <button onClick={withClickSound(game, handleCloseUI)}>Close</button>
       <p>Money: {playerMoney}$</p>
       <button
-        onClick={handleReroll}
+        onClick={withClickSound(game, handleReroll)}
         disabled={playerMoney < game.shopManager.getRerollCost()}
       >
         Reroll ({game.shopManager.getRerollCost()}$)
@@ -262,7 +273,10 @@ const ComputerUI = () => {
           <h3>{item.name}</h3>
           <p>{item.description}</p>
           <p>Price: {item.price}$</p>
-          <button onClick={() => handleBuyItem(item)} disabled={item.price > playerMoney}>
+          <button
+            onClick={withClickSound(game, () => handleBuyItem(item))}
+            disabled={item.price > playerMoney}
+          >
             Buy
           </button>
         </div>

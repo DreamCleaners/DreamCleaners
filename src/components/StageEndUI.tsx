@@ -3,6 +3,7 @@ import { GameContext } from '../contexts/GameContext';
 import { Rarity } from '../lib/shop/rarity.ts';
 import '../styles/stageEndUI.css';
 import { WeaponPassivesManager } from '../lib/weapons/passives/weaponPassivesManager';
+import { withClickSound } from './Utils';
 
 const StageEndUI = () => {
   const game = useContext(GameContext);
@@ -101,7 +102,9 @@ const StageEndUI = () => {
                 <p>Type: {playerWeapons[0].weaponType}</p>
                 <p>Rarity: {Rarity[playerWeapons[0].currentRarity]}</p>
                 {!rewardUsed && (
-                  <button onClick={() => handleReplaceWeapon(0)}>Replace</button>
+                  <button onClick={withClickSound(game, () => handleReplaceWeapon(0))}>
+                    Replace
+                  </button>
                 )}
               </div>
               <div className="player-weapon right">
@@ -110,14 +113,22 @@ const StageEndUI = () => {
                     <p>Type: {playerWeapons[1].weaponType}</p>
                     <p>Rarity: {Rarity[playerWeapons[1].currentRarity]}</p>
                     {!rewardUsed && (
-                      <button onClick={() => handleReplaceWeapon(1)}>Replace</button>
+                      <button
+                        onClick={withClickSound(game, () => handleReplaceWeapon(1))}
+                      >
+                        Replace
+                      </button>
                     )}
                   </>
                 ) : (
                   <>
                     <p>You have no weapon in this emplacement !</p>
                     {!rewardUsed && (
-                      <button onClick={() => handleReplaceWeapon(1)}>Choose</button>
+                      <button
+                        onClick={withClickSound(game, () => handleReplaceWeapon(1))}
+                      >
+                        Choose
+                      </button>
                     )}
                   </>
                 )}
@@ -126,7 +137,7 @@ const StageEndUI = () => {
           </div>
         )}
         <div className="back-to-hub-container">
-          <button onClick={handleHideUI}>Back to Hub</button>
+          <button onClick={withClickSound(game, handleHideUI)}>Back to Hub</button>
         </div>
       </div>
     </div>

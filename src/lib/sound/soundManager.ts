@@ -3,11 +3,19 @@ import { SoundSystem, SoundCategory } from './soundSystem';
 import { IStaticSoundOptions, IStreamingSoundOptions } from '@babylonjs/core';
 import { WeaponType } from '../weapons/weaponType';
 
+enum StageMusic {
+  MUSIC_ONE = 'placeholder1',
+  MUSIC_TWO = 'placeholder2',
+  MUSIC_THREE = 'placeholder3',
+}
+
 /**
  * High-level sound manager that provides game-specific sound functionality
  */
 export class SoundManager {
   private soundSystem: SoundSystem;
+
+  public static readonly DEFAULT_MUSIC_VOLUME = 0.2;
 
   constructor() {
     this.soundSystem = new SoundSystem();
@@ -20,8 +28,10 @@ export class SoundManager {
   }
 
   public async preloadSounds(): Promise<void> {
-    await this.loadMusic('main-menu', 'main-menu-default', SoundCategory.MUSIC, {loop: false,});
-    await this.loadMusic('hub', 'hub-music', SoundCategory.MUSIC, {loop: true});
+    await this.loadMusic('main-menu', 'main-menu-default', SoundCategory.MUSIC, {
+      loop: false,
+    });
+    await this.loadMusic('hub', 'hub-music', SoundCategory.MUSIC, { loop: true });
 
     await this.loadMusic('loading', 'loading-ambiance', SoundCategory.AMBIENT);
 
@@ -29,6 +39,14 @@ export class SoundManager {
     await this.createSoundPool('glockShot', 10, { volume: 0.1 });
     await this.createSoundPool('shotgunShot', 6, { volume: 0.2 });
     await this.createSoundPool('akShot', 30, { volume: 0.1 });
+
+    // Preload all UI sounds, as they are light and used everywhere
+    await this.loadStaticSound('placeholder', SoundCategory.UI, {
+      loop: false,
+      volume: 0.1,
+    });
+
+    // ...
   }
 
   // ----------------------------------------
@@ -74,7 +92,11 @@ export class SoundManager {
     this.soundSystem.play(name, SoundCategory.MUSIC);
   }
 
-  public async playSound(name: string, type: SoundCategory, options?: Partial<IStaticSoundOptions>): Promise<void> {
+  public async playSound(
+    name: string,
+    type: SoundCategory,
+    options?: Partial<IStaticSoundOptions>,
+  ): Promise<void> {
     const sound = this.soundSystem.getSound(name, type);
 
     if (!sound) {
@@ -186,18 +208,18 @@ export class SoundManager {
    */
   private getSoundDuration(name: string, type: SoundCategory): number {
     const sound = this.soundSystem.getSound(name, type) as StaticSound;
-    
+
     if (!sound) {
       console.warn(`Sound "${name}" not found or not loaded yet`);
       return -1;
     }
-    
+
     // Check if it's a static sound
     if (type == SoundCategory.MUSIC) {
       console.warn(`Sound "${name}" is not a static sound`);
       return -1;
     }
-    
+
     if (sound.buffer) {
       // We get the duration of the sound buffer
       return sound.buffer.duration;
@@ -240,6 +262,28 @@ export class SoundManager {
     }
   }
 
+  /** Picks a random music for the current stage and plays it */
+  public playStageBackgroundMusic(): void {
+    const musicKeys = Object.keys(StageMusic);
+
+    const randomIndex = Math.floor((Math.random() * musicKeys.length) / 2);
+    const musicValue = StageMusic[musicKeys[randomIndex] as keyof typeof StageMusic];
+    const musicFileName = `stage-music_${musicValue}`;
+
+    console.log(`Playing random stage music: ${musicValue} (${musicFileName})`);
+
+    // Play the new music (use same name for both parameters)
+    this.playBackgroundMusic(musicFileName, 'stageMusic', {
+      loop: true,
+      volume: SoundManager.DEFAULT_MUSIC_VOLUME,
+    });
+  }
+
+  /** Stops the current stage music from playing */
+  public stopStageBackgroundMusic(): void {
+    this.soundSystem.stop('stageMusic', SoundCategory.MUSIC);
+  }
+
   /**
    * Play weapon reload sound and adjust its playback rate to match the given reload time
    * @param type The weapon type
@@ -251,38 +295,38 @@ export class SoundManager {
     let volume = 0.5;
     switch (type) {
       case WeaponType.GLOCK:
-        soundName = "glockReload";
+        soundName = 'glockReload';
         volume = 0.2;
         break;
       case WeaponType.SHOTGUN:
-        soundName = "shotgunReload";
+        soundName = 'shotgunReload';
         volume = 0.35;
         break;
       case WeaponType.AK:
-        soundName = "akReload";
+        soundName = 'akReload';
         volume = 0.2;
         break;
       default:
         console.warn(`No sound for weapon type ${type}`);
     }
-    
+
     // Check if sound is already loaded
     let sound = this.soundSystem.getSound(soundName, SoundCategory.EFFECT) as StaticSound;
-    
+
     // If not loaded, load it first
     if (!sound) {
-      await this.loadStaticSound(soundName, SoundCategory.EFFECT, { 
+      await this.loadStaticSound(soundName, SoundCategory.EFFECT, {
         loop: false,
         autoplay: false,
         volume: volume,
-        spatialEnabled: false
+        spatialEnabled: false,
       });
-      
+
       sound = this.soundSystem.getSound(soundName, SoundCategory.EFFECT) as StaticSound;
     }
-    
+
     const originalDuration = this.getSoundDuration(soundName, SoundCategory.EFFECT);
-    
+
     // We modify the playback rate of the sound to match the reload time
     // Basically we accelerate the sound to match the reload time
     if (originalDuration > 0) {
@@ -290,26 +334,27 @@ export class SoundManager {
       // Original duration / playback rate = desired duration
       // So: playback rate = original duration / desired duration
       const playbackRate = originalDuration / reloadTime;
-      
+
       // We put a limiter on the playback rate, speed factor of 6x is the max and 0.4x is the min
       const clampedRate = Math.max(0.4, Math.min(playbackRate, 6.0));
-      
+
       // Update the sound's playback rate
       if (sound) {
         sound.playbackRate = clampedRate;
       }
     }
-    
-    await this.soundSystem.unlockAudio();
-    
-    this.soundSystem.play(soundName, SoundCategory.EFFECT);
 
+    await this.soundSystem.unlockAudio();
+
+    this.soundSystem.play(soundName, SoundCategory.EFFECT);
   }
 
   public playHubMusic(): void {
     this.soundSystem.stopAllSounds();
     this.soundSystem.resume('hub-music', SoundCategory.MUSIC);
-    this.playBackgroundMusic('hub', 'hub-music', {volume: 0.2});
+    this.playBackgroundMusic('hub', 'hub-music', {
+      volume: SoundManager.DEFAULT_MUSIC_VOLUME,
+    });
   }
 
   // ----------------------------------------

@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import '../styles/mainMenu.css';
+import { withClickSound } from './Utils';
 
 const MainMenu = () => {
   const game = useContext(GameContext);
@@ -19,9 +20,9 @@ const MainMenu = () => {
     <div className="main-menu-container">
       <h1>Dream Cleaners</h1>
       {game.saveManager.hasSave() && (
-        <button onClick={handleContinueGame}>Continue Game</button>
+        <button onClick={withClickSound(game, handleContinueGame)}>Continue Game</button>
       )}
-      <button onClick={handleNewGame}>New Game</button>
+      <button onClick={withClickSound(game, handleNewGame)}>New Game</button>
       <p>Version {game.VERSION}</p>
     </div>
   );
