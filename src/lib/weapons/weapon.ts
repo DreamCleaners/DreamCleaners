@@ -27,6 +27,7 @@ import {
 import { BulletEffect } from './passives/bulletEffect.ts';
 import { Enemy } from '../enemies/enemy.ts';
 import { AnimationController } from '../animations/animationController.ts';
+import { SoundManager } from '../sound/soundManager.ts';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -40,6 +41,8 @@ export class Weapon {
   public onAmmoChange: Observable<number> = new Observable<number>();
 
   private animationController = new AnimationController();
+
+  public soundManager!: SoundManager;
 
   public weaponData!: WeaponData;
   // Array containing the current stats for the weapon, for the current rarity tier, for easier access
@@ -98,6 +101,7 @@ export class Weapon {
     this.player = player;
     this.currentRarity = rarity;
     this.physicsEngine = player.physicsEngine;
+    this.soundManager = player.game.soundManager;
     this.weaponData = this.player.game.weaponDataManager.getWeaponData(this.weaponType);
     this.applyCurrentStats();
   }
@@ -344,6 +348,7 @@ export class Weapon {
       for (let i = 0; i < shotsFired; i++) {
         setTimeout(
           () => {
+            this.soundManager.playWeaponShot(this.weaponType);
             this.shootBullets(bulletsPerShot, projectionCone);
             this.currentAmmoRemaining--;
             this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
@@ -352,6 +357,7 @@ export class Weapon {
         );
       }
     } else {
+      this.soundManager.playWeaponShot(this.weaponType);
       this.shootBullets(bulletsPerShot, projectionCone);
       this.currentAmmoRemaining--;
     }

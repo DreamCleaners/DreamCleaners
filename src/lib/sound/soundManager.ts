@@ -1,58 +1,39 @@
-import {
-  AudioEngineV2,
-  CreateAudioEngineAsync,
-  CreateSoundAsync,
-  CreateStreamingSoundAsync,
-  IStaticSoundOptions,
-  IStreamingSoundOptions,
-  StaticSound,
-  StreamingSound,
-  Vector3,
-} from '@babylonjs/core';
+import { Vector3 } from '@babylonjs/core';
+import { SoundSystem, SoundCategory } from './soundSystem';
+import { IStaticSoundOptions, IStreamingSoundOptions } from '@babylonjs/core';
+import { WeaponType } from '../weapons/weaponType';
 
 /**
- * Enum for different sound categories
+ * High-level sound manager that provides game-specific sound functionality
  */
-export enum SoundCategory {
-  MUSIC = 'musics',
-  EFFECT = 'effects',
-  UI = 'ui',
-  AMBIENT = 'ambients',
-}
-
 export class SoundManager {
-  private loadedMusics!: Map<string, StreamingSound>;
-  private loadedSounds!: Map<string, StaticSound>;
+  private soundSystem: SoundSystem;
 
-  private audioEngine!: AudioEngineV2;
+  constructor() {
+    this.soundSystem = new SoundSystem();
+  }
 
   public async init(): Promise<void> {
-    this.loadedMusics = new Map<string, StreamingSound>();
-    this.loadedSounds = new Map<string, StaticSound>();
-    this.audioEngine = await CreateAudioEngineAsync();
-
+    await this.soundSystem.init();
     await this.preloadSounds();
     console.log('SoundManager initialized');
   }
 
   public async preloadSounds(): Promise<void> {
-    await this.loadMusic(
-      'main-menu',
-      'main-menu-default',
-      SoundCategory.MUSIC,
-      this.mergeAudioOptions({ loop: false }, this.getDefaultStreamingOptions()),
-    );
+    await this.loadMusic('main-menu', 'main-menu-default', SoundCategory.MUSIC, {
+      loop: false,
+    });
 
-    await this.loadMusic(
-      'loading',
-      'loading-ambiance',
-      SoundCategory.AMBIENT,
-      this.getDefaultStreamingOptions(),
-    );
+    await this.loadMusic('loading', 'loading-ambiance', SoundCategory.AMBIENT);
+
+    // Create sound pools weapon (and UI?)
+    await this.createSoundPool('glockShot', 10, { volume: 0.1 });
+    await this.createSoundPool('shotgunShot', 6, { volume: 0.2 });
+    await this.createSoundPool('akShot', 30, { volume: 0.1 });
   }
 
   // ----------------------------------------
-  // SOUNDS LOADING
+  // HIGH-LEVEL SOUND OPERATIONS
   // ----------------------------------------
 
   /** Creates a sound based on the name and configuration */
@@ -62,26 +43,7 @@ export class SoundManager {
     type: SoundCategory,
     options?: Partial<IStreamingSoundOptions>,
   ): Promise<void> {
-    try {
-      const path = this.getPath(name_in_file, type);
-
-      const baseOptions: Partial<IStreamingSoundOptions> = {
-        loop: true,
-        autoplay: false,
-        volume: 0.5,
-      };
-
-      // Merge with any user-provided options
-      const finalOptions = { ...baseOptions, ...options };
-
-      const sound = await CreateStreamingSoundAsync(name, path, finalOptions);
-
-      this.putIntoMap(name, sound, type);
-
-      console.log('Music loaded: ' + name + ' from ' + path);
-    } catch (error) {
-      console.error(`Failed to load music "${name}":`, error);
-    }
+    await this.soundSystem.loadStreamingSound(name_in_file, name, type, options);
   }
 
   /** Creates a spatial sound based on the name and configuration */
@@ -90,383 +52,179 @@ export class SoundManager {
     type: SoundCategory,
     options?: Partial<IStaticSoundOptions>,
   ): Promise<void> {
-    try {
-      const path = this.getPath(name, type);
-
-      // Use a minimal set of options instead of providing everything
-      const baseOptions: Partial<IStaticSoundOptions> = {
-        loop: false,
-        autoplay: false,
-        volume: 0.7,
-        spatialEnabled: true,
-      };
-
-      // Merge with any user-provided options
-      const finalOptions = { ...baseOptions, ...options };
-
-      const sound = await CreateSoundAsync(name, path, finalOptions);
-
-      this.putIntoMap(name, sound, type);
-
-      console.log('Spatial sound loaded: ' + name + ' from ' + path);
-    } catch (error) {
-      console.error(`Failed to load spatial sound "${name}":`, error);
-    }
+    await this.soundSystem.loadStaticSound(name, type, options);
   }
 
-  private putIntoMap(
-    name: string,
-    sound: StaticSound | StreamingSound,
-    type: SoundCategory,
-  ) {
-    switch (type) {
-      case SoundCategory.MUSIC:
-      case SoundCategory.AMBIENT:
-        this.loadedMusics.set(name, sound as StreamingSound);
-        break;
-
-      case SoundCategory.EFFECT:
-      case SoundCategory.UI:
-        this.loadedSounds.set(name, sound as StaticSound);
-        break;
-      default:
-        console.error('Unknown sound type: ' + type);
-        break;
-    }
-  }
-
-  private getPath(name: string, type: SoundCategory): string {
-    let path = 'audio/';
-    path += type + '/';
-    path += name + '.mp3';
-
-    return path;
-  }
-
-  public updateSoundOptions(
-    name: string,
-    type: SoundCategory,
-    options: Partial<IStaticSoundOptions | IStreamingSoundOptions>,
-  ): void {
-    let sound: StaticSound | StreamingSound | undefined;
-
-    switch (type) {
-      case SoundCategory.MUSIC:
-      case SoundCategory.AMBIENT:
-        sound = this.loadedMusics.get(name);
-        break;
-      case SoundCategory.EFFECT:
-      case SoundCategory.UI:
-        sound = this.loadedSounds.get(name);
-        break;
-      default:
-        console.error('Unknown sound type: ' + type);
-        return;
-    }
-
-    if (!sound) {
-      console.warn('Sound not found: ' + name);
-      return;
-    }
-
-    console.log('Updating sound options for: ' + name);
-
-    // Update common properties
-    if (options.volume !== undefined) sound.volume = options.volume;
-    if (options.loop !== undefined) sound.loop = options.loop;
-
-    if (sound instanceof StaticSound) {
-      const staticOptions = options as Partial<IStaticSoundOptions>;
-      // Update spatial properties
-      if (sound.spatial) {
-        if (staticOptions.spatialPosition)
-          sound.spatial.position = staticOptions.spatialPosition;
-        if (staticOptions.spatialMaxDistance !== undefined)
-          sound.spatial.maxDistance = staticOptions.spatialMaxDistance;
-        if (staticOptions.spatialMinDistance !== undefined)
-          sound.spatial.minDistance = staticOptions.spatialMinDistance;
-        if (staticOptions.spatialRolloffFactor !== undefined)
-          sound.spatial.rolloffFactor = staticOptions.spatialRolloffFactor;
-        // Add other spatial-specific properties as needed
-      }
-    }
-  }
-
-  // ----------------------------------------
-  // SOUNDS PLAYING
-  // ----------------------------------------
-
-  /** Plays a simple background music, no spatialization. No options given mean default settings
-   * for the music
-   * @param name_in_file The name of the file to load, without the extension nor the path
-   * @param name The name under which to store the music, i.e one same file can be the object of
-   * two different musics, based on different settings for instance
-   * @param options The options to use for the music. If not provided, default settings will be used or the ones provided in preload
-   */
+  /** Plays a simple background music, no spatialization */
   public async playBackgroundMusic(
     name_in_file: string,
     name: string,
     options?: Partial<IStreamingSoundOptions>,
   ): Promise<void> {
-    let sound = this.loadedMusics.get(name);
-    const finalOptions = this.mergeAudioOptions(
-      options || {},
-      this.getDefaultStreamingOptions(),
-    );
+    const sound = this.soundSystem.getSound(name, SoundCategory.MUSIC);
 
     if (!sound) {
       console.log('Music not loaded, loading it');
-      await this.loadMusic(name_in_file, name, SoundCategory.MUSIC, finalOptions);
-    } else {
-      if (options) {
-        console.log('Music already loaded, modifying its options with provided ones');
-        this.updateSoundOptions(name, SoundCategory.MUSIC, options);
-      }
+      await this.loadMusic(name_in_file, name, SoundCategory.MUSIC, options);
+    } else if (options) {
+      console.log('Music already loaded, modifying its options with provided ones');
+      this.soundSystem.updateSoundOptions(name, SoundCategory.MUSIC, options);
     }
 
-    sound = this.loadedMusics.get(name);
-
-    await this.audioEngine.unlockAsync();
-
-    if (sound) {
-      console.log('Playing music: ' + name);
-      sound.play();
-    } else {
-      console.warn('Music not found: ' + name);
-    }
+    await this.soundSystem.unlockAudio();
+    this.soundSystem.play(name, SoundCategory.MUSIC);
   }
 
   public async playSpatialSoundAt(name: string, position: Vector3): Promise<void> {
-    let sound = this.loadedSounds.get(name);
+    const sound = this.soundSystem.getSound(name, SoundCategory.EFFECT);
+
     if (!sound) {
       console.log('Sound not loaded, loading it');
-      const options = this.getDefaultStaticOptions();
+      const options = this.soundSystem.getDefaultStaticOptions();
       options.spatialPosition = position;
-
       await this.loadSpatialSound(name, SoundCategory.EFFECT, options);
-    }
-
-    sound = this.loadedSounds.get(name);
-
-    await this.audioEngine.unlockAsync();
-
-    if (sound) {
-      console.log('Playing sound: ' + name + ' at ' + position.toString());
-      console.log('Spatial pos: ', sound.spatial.position);
-      sound.play();
     } else {
-      console.warn('Sound not found: ' + name);
+      // Update position for existing sound
+      this.soundSystem.updateSoundOptions(name, SoundCategory.EFFECT, {
+        spatialPosition: position,
+      });
     }
+
+    await this.soundSystem.unlockAudio();
+    this.soundSystem.play(name, SoundCategory.EFFECT);
   }
+
+  /**
+   * Preload a sound pool for effects that need to be played rapidly
+   * @param soundName The base name of the sound
+   * @param poolSize Number of simultaneous instances
+   * @param options Sound options
+   */
+  public async createSoundPool(
+    soundName: string,
+    poolSize: number = 8,
+    options?: Partial<IStaticSoundOptions>,
+  ): Promise<void> {
+    // Default non-spatial, non-looping sound options
+    const defaultOptions: Partial<IStaticSoundOptions> = {
+      loop: false,
+      autoplay: false,
+      volume: 0.7,
+      spatialEnabled: false,
+    };
+
+    // Merge with any provided options
+    const finalOptions = {
+      ...defaultOptions,
+      ...options,
+    };
+
+    await this.soundSystem.createSoundPool(
+      soundName,
+      SoundCategory.EFFECT,
+      poolSize,
+      finalOptions,
+    );
+  }
+
+  /**
+   * Play sound from a pool
+   * @param soundName The name of the sound pool
+   * @param volume Optional volume override
+   */
+  public playFromPool(soundName: string, volume?: number): void {
+    const options: Partial<IStaticSoundOptions> = {};
+
+    if (volume !== undefined) {
+      options.volume = volume;
+    }
+
+    this.soundSystem.playFromPool(soundName, options);
+  }
+
+  /**
+   * Play sound from a pool with spatial positioning
+   * @param soundName The name of the sound pool
+   * @param position Position to play at
+   * @param volume Optional volume override
+   */
+  public playSpatialFromPool(
+    soundName: string,
+    position: Vector3,
+    volume?: number,
+  ): void {
+    const options: Partial<IStaticSoundOptions> = {
+      spatialPosition: position,
+    };
+
+    if (volume !== undefined) {
+      options.volume = volume;
+    }
+
+    this.soundSystem.playFromPool(soundName, options);
+  }
+
+  // ----------------------------------------
+  // GAME-SPECIFIC SOUND FUNCTIONALITY
+  // ----------------------------------------
 
   /** Plays the loading music and pauses every other possible sounds/musics */
   public playLoadingAmbience(): void {
-    this.pauseAllSounds();
-    // Somehow resuming is necesssary even if we are not playing the sound in the first place
-    this.resumeSound('loading-ambiance', SoundCategory.AMBIENT);
+    this.soundSystem.pauseAllSounds();
+    this.soundSystem.resume('loading-ambiance', SoundCategory.AMBIENT);
     this.playBackgroundMusic('loading', 'loading-ambiance');
   }
 
   /** Stops the loading music and resumes every other possible sounds/musics */
   public stopLoadingAmbience(): void {
-    this.stopSound('loading-ambiance', SoundCategory.AMBIENT);
-    this.resumeAllSounds();
+    this.soundSystem.stop('loading-ambiance', SoundCategory.AMBIENT);
+    this.soundSystem.resumeAllSounds();
   }
 
-  public stopSound(name: string, type: SoundCategory): void {
-    let sound;
-
+  public playWeaponShot(type: WeaponType) {
     switch (type) {
-      case SoundCategory.MUSIC:
-      case SoundCategory.AMBIENT:
-        sound = this.loadedMusics.get(name);
+      case WeaponType.GLOCK:
+        this.playFromPool('glockShot');
         break;
-      case SoundCategory.EFFECT:
-      case SoundCategory.UI:
-        sound = this.loadedSounds.get(name);
+      case WeaponType.SHOTGUN:
+        this.playFromPool('shotgunShot');
+        break;
+      case WeaponType.AK:
+        this.playFromPool('akShot');
         break;
       default:
-        console.error('Unknown sound type: ' + type);
+        console.warn(`No sound for weapon type ${type}`);
         break;
     }
+  }
 
-    if (!sound) {
-      console.warn('Sound not loaded: ' + name);
-      return;
-    }
+  // ----------------------------------------
+  // OPERATIONS DELEGATED TO SOUND SYSTEM
+  // ----------------------------------------
 
-    console.log('Stopping sound: ' + name);
-    sound.stop();
+  public stopSound(name: string, type: SoundCategory): void {
+    this.soundSystem.stop(name, type);
   }
 
   public pauseSound(name: string, type: SoundCategory): void {
-    let sound;
-
-    switch (type) {
-      case SoundCategory.MUSIC:
-      case SoundCategory.AMBIENT:
-        sound = this.loadedMusics.get(name);
-        break;
-      case SoundCategory.EFFECT:
-      case SoundCategory.UI:
-        sound = this.loadedSounds.get(name);
-        break;
-      default:
-        console.error('Unknown sound type: ' + type);
-        break;
-    }
-    if (!sound) {
-      console.warn('Sound not loaded: ' + name);
-      return;
-    }
-
-    console.log('Pausing sound: ' + name);
-    sound.pause();
+    this.soundSystem.pause(name, type);
   }
 
   public resumeSound(name: string, type: SoundCategory): void {
-    let sound;
-
-    switch (type) {
-      case SoundCategory.MUSIC:
-      case SoundCategory.AMBIENT:
-        sound = this.loadedMusics.get(name);
-        break;
-      case SoundCategory.EFFECT:
-      case SoundCategory.UI:
-        sound = this.loadedSounds.get(name);
-        break;
-      default:
-        console.error('Unknown sound type: ' + type);
-        break;
-    }
-
-    if (!sound) {
-      console.warn('Sound not loaded: ' + name);
-      return;
-    }
-
-    console.log('Resuming sound: ' + name);
-    sound.resume();
-  }
-
-  public dispose(): void {
-    this.loadedMusics.forEach((sound) => {
-      sound.dispose();
-    });
-
-    this.loadedSounds.forEach((sound) => {
-      sound.dispose();
-    });
-
-    this.audioEngine.dispose();
-    this.loadedMusics.clear();
-    this.loadedSounds.clear();
+    this.soundSystem.resume(name, type);
   }
 
   public pauseAllSounds(): void {
-    console.log('Stopping all sounds and musics');
-    this.loadedMusics.forEach((sound) => {
-      sound.pause();
-    });
-    this.loadedSounds.forEach((sound) => {
-      sound.pause();
-    });
+    this.soundSystem.pauseAllSounds();
   }
 
   public resumeAllSounds(): void {
-    console.log('Resuming all sounds and musics');
-    this.loadedMusics.forEach((sound) => {
-      if (!(sound.name === 'loading-ambiance')) {
-        sound.resume();
-        console.log('Resuming: ', sound.name);
-      }
-    });
-    this.loadedSounds.forEach((sound) => {
-      sound.resume();
-      console.log('Resuming: ', sound.name);
-    });
+    this.soundSystem.resumeAllSounds();
   }
 
-  // ---------------------------------------------
-  // Options management
-  // ---------------------------------------------
-
-  private getDefaultStreamingOptions(): Partial<IStreamingSoundOptions> {
-    return {
-      loop: true,
-      autoplay: false,
-      volume: 0.5,
-      stereoEnabled: true,
-      spatialEnabled: false,
-    };
+  public dispose(): void {
+    this.soundSystem.dispose();
   }
-
-  private getDefaultStaticOptions(): Partial<IStaticSoundOptions> {
-    return {
-      loop: false,
-      autoplay: false,
-      volume: 0.7,
-      spatialEnabled: true,
-      spatialMaxDistance: 30,
-      spatialMinDistance: 1,
-      spatialRolloffFactor: 2,
-      spatialDistanceModel: 'exponential',
-      spatialAutoUpdate: true,
-    };
-  }
-
-  /**
-   * Merges partial audio options with base options of the same type
-   * @param partialOptions Partial options that will override base options
-   * @param baseOptions Complete base options to be overridden
-   * @returns Merged options with partial options taking precedence
-   */
-  private mergeAudioOptions<
-    T extends Partial<IStaticSoundOptions> | Partial<IStreamingSoundOptions>,
-  >(partialOptions: T, baseOptions: T): T {
-    // Merge base options with partial options (partial overrides base)
-    return {
-      ...baseOptions,
-      ...partialOptions,
-    } as T;
-  }
-
-  //     private getDefaultStateicOptions(): IStaticSoundOptions{
-  //         return {
-  //     outBus: null,
-  //     autoplay: false,
-  //     maxInstances: 0,
-  //     loop: false,
-  //     startOffset: 0,
-  //     volume: 0,
-  //     analyzerEnabled: false,
-  //     analyzerFFTSize: 32,
-  //     analyzerMinDecibels: 0,
-  //     analyzerMaxDecibels: 0,
-  //     analyzerSmoothing: 0,
-  //     spatialAutoUpdate: false,
-  //     spatialConeInnerAngle: 0,
-  //     spatialConeOuterAngle: 0,
-  //     spatialConeOuterVolume: 0,
-  //     spatialDistanceModel: "exponential",
-  //     spatialEnabled: false,
-  //     spatialMaxDistance: 0,
-  //     spatialMinUpdateTime: 0,
-  //     spatialPanningModel: "equalpower",
-  //     spatialPosition: new Vector3,
-  //     spatialMinDistance: 0,
-  //     spatialRolloffFactor: 0,
-  //     spatialRotation: new Vector3,
-  //     spatialRotationQuaternion: new Quaternion,
-  //     stereoEnabled: false,
-  //     stereoPan: 0,
-  //     skipCodecCheck: false,
-  //     pitch: 0,
-  //     playbackRate: 0,
-  //     duration: 0,
-  //     loopEnd: 0,
-  //     loopStart: 0
-  // };
-  //     }
 }
+
+export { SoundCategory } from './soundSystem';
