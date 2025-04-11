@@ -548,6 +548,7 @@ export class Weapon {
       maxDuration: this.currentStats.reloadTime,
     });
 
+    this.soundManager.playWeaponReload(this.weaponType, this.currentStats.reloadTime);
     this.isReloading = true;
     this.reloadProgress = 0;
     this.reloadDuration = this.currentStats.reloadTime * 1000;

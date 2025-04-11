@@ -84,7 +84,7 @@ export class Game {
 
     this.soundManager = new SoundManager();
     await this.soundManager.init();
-    this.soundManager.playBackgroundMusic('main-menu', 'main-menu-default');
+    //this.soundManager.playBackgroundMusic('main-menu', 'main-menu-default');
 
     this.shopManager = new ShopManager(this);
     this.workbenchManager = new WorkbenchManager(this);

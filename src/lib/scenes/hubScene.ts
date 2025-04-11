@@ -66,6 +66,9 @@ export class HubScene extends GameScene {
 
     // TP player to 0,1,0
     this.game.player.setPosition(new Vector3(0, 1, 0));
+
+    // Start music
+    this.game.soundManager.playHubMusic();
   }
 
   public dispose(): void {

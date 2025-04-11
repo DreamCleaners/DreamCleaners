@@ -1,4 +1,4 @@
-import { Vector3 } from '@babylonjs/core';
+import { StaticSound, Vector3 } from '@babylonjs/core';
 import { SoundSystem, SoundCategory } from './soundSystem';
 import { IStaticSoundOptions, IStreamingSoundOptions } from '@babylonjs/core';
 import { WeaponType } from '../weapons/weaponType';
@@ -20,9 +20,8 @@ export class SoundManager {
   }
 
   public async preloadSounds(): Promise<void> {
-    await this.loadMusic('main-menu', 'main-menu-default', SoundCategory.MUSIC, {
-      loop: false,
-    });
+    await this.loadMusic('main-menu', 'main-menu-default', SoundCategory.MUSIC, {loop: false,});
+    await this.loadMusic('hub', 'hub-music', SoundCategory.MUSIC, {loop: true});
 
     await this.loadMusic('loading', 'loading-ambiance', SoundCategory.AMBIENT);
 
@@ -46,8 +45,8 @@ export class SoundManager {
     await this.soundSystem.loadStreamingSound(name_in_file, name, type, options);
   }
 
-  /** Creates a spatial sound based on the name and configuration */
-  public async loadSpatialSound(
+  /** Creates a static sound based on the name and configuration. Can be spatialized */
+  public async loadStaticSound(
     name: string,
     type: SoundCategory,
     options?: Partial<IStaticSoundOptions>,
@@ -75,6 +74,21 @@ export class SoundManager {
     this.soundSystem.play(name, SoundCategory.MUSIC);
   }
 
+  public async playSound(name: string, type: SoundCategory, options?: Partial<IStaticSoundOptions>): Promise<void> {
+    const sound = this.soundSystem.getSound(name, type);
+
+    if (!sound) {
+      console.log('Sound not loaded, loading it');
+      await this.loadStaticSound(name, type, options);
+    } else if (options) {
+      console.log('Sound already loaded, modifying its options with provided ones');
+      this.soundSystem.updateSoundOptions(name, type, options);
+    }
+
+    await this.soundSystem.unlockAudio();
+    this.soundSystem.play(name, type);
+  }
+
   public async playSpatialSoundAt(name: string, position: Vector3): Promise<void> {
     const sound = this.soundSystem.getSound(name, SoundCategory.EFFECT);
 
@@ -82,7 +96,7 @@ export class SoundManager {
       console.log('Sound not loaded, loading it');
       const options = this.soundSystem.getDefaultStaticOptions();
       options.spatialPosition = position;
-      await this.loadSpatialSound(name, SoundCategory.EFFECT, options);
+      await this.loadStaticSound(name, SoundCategory.EFFECT, options);
     } else {
       // Update position for existing sound
       this.soundSystem.updateSoundOptions(name, SoundCategory.EFFECT, {
@@ -164,13 +178,42 @@ export class SoundManager {
     this.soundSystem.playFromPool(soundName, options);
   }
 
+  /**
+   * Get the duration of a loaded static sound
+   * @param name The name of the sound
+   * @param type The sound category
+   * @returns Duration in seconds, or -1 if sound not found
+   */
+  private getSoundDuration(name: string, type: SoundCategory): number {
+    const sound = this.soundSystem.getSound(name, type) as StaticSound;
+    
+    if (!sound) {
+      console.warn(`Sound "${name}" not found or not loaded yet`);
+      return -1;
+    }
+    
+    // Check if it's a static sound
+    if (type == SoundCategory.MUSIC) {
+      console.warn(`Sound "${name}" is not a static sound`);
+      return -1;
+    }
+    
+    if (sound.buffer) {
+      // We get the duration of the sound buffer
+      return sound.buffer.duration;
+    }
+
+    return -1;
+  }
+
   // ----------------------------------------
   // GAME-SPECIFIC SOUND FUNCTIONALITY
   // ----------------------------------------
 
   /** Plays the loading music and pauses every other possible sounds/musics */
   public playLoadingAmbience(): void {
-    this.soundSystem.pauseAllSounds();
+    this.soundSystem.stopAllSounds();
+    // Resume is somehow necessary even if it was not playing nor paused
     this.soundSystem.resume('loading-ambiance', SoundCategory.AMBIENT);
     this.playBackgroundMusic('loading', 'loading-ambiance');
   }
@@ -178,7 +221,6 @@ export class SoundManager {
   /** Stops the loading music and resumes every other possible sounds/musics */
   public stopLoadingAmbience(): void {
     this.soundSystem.stop('loading-ambiance', SoundCategory.AMBIENT);
-    this.soundSystem.resumeAllSounds();
   }
 
   public playWeaponShot(type: WeaponType) {
@@ -196,6 +238,78 @@ export class SoundManager {
         console.warn(`No sound for weapon type ${type}`);
         break;
     }
+  }
+
+  /**
+   * Play weapon reload sound and adjust its playback rate to match the given reload time
+   * @param type The weapon type
+   * @param reloadTime Game logic reload time in seconds
+   * @returns Promise that resolves when sound starts playing
+   */
+  public async playWeaponReload(type: WeaponType, reloadTime: number): Promise<void> {
+    let soundName!: string;
+    let volume = 0.5;
+    switch (type) {
+      case WeaponType.GLOCK:
+        soundName = "glockReload";
+        volume = 0.2;
+        break;
+      case WeaponType.SHOTGUN:
+        soundName = "shotgunReload";
+        volume = 0.35;
+        break;
+      case WeaponType.AK:
+        soundName = "akReload";
+        volume = 0.2;
+        break;
+      default:
+        console.warn(`No sound for weapon type ${type}`);
+    }
+    
+    // Check if sound is already loaded
+    let sound = this.soundSystem.getSound(soundName, SoundCategory.EFFECT) as StaticSound;
+    
+    // If not loaded, load it first
+    if (!sound) {
+      await this.loadStaticSound(soundName, SoundCategory.EFFECT, { 
+        loop: false,
+        autoplay: false,
+        volume: volume,
+        spatialEnabled: false
+      });
+      
+      sound = this.soundSystem.getSound(soundName, SoundCategory.EFFECT) as StaticSound;
+    }
+    
+    const originalDuration = this.getSoundDuration(soundName, SoundCategory.EFFECT);
+    
+    // We modify the playback rate of the sound to match the reload time
+    // Basically we accelerate the sound to match the reload time
+    if (originalDuration > 0) {
+      // Calculate playback rate to match the desired reload time
+      // Original duration / playback rate = desired duration
+      // So: playback rate = original duration / desired duration
+      const playbackRate = originalDuration / reloadTime;
+      
+      // We put a limiter on the playback rate, speed factor of 6x is the max and 0.4x is the min
+      const clampedRate = Math.max(0.4, Math.min(playbackRate, 6.0));
+      
+      // Update the sound's playback rate
+      if (sound) {
+        sound.playbackRate = clampedRate;
+      }
+    }
+    
+    await this.soundSystem.unlockAudio();
+    
+    this.soundSystem.play(soundName, SoundCategory.EFFECT);
+
+  }
+
+  public playHubMusic(): void {
+    this.soundSystem.stopAllSounds();
+    this.soundSystem.resume('hub-music', SoundCategory.MUSIC);
+    this.playBackgroundMusic('hub', 'hub-music', {volume: 0.2});
   }
 
   // ----------------------------------------

@@ -261,7 +261,6 @@ export class SoundSystem {
       return;
     }
 
-    console.log('Playing sound: ' + name);
     sound.play();
   }
 
@@ -273,7 +272,6 @@ export class SoundSystem {
       return;
     }
 
-    console.log('Stopping sound: ' + name);
     sound.stop();
   }
 
@@ -285,7 +283,6 @@ export class SoundSystem {
       return;
     }
 
-    console.log('Pausing sound: ' + name);
     sound.pause();
   }
 
@@ -297,29 +294,25 @@ export class SoundSystem {
       return;
     }
 
-    console.log('Resuming sound: ' + name);
     sound.resume();
   }
 
+  public stopAllSounds(): void {
+    this.loadedMusics.forEach((sound) => sound.stop());
+    this.loadedSounds.forEach((sound) => sound.stop());
+  }
+
   public pauseAllSounds(): void {
-    console.log('Pausing all sounds and musics');
     this.loadedMusics.forEach((sound) => sound.pause());
     this.loadedSounds.forEach((sound) => sound.pause());
   }
 
-  public resumeAllSounds(excludeNames: string[] = []): void {
-    console.log('Resuming all sounds and musics');
+  public resumeAllSounds(): void {
     this.loadedMusics.forEach((sound) => {
-      if (!excludeNames.includes(sound.name)) {
         sound.resume();
-        console.log('Resuming: ', sound.name);
-      }
     });
     this.loadedSounds.forEach((sound) => {
-      if (!excludeNames.includes(sound.name)) {
         sound.resume();
-        console.log('Resuming: ', sound.name);
-      }
     });
   }
 
@@ -380,4 +373,8 @@ export class SoundSystem {
       ...partialOptions,
     } as T;
   }
+
+
+
+  
 }
