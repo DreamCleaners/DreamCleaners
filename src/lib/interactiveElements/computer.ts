@@ -31,11 +31,5 @@ export class Computer extends InteractiveElement {
       mass: 0,
     });
     this.gameAssetContainer.addPhysicsAggregate(physicsAggregate);
-
-    // Also add a "music" for ambiance
-    this.gameScene.game.soundManager.playSpatialSoundAt(
-      'placeholder',
-      new Vector3(1.5, 1.5, 1.5),
-    );
   }
 }

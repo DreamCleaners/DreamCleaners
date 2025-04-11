@@ -33,6 +33,8 @@ export class SceneManager {
     stageReward: StageReward | null = null,
   ): Promise<void> {
     this.game.engine.displayLoadingUI();
+    this.game.soundManager.playLoadingAmbience();
+
     if (this.currentScene !== null) {
       this.currentScene.dispose();
       this.currentScene = null;
@@ -57,7 +59,8 @@ export class SceneManager {
     await scene.load();
     this.game.engine.hideLoadingUI();
     this.currentScene = scene;
-    this.game.soundManager.stopAllSounds();
+
+    this.game.soundManager.stopLoadingAmbience();
   }
 
   public async changeSceneToProceduralStage(): Promise<void> {

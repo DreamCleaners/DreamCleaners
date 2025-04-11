@@ -84,7 +84,7 @@ export class Game {
 
     this.soundManager = new SoundManager();
     await this.soundManager.init();
-    this.soundManager.playBackgroundMusic('placeholder');
+    this.soundManager.playBackgroundMusic('main-menu', 'main-menu-default');
 
     this.shopManager = new ShopManager(this);
     this.workbenchManager = new WorkbenchManager(this);
@@ -111,7 +111,7 @@ export class Game {
       this.saveManager.restore();
     }
 
-    this.soundManager.stopSound('placeholder', SoundCategory.MUSIC);
+    this.soundManager.pauseSound('main-menu-default', SoundCategory.MUSIC);
     this.player.start();
     this.sceneManager.start();
     this.stageManager.start(isNewGame);
