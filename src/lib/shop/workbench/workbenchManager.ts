@@ -24,6 +24,10 @@ export class WorkbenchManager {
 
     weapon.currentRarity++;
 
+    if(weapon.isAkimboWielding){
+      weapon.akimboWeapon?.hideInScene();
+    }
+
     // We must re-get the "factory setting" weapon data as passives may have altered it
     weapon.weaponData = this.game.weaponDataManager.getWeaponData(weapon.weaponType);
     weapon.applyCurrentStats();

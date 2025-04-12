@@ -15,7 +15,11 @@ export class Akimbo extends WeaponPassive {
   public override embedPassiveToWeapon(weapon: Weapon): void {
     super.embedPassiveToWeapon(weapon);
 
-    const newWeapon = weapon.cloneWeapon();
+    const newWeapon = new Weapon(
+      weapon.player,
+      weapon.weaponType,
+      weapon.currentRarity,
+    );
 
     // We will initialize the mesh but first we modify its position
     newWeapon.weaponData.transform.position.x =

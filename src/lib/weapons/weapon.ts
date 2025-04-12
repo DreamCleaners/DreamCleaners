@@ -94,7 +94,7 @@ export class Weapon {
   private muzzleFlashParticleSystem!: ParticleSystem;
 
   constructor(
-    private player: Player,
+    public player: Player,
     public weaponType: WeaponType,
     rarity: Rarity,
   ) {
@@ -107,6 +107,10 @@ export class Weapon {
   }
 
   public async init(): Promise<void> {
+    if(this.isAkimboWielding){
+      await this.akimboWeapon?.init();
+    }
+
     await this.initMesh();
     this.initAnimations();
     this.initMuzzleFlashParticleSystem();
@@ -219,7 +223,10 @@ export class Weapon {
   }
 
   public isVisible(): boolean {
-    return this.rootMesh.isEnabled();
+    if(this.rootMesh)
+      return this.rootMesh.isEnabled();
+
+    return false;
   }
 
   public fixedUpdate(): void {
@@ -688,15 +695,6 @@ export class Weapon {
     pm.applyPassivesToWeapon(weapon, data.embeddedPassives);
 
     return weapon;
-  }
-
-  /** Returns a new instance of a weapon, copied from this one */
-  public cloneWeapon(): Weapon {
-    const newWeapon = new Weapon(this.player, this.weaponType, this.currentRarity);
-    newWeapon.weaponData = structuredClone(this.weaponData);
-    newWeapon.applyCurrentStats();
-
-    return newWeapon;
   }
 
   // --------------------- VFX related ---------------------------
