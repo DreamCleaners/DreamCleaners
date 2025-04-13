@@ -1,6 +1,61 @@
 .pause-menu-container {
-  background-color: bisque;
   width: 100vw;
   height: 100vh;
-  opacity: 0.8;
+}
+
+.pause-menu-background {
+  position: absolute;
+  background-color: var(--primary-color);
+  opacity: 0.6;
+  width: 100vw;
+  height: 100vh;
+}
+
+.pause-menu-content {
+  position: relative;
+  padding-top: 7%;
+  width: 100%;
+  height: 100%;
+}
+
+.pause-menu-buttons-container {
+  width: 100%;
+  height: 100%;
+}
+
+.pause-menu-buttons-content {
+  width: 400px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pause-menu-button {
+  height: 60px;
+  width: 400px;
+  background-color: var(--secondary-color);
+  border: 3px solid var(--border-color);
+  border-left: 0px;
+  border-bottom-right-radius: var(--border-radius);
+  box-shadow: 0px 0px var(--shadow-size) var(--border-color);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  color: var(--font-color);
+  padding: 5%;
+  animation: slide-in-left 0.2s ease-out;
+}
+
+.pause-menu-button:hover {
+  background-color: var(--primary-color);
+  transform: scale(1.04);
+  transition: 0.1s ease;
+}
+
+.pause-menu-button:active {
+  transform: scale(1);
+  transition: 0.1s ease;
 }

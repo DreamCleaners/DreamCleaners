@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import '../styles/pauseMenu.css';
+import '../styles/shared.css';
 import { withClickSound } from './Utils';
 
 const PauseMenu = () => {
@@ -16,9 +17,29 @@ const PauseMenu = () => {
 
   return (
     <div className="pause-menu-container">
-      <h1>Pause Menu</h1>
-      <button onClick={withClickSound(game, handleResume)}>Resume</button>
-      <button onClick={withClickSound(game, handleMainMenu)}>Main Menu</button>
+      <div className="pause-menu-background"></div>
+      <div className="pause-menu-content">
+        <h1 className="title">PAUSE</h1>
+        <div className="pause-menu-buttons-container">
+          <div className="pause-menu-buttons-content">
+            <button
+              className="pause-menu-button"
+              onClick={withClickSound(game, handleResume)}
+            >
+              <h2>RESUME</h2>
+            </button>
+            <button className="pause-menu-button">
+              <h2>PARAMETERS</h2>
+            </button>
+            <button
+              className="pause-menu-button"
+              onClick={withClickSound(game, handleMainMenu)}
+            >
+              <h2>MAIN MENU</h2>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -68,7 +68,7 @@ export class HubScene extends GameScene {
     this.game.player.setPosition(new Vector3(0, 1, 0));
 
     // Start music
-    this.game.soundManager.playHubMusic();
+    // this.game.soundManager.playHubMusic();
   }
 
   public dispose(): void {

@@ -107,7 +107,7 @@ export class Weapon {
   }
 
   public async init(): Promise<void> {
-    if(this.isAkimboWielding){
+    if (this.isAkimboWielding) {
       await this.akimboWeapon?.init();
     }
 
@@ -223,8 +223,7 @@ export class Weapon {
   }
 
   public isVisible(): boolean {
-    if(this.rootMesh)
-      return this.rootMesh.isEnabled();
+    if (this.rootMesh) return this.rootMesh.isEnabled();
 
     return false;
   }
