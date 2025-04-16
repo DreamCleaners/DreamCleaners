@@ -749,8 +749,6 @@ export class Player implements IDamageable {
   }
 
   private hideInteractionUI(): void {
-    if (!this.isInteractionUIVisible) return;
-
     this.isInteractionUIVisible = false;
     this.gui.removeControl(this.container);
   }
