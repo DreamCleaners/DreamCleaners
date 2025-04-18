@@ -24,6 +24,7 @@ export class weaponDataManager {
 
       const weaponData = {
         weaponName: weaponJson.weaponName,
+        crosshairName: weaponJson.crosshairName,
         globalStats: globalStats,
         staticStats: weaponJson.staticStats,
         transform: weaponJson.transform,

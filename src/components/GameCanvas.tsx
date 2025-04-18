@@ -4,13 +4,17 @@ import '../styles/gameCanvas.css';
 import UserInterface from './UserInterface';
 import { GameContext } from '../contexts/GameContext';
 import { Observer } from '@babylonjs/core';
+import { Weapon } from '../lib/weapons/weapon';
 
 const GameCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const gameRef = useRef<Game | null>(null);
   const [isCrosshairVisible, setIsCrosshairVisible] = useState<boolean>(false);
+  const [crosshairName, setCrosshairName] = useState<string>('crosshair-glock');
+
   const onCrosshairChangeObserverRef = useRef<Observer<boolean> | null>(null);
+  const onWeaponChangeObserverRef = useRef<Observer<Weapon> | null>(null);
 
   const initGame = async () => {
     gameRef.current = new Game();
@@ -19,6 +23,12 @@ const GameCanvas = () => {
 
     onCrosshairChangeObserverRef.current =
       gameRef.current.uiManager.onCrosshairChange.add(setIsCrosshairVisible);
+
+    onWeaponChangeObserverRef.current = gameRef.current.player.onWeaponChange.add(
+      (weapon: Weapon) => {
+        setCrosshairName(weapon.weaponData.crosshairName);
+      },
+    );
   };
 
   useEffect(() => {
@@ -29,6 +39,7 @@ const GameCanvas = () => {
     return () => {
       if (gameRef.current) {
         onCrosshairChangeObserverRef.current?.remove();
+        onWeaponChangeObserverRef.current?.remove();
       }
     };
   }, []);
@@ -36,10 +47,10 @@ const GameCanvas = () => {
   return (
     <GameContext.Provider value={game}>
       {isCrosshairVisible && (
-        <>
-          <div className="player-crosshair vertical-line"></div>
-          <div className="player-crosshair horizontal-line"></div>
-        </>
+        <img
+          className="player-crosshair"
+          src={`/src/assets/img/cursors/${crosshairName}.png`}
+        />
       )}
       <UserInterface />
       <canvas

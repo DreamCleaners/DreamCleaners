@@ -2,6 +2,7 @@ import { GlobalStats } from './globalStats';
 
 export type WeaponData = {
   weaponName: string;
+  crosshairName: string;
   globalStats: GlobalStats[];
   staticStats: StaticStats;
   transform: WeaponTransform;

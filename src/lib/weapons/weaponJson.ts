@@ -3,6 +3,7 @@ import { StaticStats, Vec3, WeaponAnimationsSpeed, WeaponTransform } from './wea
 
 export type WeaponJson = {
   weaponName: string;
+  crosshairName: string;
   globalStats: GlobalStatsJson;
   staticStats: StaticStats;
   transform: WeaponTransform;
