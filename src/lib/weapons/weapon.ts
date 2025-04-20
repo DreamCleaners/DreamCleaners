@@ -107,7 +107,7 @@ export class Weapon {
   }
 
   public async init(): Promise<void> {
-    if(this.isAkimboWielding){
+    if (this.isAkimboWielding) {
       await this.akimboWeapon?.init();
     }
 
@@ -163,12 +163,12 @@ export class Weapon {
   private preventMeshFromClipping(weaponMesh: Mesh): void {
     const meshes = weaponMesh.getChildMeshes ? weaponMesh.getChildMeshes() : [];
     meshes.push(weaponMesh);
-    
+
     for (const mesh of meshes) {
       if (!mesh.isVisible) continue;
       mesh.renderingGroupId = 1;
     }
-    
+
     const weaponRoot = this.rootMesh as Mesh;
     weaponRoot.renderingGroupId = 1;
   }
@@ -238,8 +238,7 @@ export class Weapon {
   }
 
   public isVisible(): boolean {
-    if(this.rootMesh)
-      return this.rootMesh.isEnabled();
+    if (this.rootMesh) return this.rootMesh.isEnabled();
 
     return false;
   }

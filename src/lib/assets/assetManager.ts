@@ -1,10 +1,14 @@
 import {
+  Color3,
+  HDRCubeTexture,
   InstancedMesh,
   LoadAssetContainerAsync,
   Mesh,
+  MeshBuilder,
   PhysicsAggregate,
   PhysicsShapeType,
   Scene,
+  StandardMaterial,
   Texture,
   TransformNode,
 } from '@babylonjs/core';
@@ -36,6 +40,9 @@ export class AssetManager {
       sceneName,
       AssetType.SCENE,
     );
+    // Create the skybox
+    this.createSky(sceneName, gameAssetContainer);
+
     const spawnTriggers: SpawnTrigger[] = [];
     let arrivalPoint: TransformNode | undefined = undefined;
 
@@ -49,7 +56,6 @@ export class AssetManager {
 
       const tokens = match[0].slice(1, -1).split('-');
       const type = tokens[0];
-
       if (
         type === UnityTypeToken.PHYSICAL_OBJECT &&
         (node instanceof Mesh || node instanceof InstancedMesh)
@@ -68,6 +74,33 @@ export class AssetManager {
       spawnTriggers: spawnTriggers,
       arrivalPoint: arrivalPoint,
     };
+  }
+
+  private createSky(sceneName: string, assetContainer: GameAssetContainer): void {
+    console.log('Creating skybox for scene: ' + sceneName);
+    const skybox = MeshBuilder.CreateBox('skyBox', { size: 1000 }, this.scene);
+
+    // Create material for the skybox
+    const skyboxMaterial = new StandardMaterial(sceneName + 'Sky', this.scene);
+    skyboxMaterial.backFaceCulling = false;
+
+    const hdrTexture = new HDRCubeTexture(
+      `materials/${sceneName}Sky.hdr`,
+      this.scene,
+      512,
+    );
+
+    skyboxMaterial.reflectionTexture = hdrTexture;
+    skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+    skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
+    skyboxMaterial.specularColor = new Color3(0, 0, 0);
+    skyboxMaterial.disableLighting = true;
+
+    skybox.material = skyboxMaterial;
+    skybox.infiniteDistance = true;
+
+    console.log('Adding skybox to asset container');
+    assetContainer.addMesh(skybox);
   }
 
   private handlePhysicalObject(
@@ -96,7 +129,7 @@ export class AssetManager {
   }
 
   private handleArrivalPoint(node: Mesh): TransformNode {
-    node.position.x *= -1;
+    //node.position.x *= -1;
     return node;
   }
 
@@ -106,11 +139,11 @@ export class AssetManager {
     tokens: string[],
   ): void {
     const diameter = parseInt(tokens[1]);
-    node.position.x *= -1;
+    //node.position.x *= -1;
 
     const spawnPoints: TransformNode[] = [];
     node.getChildTransformNodes(true).forEach((child) => {
-      child.position.x *= -1;
+      //child.position.x *= -1;
       spawnPoints.push(child);
     });
 

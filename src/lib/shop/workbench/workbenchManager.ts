@@ -24,7 +24,7 @@ export class WorkbenchManager {
 
     weapon.currentRarity++;
 
-    if(weapon.isAkimboWielding){
+    if (weapon.isAkimboWielding) {
       weapon.akimboWeapon?.hideInScene();
     }
 

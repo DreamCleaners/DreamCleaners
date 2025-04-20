@@ -4,4 +4,5 @@ export enum FixedStageLayout {
   // TEST = 'Test',
   // CLOSED_SCENE = 'ClosedScene',
   LABORATORY = 'laboratory',
+  OPEN_FARM = 'openFarm',
 }
