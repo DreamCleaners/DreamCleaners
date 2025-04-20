@@ -4,9 +4,7 @@ import { IStaticSoundOptions, IStreamingSoundOptions } from '@babylonjs/core';
 import { WeaponType } from '../weapons/weaponType';
 
 enum StageMusic {
-  MUSIC_ONE = 'placeholder1',
-  MUSIC_TWO = 'placeholder2',
-  MUSIC_THREE = 'placeholder3',
+  ELECTRO_ONE = 'electroOne',
 }
 
 /**

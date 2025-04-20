@@ -5,6 +5,7 @@ import { GameContext } from '../contexts/GameContext';
 import { Rarity } from '../lib/shop/rarity.ts';
 import { StageInformation } from '../lib/stages/stageInformation';
 import { withClickSound } from './Utils';
+import { FixedStageLayout } from '../lib/scenes/fixedStageLayout.ts';
 
 const StageSelectionUI = () => {
   const game = useContext(GameContext);
@@ -40,7 +41,9 @@ const StageSelectionUI = () => {
         <button onClick={withClickSound(game, handleHideUI)}>Back</button>
       </div>
       <div className="stage-title-container">
-        {stageInfo?.proposedFixedStageLayout || 'Procedural Stage'}
+        {game?.stageInformationManager.getStageName(
+          stageInfo?.proposedFixedStageLayout as FixedStageLayout,
+        )}
       </div>
       <div className="stage-info-reward-container">
         <div className="stage-info-container">
