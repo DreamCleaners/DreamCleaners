@@ -2,11 +2,12 @@ import { useContext } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import '../styles/mainMenu.css';
 import '../styles/shared.css';
-import { withClickSound } from './Utils';
-import settingsIcon from '../assets/img/settings.png';
-import tutorialIcon from '../assets/img/tutorial.png';
-import continueIcon from '../assets/img/continue.png';
-import newGameIcon from '../assets/img/new-game.png';
+import { withClickSound } from '../lib/utils/withClickSound';
+
+import GraduateCapIcon from '@/assets/icons/graduate-cap.svg?react';
+import CogIcon from '@/assets/icons/cog.svg?react';
+import BackwardTimeIcon from '@/assets/icons/backward-time.svg?react';
+import PlayButtonIcon from '@/assets/icons/play-button.svg?react';
 
 const MainMenu = () => {
   const game = useContext(GameContext);
@@ -27,9 +28,11 @@ const MainMenu = () => {
 
   return (
     <div className="main-menu-container">
-      <div className="main-menu-container-background"></div>
-      <div className="main-menu-container-content">
-        <h1 className="title">MAIN MENU</h1>
+      <div className="main-background"></div>
+      <div className="main-content">
+        <div className="top-buttons-container">
+          <h1 className="main-title">MAIN MENU</h1>
+        </div>
         <div className="main-menu-buttons-container">
           <div className="main-menu-buttons-content">
             <button
@@ -37,7 +40,7 @@ const MainMenu = () => {
               onClick={withClickSound(game, handleNewGame)}
             >
               <div className="main-menu-large-button-icon-container">
-                <img src={newGameIcon} className="main-menu-large-button-icon" />
+                <PlayButtonIcon className="main-menu-large-button-icon" />
               </div>
               <h1 className="main-menu-button-title">NEW GAME</h1>
             </button>
@@ -46,7 +49,7 @@ const MainMenu = () => {
               onClick={withClickSound(game, handleContinueGame)}
             >
               <div className="main-menu-large-button-icon-container">
-                <img src={continueIcon} className="main-menu-large-button-icon" />
+                <BackwardTimeIcon className="main-menu-large-button-icon" />
               </div>
               <h1 className="main-menu-button-title">
                 {game.saveManager.hasSave() ? 'CONTINUE' : 'NO SAVE'}
@@ -55,16 +58,13 @@ const MainMenu = () => {
             <div className="main-menu-right-buttons-container">
               <button className="main-menu-button">
                 <div className="main-menu-button-icon-container">
-                  <img src={tutorialIcon} className="main-menu-button-icon" />
+                  <GraduateCapIcon className="main-menu-button-icon" />
                 </div>
                 <h1 className="main-menu-button-title">TUTORIAL</h1>
               </button>
               <button className="main-menu-button">
                 <div className="main-menu-button-icon-container">
-                  <img
-                    src={settingsIcon}
-                    className="main-menu-button-icon settings-icon"
-                  />
+                  <CogIcon className="main-menu-button-icon settings-icon" />
                 </div>
                 <h1 className="main-menu-button-title">SETTINGS</h1>
               </button>

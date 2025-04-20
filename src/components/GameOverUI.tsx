@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import '../styles/gameOverUI.css';
 import { GameContext } from '../contexts/GameContext';
-import { withClickSound } from './Utils';
+import { withClickSound } from '../lib/utils/withClickSound';
 
 const GameOverUI = () => {
   const game = useContext(GameContext); // Access the game instance from the context

@@ -6,7 +6,7 @@ import {
   WeaponPassivesManager,
   WeaponPassiveType,
 } from '../lib/weapons/passives/weaponPassivesManager';
-import { withClickSound } from './Utils';
+import { withClickSound } from '../lib/utils/withClickSound';
 
 const WorkbenchUI = () => {
   const game = useContext(GameContext);

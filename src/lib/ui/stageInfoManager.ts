@@ -2,7 +2,7 @@ import { EnemyType } from '../enemies/enemyType';
 
 export class StageInformationManager {
   public getStageImagePath(stageName: string): string {
-    return `img/stage-images/${stageName}.png`;
+    return `/src/assets/img/stage-images/${stageName}.png`;
   }
 
   public buildStageDescription(enemies: EnemyType[]): string {

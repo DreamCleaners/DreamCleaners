@@ -1,4 +1,4 @@
-import data from '../../data/weapons.json' assert { type: 'json' };
+import data from '../../assets/data/weapons.json' assert { type: 'json' };
 import { WeaponData } from './weaponData';
 import { WeaponJson } from './weaponJson';
 import { WeaponType } from './weaponType';

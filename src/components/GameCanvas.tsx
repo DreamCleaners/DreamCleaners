@@ -49,7 +49,7 @@ const GameCanvas = () => {
       {isCrosshairVisible && (
         <img
           className="player-crosshair"
-          src={`/src/assets/img/cursors/${crosshairName}.png`}
+          src={`/src/assets/img/crosshairs/${crosshairName}.png`}
         />
       )}
       <UserInterface />

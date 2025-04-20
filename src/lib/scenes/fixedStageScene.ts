@@ -81,7 +81,7 @@ export class FixedStageScene extends GameScene {
     this.game.player.setPosition(new Vector3(0, 1, 0));
 
     this.game.scoreManager.startStage();
-    this.game.soundManager.playStageBackgroundMusic();
+    // this.game.soundManager.playStageBackgroundMusic();
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );

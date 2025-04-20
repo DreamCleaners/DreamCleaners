@@ -1,3 +1,4 @@
+import { Rarity } from '../shop/rarity';
 import { WeaponPassiveType } from '../weapons/passives/weaponPassivesManager';
 import { WeaponType } from '../weapons/weaponType';
 
@@ -7,7 +8,7 @@ import { WeaponType } from '../weapons/weaponType';
 export class RewardWeaponDescription {
   constructor(
     public weaponType: WeaponType,
-    public rarity: number,
+    public rarity: Rarity,
     public embeddedPassives: WeaponPassiveType[],
   ) {}
 }

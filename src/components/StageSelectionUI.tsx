@@ -1,20 +1,31 @@
 import { useEffect, useState, useContext } from 'react';
 import '../styles/stageSelectionUI.css';
+import '../styles/shared.css';
 import { StagesManager } from '../lib/stages/stagesManager';
 import { GameContext } from '../contexts/GameContext';
 import { Rarity } from '../lib/shop/rarity.ts';
 import { StageInformation } from '../lib/stages/stageInformation';
-import { withClickSound } from './Utils';
+import { withClickSound } from '../lib/utils/withClickSound';
+import BaseContainer from './BaseContainer.tsx';
+import { RewardWeaponDescription } from '../lib/stages/rewardWeaponDescription.ts';
+import WeaponIcon from './WeaponIcon.tsx';
+
+import MoneyStackIcon from '@/assets/icons/money-stack.svg?react';
 
 const StageSelectionUI = () => {
   const game = useContext(GameContext);
   const [stageInfo, setStageInfo] = useState<StageInformation | null>(null);
   const [stageImagePath, setStageImagePath] = useState<string | null>(null);
+  const [weaponReward, setWeaponReward] = useState<RewardWeaponDescription | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     const stagesManager = StagesManager.getInstance();
     const selectedBedInfo = stagesManager.getSelectedBedInformation();
     setStageInfo(selectedBedInfo);
+
+    setWeaponReward(selectedBedInfo?.stageReward.getWeaponReward());
 
     // Get the image path for the stage if available
     if (selectedBedInfo && game?.stageInformationManager) {
@@ -30,102 +41,125 @@ const StageSelectionUI = () => {
   };
 
   const handleEnterStage = () => {
-    handleHideUI(); // Hide the UI
-    StagesManager.getInstance().enterStage(); // Call enterStage() method
+    handleHideUI();
+    StagesManager.getInstance().enterStage();
+  };
+
+  const getDifficultyIcons = (difficulty: number) => {
+    const icons = [];
+
+    const iconsPaths = ['daemon-skull', 'crowned-skull', 'skull-shield'];
+    const iconPathIndex = Math.min(
+      Math.floor((difficulty - 1) / 10),
+      iconsPaths.length - 1,
+    );
+
+    const iconsCount =
+      difficulty === 0 ? 0 : difficulty % 10 === 0 ? 10 : difficulty % 10;
+    for (let i = 0; i < iconsCount; i++) {
+      icons.push(
+        <img
+          key={i}
+          src={`/src/assets/icons/${iconsPaths[iconPathIndex]}.svg`}
+          alt="Difficulty Icon"
+          className="difficulty-icon"
+        />,
+      );
+    }
+    return <div className="difficulty-icon-container">{icons}</div>;
   };
 
   return (
-    <div className="stage-selection-container">
-      <div className="back-button-container">
-        <button onClick={withClickSound(game, handleHideUI)}>Back</button>
-      </div>
-      <div className="stage-title-container">
-        {stageInfo?.proposedFixedStageLayout || 'Procedural Stage'}
-      </div>
-      <div className="stage-info-reward-container">
-        <div className="stage-info-container">
-          {stageInfo ? (
-            <ul>
-              <li>Difficulty: {stageInfo.difficulty}</li>
-              <li>
-                Enemies:{' '}
-                {stageInfo.enemyTypes.map((enemy) => enemy.toString()).join(', ')}
-              </li>
-            </ul>
-          ) : (
-            'Loading stage information...'
-          )}
-        </div>
-        <div className="stage-reward-container">
-          <h3 className="stage-reward-title">Stage Reward</h3>
-          {stageInfo ? (
-            <div className="stage-reward-content">
-              {stageInfo.stageReward.getWeaponReward() ? (
-                <div className="reward-with-weapon">
-                  <span className="reward-money">
-                    {stageInfo.stageReward.getMoneyReward() ?? 0} gold
-                  </span>
-                  <div className="reward-weapon">
-                    <span>
-                      {`Weapon: ${
-                        stageInfo.stageReward
-                          .getWeaponReward()
-                          ?.weaponType?.toUpperCase() ?? 'Unknown'
-                      } of quality: ${
-                        Rarity[stageInfo.stageReward.getWeaponReward()?.rarity ?? 0]
-                      }`}
-                    </span>
-                    {(stageInfo.stageReward.getWeaponReward()?.embeddedPassives ?? [])
-                      .length > 0 && (
-                      <span>
-                        This weapon has{' '}
-                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives
-                          ?.length ?? 0}{' '}
-                        hidden{' '}
-                        {stageInfo.stageReward.getWeaponReward()?.embeddedPassives
-                          ?.length === 1
-                          ? 'passive'
-                          : 'passives'}
-                        !
-                      </span>
-                    )}
+    <BaseContainer
+      title={stageInfo?.proposedFixedStageLayout?.toUpperCase() || 'Procedural Stage'}
+      backButtonCallback={withClickSound(game, handleHideUI)}
+    >
+      <div className="stage-selection-container">
+        <div className="stage-selection-content">
+          <div className="stage-selection-item-container">
+            <h2 className="stage-selection-item-title">REWARDS</h2>
+            <div className="stage-selection-item">
+              <div className="stage-selection-item-reward-container">
+                <div className="stage-selection-item-reward">
+                  <MoneyStackIcon className="reward-icon" />
+                  <div className="reward-money-text-container">
+                    <img
+                      src={`/src/assets/icons/credits-currency.svg`}
+                      alt="Credits currency"
+                      className="currency-icon"
+                    />
+                    <h2>{stageInfo?.stageReward.getMoneyReward() ?? 0}</h2>
                   </div>
                 </div>
-              ) : (
-                <div className="reward-no-weapon">
-                  <span>{stageInfo.stageReward.getMoneyReward() ?? 0} gold</span>
-                </div>
+                {weaponReward ? (
+                  <div
+                    className={`stage-selection-item-reward ${Rarity[
+                      weaponReward.rarity
+                    ].toLowerCase()}`}
+                  >
+                    <WeaponIcon
+                      iconName={weaponReward.weaponType.toLowerCase()}
+                      className="reward-icon"
+                    />
+                    <div className="reward-weapon-text-container">
+                      <h2 className="reward-weapon-title">
+                        {weaponReward.weaponType.toUpperCase()}
+                      </h2>
+                      {weaponReward.embeddedPassives.length > 0 && (
+                        <p className="reward-weapon-passive-text">
+                          +{weaponReward.embeddedPassives.length} PASSIVE
+                          {weaponReward.embeddedPassives.length > 1 ? 'S' : ''}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="stage-selection-item-container">
+            <h2 className="stage-selection-item-title">OVERVIEW</h2>
+            <div className="stage-selection-item">
+              {stageImagePath && (
+                <img
+                  src={stageImagePath}
+                  alt={`Stage ${stageInfo?.proposedFixedStageLayout || 'image'}`}
+                  className="stage-selection-image"
+                />
               )}
             </div>
-          ) : (
-            'Loading reward information...'
-          )}
+          </div>
+          <div className="stage-selection-item-container">
+            <h2 className="stage-selection-item-title">DIFFICULTY</h2>
+            <div className="stage-selection-item">
+              {getDifficultyIcons(stageInfo?.difficulty || 0)}
+            </div>
+          </div>
+          <div className="stage-selection-item-container">
+            <h2 className="stage-selection-item-title">DESCRIPTION</h2>
+            <div className="stage-selection-item">
+              <div className="stage-selection-item-description">
+                {stageInfo && game?.stageInformationManager ? (
+                  game.stageInformationManager.buildStageDescription(stageInfo.enemyTypes)
+                ) : (
+                  <></>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="stage-selection-buttons-container">
+          <button
+            className="button enter-button"
+            onClick={withClickSound(game, handleEnterStage)}
+          >
+            <h2>ENTER DREAM</h2>
+          </button>
         </div>
       </div>
-      <div className="stage-description-container">
-        <div className="stage-image-container">
-          {stageImagePath ? (
-            <img
-              src={stageImagePath}
-              alt={`Stage ${stageInfo?.proposedFixedStageLayout || 'image'}`}
-              className="stage-image"
-            />
-          ) : (
-            'Loading stage image...'
-          )}
-        </div>
-        <div className="stage-description-text-container">
-          <p>
-            {stageInfo && game?.stageInformationManager
-              ? game.stageInformationManager.buildStageDescription(stageInfo.enemyTypes)
-              : 'Loading stage description...'}
-          </p>
-        </div>
-      </div>
-      <div className="select-button-container">
-        <button onClick={withClickSound(game, handleEnterStage)}>Enter Stage</button>
-      </div>
-    </div>
+    </BaseContainer>
   );
 };
 

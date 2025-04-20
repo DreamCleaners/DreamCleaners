@@ -24,7 +24,6 @@ export class SoundManager {
   public async init(): Promise<void> {
     await this.soundSystem.init();
     await this.preloadSounds();
-    console.log('SoundManager initialized');
   }
 
   public async preloadSounds(): Promise<void> {
@@ -81,10 +80,8 @@ export class SoundManager {
     const sound = this.soundSystem.getSound(name, SoundCategory.MUSIC);
 
     if (!sound) {
-      console.log('Music not loaded, loading it');
       await this.loadMusic(name_in_file, name, SoundCategory.MUSIC, options);
     } else if (options) {
-      console.log('Music already loaded, modifying its options with provided ones');
       this.soundSystem.updateSoundOptions(name, SoundCategory.MUSIC, options);
     }
 
@@ -100,10 +97,8 @@ export class SoundManager {
     const sound = this.soundSystem.getSound(name, type);
 
     if (!sound) {
-      console.log('Sound not loaded, loading it');
       await this.loadStaticSound(name, type, options);
     } else if (options) {
-      console.log('Sound already loaded, modifying its options with provided ones');
       this.soundSystem.updateSoundOptions(name, type, options);
     }
 
@@ -115,7 +110,6 @@ export class SoundManager {
     const sound = this.soundSystem.getSound(name, SoundCategory.EFFECT);
 
     if (!sound) {
-      console.log('Sound not loaded, loading it');
       const options = this.soundSystem.getDefaultStaticOptions();
       options.spatialPosition = position;
       await this.loadStaticSound(name, SoundCategory.EFFECT, options);
@@ -269,8 +263,6 @@ export class SoundManager {
     const randomIndex = Math.floor((Math.random() * musicKeys.length) / 2);
     const musicValue = StageMusic[musicKeys[randomIndex] as keyof typeof StageMusic];
     const musicFileName = `stage-music_${musicValue}`;
-
-    console.log(`Playing random stage music: ${musicValue} (${musicFileName})`);
 
     // Play the new music (use same name for both parameters)
     this.playBackgroundMusic(musicFileName, 'stageMusic', {

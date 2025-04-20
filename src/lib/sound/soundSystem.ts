@@ -44,7 +44,6 @@ export class SoundSystem {
 
   public async init(): Promise<void> {
     this.audioEngine = await CreateAudioEngineAsync();
-    console.log('SoundSystem initialized');
   }
 
   // ----------------------------------------
@@ -67,7 +66,6 @@ export class SoundSystem {
 
       const sound = await CreateStreamingSoundAsync(name, path, finalOptions);
       this.putIntoMap(name, sound, type);
-      console.log('Streaming sound loaded: ' + name + ' from ' + path);
     } catch (error) {
       console.error(`Failed to load streaming sound "${name}":`, error);
     }
@@ -88,7 +86,6 @@ export class SoundSystem {
 
       const sound = await CreateSoundAsync(name, path, finalOptions);
       this.putIntoMap(name, sound, type);
-      console.log('Static sound loaded: ' + name + ' from ' + path);
     } catch (error) {
       console.error(`Failed to load static sound "${name}":`, error);
     }
@@ -127,7 +124,6 @@ export class SoundSystem {
       }
 
       this.soundPools.set(name, soundPool);
-      console.log(`Created sound pool for "${name}" with ${poolSize} instances`);
     } catch (error) {
       console.error(`Failed to create sound pool for "${name}":`, error);
     }
@@ -199,8 +195,6 @@ export class SoundSystem {
       console.warn('Sound not found: ' + name);
       return;
     }
-
-    console.log('Updating sound options for: ' + name);
 
     // Update common properties
     if (options.volume !== undefined) sound.volume = options.volume;

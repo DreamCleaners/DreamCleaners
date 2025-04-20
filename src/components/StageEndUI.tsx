@@ -3,7 +3,7 @@ import { GameContext } from '../contexts/GameContext';
 import { Rarity } from '../lib/shop/rarity.ts';
 import '../styles/stageEndUI.css';
 import { WeaponPassivesManager } from '../lib/weapons/passives/weaponPassivesManager';
-import { withClickSound } from './Utils';
+import { withClickSound } from '../lib/utils/withClickSound';
 
 const StageEndUI = () => {
   const game = useContext(GameContext);

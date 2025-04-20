@@ -11,7 +11,7 @@ import {
   WeaponPassivesManager,
   WeaponPassiveT3,
 } from '../lib/weapons/passives/weaponPassivesManager';
-import { withClickSound } from './Utils';
+import { withClickSound } from '../lib/utils/withClickSound';
 
 const ComputerUI = () => {
   const game = useContext(GameContext);

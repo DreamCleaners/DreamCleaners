@@ -45,7 +45,7 @@
     }
   },
   "glock": {
-    "weaponName": "Glock",
+    "weaponName": "GLOCK",
     "crosshairName": "crosshair-glock",
     "globalStats": {
       "damage": [40, 50, 60, 70],
@@ -90,7 +90,7 @@
     }
   },
   "shotgun": {
-    "weaponName": "Shotgun",
+    "weaponName": "SHOTGUN",
     "crosshairName": "crosshair-shotgun",
     "globalStats": {
       "damage": [100, 150, 200, 250],
