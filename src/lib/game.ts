@@ -41,7 +41,7 @@ export class Game {
   private canvas!: HTMLCanvasElement;
   public player!: Player;
   public assetManager!: AssetManager;
-  public scoreManager = new ScoreManager();
+  public scoreManager!: ScoreManager;
   public moneyManager = new MoneyManager();
   public uiManager = new UIManager(this);
   public stageInformationManager = new StageInformationManager();
@@ -85,6 +85,8 @@ export class Game {
     this.soundManager = new SoundManager();
     await this.soundManager.init();
     //this.soundManager.playBackgroundMusic('main-menu', 'main-menu-default');
+
+    this.scoreManager = new ScoreManager(this);
 
     this.shopManager = new ShopManager(this);
     this.workbenchManager = new WorkbenchManager(this);

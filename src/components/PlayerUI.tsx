@@ -4,6 +4,9 @@ import { Weapon } from '../lib/weapons/weapon';
 import { Observer } from '@babylonjs/core';
 import '../styles/playerUI.css';
 
+import HeavyBulletsIcon from '@/assets/icons/heavy-bullets.svg?react';
+import HealthIcon from '@/assets/icons/health.svg?react';
+
 const PlayerHUD = () => {
   const game = useContext(GameContext);
 
@@ -12,24 +15,31 @@ const PlayerHUD = () => {
   const [playerHealth, setPlayerHealth] = useState<number>(0);
 
   // Weapon
-  const [playerWeapon, setPlayerWeapon] = useState<Weapon | null>(null);
   const [ammo, setAmmo] = useState<number>(0);
   const onAmmoChangeObserverRef = useRef<Observer<number> | null>(null);
 
-  const [playerMoney, setPlayerMoney] = useState<number>(0);
-
-  // Stage Completed
-  const [stageCompletedCount, setStageCompletedCount] = useState<number>(0);
+  const [timer, setTimer] = useState<string>('00:00:00');
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
   const onWeaponChange = (weapon: Weapon) => {
     if (weapon === undefined) return;
     // remove previous observer so we don't have multiple observers
     onAmmoChangeObserverRef.current?.remove();
 
-    setPlayerWeapon(weapon);
-
     setAmmo(weapon.currentAmmoRemaining);
     onAmmoChangeObserverRef.current = weapon.onAmmoChange.add(setAmmo);
+  };
+
+  const updateTimer = (timer: number) => {
+    const hours = Math.floor((timer / 3600) % 24);
+    const minutes = Math.floor((timer / 60) % 60);
+    const seconds = Math.floor(timer % 60);
+
+    const formattedHours = String(hours).padStart(1, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+
+    setTimer(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`);
   };
 
   useEffect(() => {
@@ -38,8 +48,6 @@ const PlayerHUD = () => {
     // set initial values
     setPlayerHealth(game.player.healthController.getHealth());
     setPlayerMaxHealth(game.player.healthController.getMaxHealth());
-    setPlayerMoney(game.moneyManager.getPlayerMoney());
-    setStageCompletedCount(game.runManager.getStageCompletedCount());
     onWeaponChange(game.player.equippedWeapon);
 
     // add observers
@@ -50,32 +58,45 @@ const PlayerHUD = () => {
 
     const onWeaponChangeObserver = game.player.onWeaponChange.add(onWeaponChange);
 
-    const onPlayerMoneyChangeObserver =
-      game.moneyManager.onPlayerMoneyChange.add(setPlayerMoney);
-
-    const onStageCompletedObserver =
-      game.runManager.onStageCompletedChange.add(setStageCompletedCount);
+    const onStageStateChangeObserver =
+      game.scoreManager.onStateChange.add(setIsTimerRunning);
+    const onTimerChangeObserver = game.scoreManager.onTimerChange.add(updateTimer);
 
     return () => {
       // remove observers when component unmounts
       onHealthChangeObserver.remove();
       onMaxHealthChangeObserver.remove();
       onWeaponChangeObserver.remove();
-      onPlayerMoneyChangeObserver.remove();
-      onStageCompletedObserver.remove();
       onAmmoChangeObserverRef.current?.remove();
+      onStageStateChangeObserver.remove();
+      onTimerChangeObserver.remove();
     };
   }, [game]);
 
   return (
     <div className="hud-container">
-      <p>
-        Health: {playerHealth} / {playerMaxHealth}
-      </p>
-      <p>Weapon: {playerWeapon?.weaponType}</p>
-      <p>Ammo: {ammo}</p>
-      <p>Money: {playerMoney}$</p>
-      <p>Stages cleared: {stageCompletedCount}</p>
+      {isTimerRunning && (
+        <div className="hud-timer-container">
+          <h2 className="hud-timer">{timer}</h2>
+        </div>
+      )}
+      <div className="hud-bottom-container">
+        <div className="hud-health-container">
+          <div className="hud-health">
+            <HealthIcon className="hud-health-icon" />
+            <div
+              className="hud-health-bar"
+              style={{ width: `${(playerHealth / playerMaxHealth) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+        <div className="hud-weapon">
+          <div className="hud-ammo">
+            <h2>{ammo}</h2>
+            <HeavyBulletsIcon className="hud-ammo-icon" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
