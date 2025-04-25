@@ -115,6 +115,7 @@ export class Weapon {
     this.initAnimations();
     this.initMuzzleFlashParticleSystem();
     this.player.fireLight.parent = this.firePoint;
+    this.player.fireLight.setEnabled(false);
   }
 
   private async initMesh(): Promise<void> {

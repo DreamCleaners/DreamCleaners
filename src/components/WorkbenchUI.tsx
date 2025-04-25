@@ -21,13 +21,11 @@ const WorkbenchUI = () => {
       case Rarity.COMMON:
         return 'gray';
       case Rarity.RARE:
-        return '#1E90FF';
+        return 'green';
       case Rarity.EPIC:
         return 'purple';
       case Rarity.LEGENDARY:
         return 'orange';
-      default:
-        return 'white';
     }
   };
 
