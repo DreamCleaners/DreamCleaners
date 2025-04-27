@@ -18,7 +18,7 @@ const PlayerHUD = () => {
   const [ammo, setAmmo] = useState<number>(0);
   const onAmmoChangeObserverRef = useRef<Observer<number> | null>(null);
 
-  const [timer, setTimer] = useState<string>('00:00:00');
+  const [timer, setTimer] = useState<string>('0:00:00');
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
   const onWeaponChange = (weapon: Weapon) => {

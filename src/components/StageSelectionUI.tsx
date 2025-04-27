@@ -8,9 +8,11 @@ import { StageInformation } from '../lib/stages/stageInformation';
 import { withClickSound } from '../lib/utils/withClickSound';
 import BaseContainer from './BaseContainer.tsx';
 import { RewardWeaponDescription } from '../lib/stages/rewardWeaponDescription.ts';
-import WeaponIcon from './WeaponIcon.tsx';
+import ItemIcon from './ItemIcon.tsx';
 
 import MoneyStackIcon from '@/assets/icons/money-stack.svg?react';
+import CreditsCurrencyIcon from '@/assets/icons/credits-currency.svg?react';
+import { ShopItemType } from '../lib/shop/shopItemType.ts';
 
 const StageSelectionUI = () => {
   const game = useContext(GameContext);
@@ -83,11 +85,7 @@ const StageSelectionUI = () => {
                 <div className="stage-selection-item-reward">
                   <MoneyStackIcon className="reward-icon" />
                   <div className="reward-money-text-container">
-                    <img
-                      src={`/src/assets/icons/credits-currency.svg`}
-                      alt="Credits currency"
-                      className="currency-icon"
-                    />
+                    <CreditsCurrencyIcon className="currency-icon" />
                     <h2>{stageInfo?.stageReward.getMoneyReward() ?? 0}</h2>
                   </div>
                 </div>
@@ -95,14 +93,21 @@ const StageSelectionUI = () => {
                   <div
                     className={`stage-selection-item-reward ${Rarity[
                       weaponReward.rarity
-                    ].toLowerCase()}`}
+                    ].toLowerCase()}-border`}
                   >
-                    <WeaponIcon
+                    <ItemIcon
                       iconName={weaponReward.weaponType.toLowerCase()}
-                      className="reward-icon"
+                      className={`reward-icon ${Rarity[
+                        weaponReward.rarity
+                      ].toLowerCase()}-shadow`}
+                      shopItemType={ShopItemType.WEAPON}
                     />
                     <div className="reward-weapon-text-container">
-                      <h2 className="reward-weapon-title">
+                      <h2
+                        className={`reward-weapon-title ${Rarity[
+                          weaponReward.rarity
+                        ].toLowerCase()}`}
+                      >
                         {weaponReward.weaponType.toUpperCase()}
                       </h2>
                       {weaponReward.embeddedPassives.length > 0 && (

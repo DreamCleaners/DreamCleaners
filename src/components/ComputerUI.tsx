@@ -1,17 +1,28 @@
 import { useContext, useEffect, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import '../styles/computerUI.css';
+import '../styles/shared.css';
 import { ShopItem } from '../lib/shop/shopItem';
 import { Rarity } from '../lib/shop/rarity';
 import { ShopItemType } from '../lib/shop/shopItemType';
 import { PlayerPassiveItem } from '../lib/shop/playerPassiveItem';
 import { WeaponItem } from '../lib/shop/weaponItem';
 import { WeaponPassiveItem } from '../lib/shop/weaponPassiveItem';
-import {
-  WeaponPassivesManager,
-  WeaponPassiveT3,
-} from '../lib/weapons/passives/weaponPassivesManager';
+import { WeaponPassiveT3 } from '../lib/weapons/passives/weaponPassivesManager';
 import { withClickSound } from '../lib/utils/withClickSound';
+import BaseContainer from './BaseContainer';
+
+import CreditsCurrencyIcon from '@/assets/icons/credits-currency.svg?react';
+import ItemIcon from './ItemIcon';
+import SpeedometerIcon from '@/assets/icons/speedometer.svg?react';
+import HeartPlusIcon from '@/assets/icons/heart-plus.svg?react';
+import EternalLoveIcon from '@/assets/icons/eternal-love.svg?react';
+import SprintIcon from '@/assets/icons/sprint.svg?react';
+import ShamrockIcon from '@/assets/icons/shamrock.svg?react';
+import DodgingIcon from '@/assets/icons/dodging.svg?react';
+import InventoryUI, { InventoryUIType } from './InventoryUI';
+import { SoundCategory } from '../lib/sound/soundSystem';
+import { Weapon } from '../lib/weapons/weapon';
 
 const ComputerUI = () => {
   const game = useContext(GameContext);
@@ -70,29 +81,14 @@ const ComputerUI = () => {
     setSelectedWeaponPassive(null);
   };
 
-  // debug only!
-  const getBackgroundColor = (rarity: Rarity) => {
-    switch (rarity) {
-      case Rarity.COMMON:
-        return 'gray';
-      case Rarity.RARE:
-        return 'green';
-      case Rarity.EPIC:
-        return 'purple';
-      case Rarity.LEGENDARY:
-        return 'orange';
-    }
-  };
-
-  // debug only!
   const getShopItemType = (item: ShopItem) => {
     switch (item.type) {
       case ShopItemType.PLAYER_PASSIVE:
-        return 'Player Passive';
+        return 'PLAYER PASSIVE';
       case ShopItemType.WEAPON:
-        return 'Weapon';
+        return 'WEAPON';
       case ShopItemType.WEAPON_PASSIVE:
-        return 'Weapon Passive';
+        return 'WEAPON PASSIVE';
     }
   };
 
@@ -150,165 +146,196 @@ const ComputerUI = () => {
     };
   }, [game]);
 
+  const replaceWeaponCallback = (weaponIndex: number) => {
+    if (!selectedWeapon || !game) return;
+
+    game.soundManager.playSound('placeholder', SoundCategory.UI);
+    handleReplaceWeapon(selectedWeapon, weaponIndex);
+  };
+
+  const applyPassiveCallback = (weaponIndex: number) => {
+    if (!selectedWeaponPassive || !game) return;
+
+    game.soundManager.playSound('placeholder', SoundCategory.UI);
+    handleApplyWeaponPassive(selectedWeaponPassive, weaponIndex);
+  };
+
+  const canApplyPassive = (weapon: Weapon, isSlotEmpty: boolean) => {
+    if (isSlotEmpty) return true;
+
+    // Check if the weapon already has the same passive
+    const hasSamePassive = weapon.embeddedPassives.some(
+      (passive) => passive === selectedWeaponPassive?.weaponPassiveType,
+    );
+
+    // Check if the weapon already has a legendary passive
+    const hasLegendaryPassive = weapon.embeddedPassives.some((passive) =>
+      Object.values(WeaponPassiveT3).includes(passive as WeaponPassiveT3),
+    );
+
+    return (
+      hasSamePassive ||
+      (selectedWeaponPassive?.rarity === Rarity.LEGENDARY && hasLegendaryPassive)
+    );
+  };
+
   if (!game) return null;
 
   if (selectedWeapon !== null) {
     return (
-      <div className="computer-interface-container">
-        <h1>Choose a slot for your weapon</h1>
-        {Array.from({ length: 2 }, (_, index) => (
-          <div key={index}>
-            {game.player.inventory.getWeapons().length <= index ? (
-              <div>Empty slot</div>
-            ) : (
-              <h3
-                style={{
-                  background: getBackgroundColor(
-                    game.player.inventory.getWeapons()[index].currentRarity,
-                  ),
-                }}
-              >
-                {game.player.inventory.getWeapons()[index].weaponData.weaponName}
-              </h3>
-            )}
-            <button
-              onClick={withClickSound(game, () =>
-                handleReplaceWeapon(selectedWeapon, index),
-              )}
-            >
-              Replace
-            </button>
-          </div>
-        ))}
-        <button onClick={withClickSound(game, () => setSelectedWeapon(null))}>
-          Back
-        </button>
-      </div>
+      <BaseContainer
+        title="INVENTORY"
+        backButtonCallback={withClickSound(game, () => setSelectedWeapon(null))}
+      >
+        <InventoryUI
+          isDisabled={() => false}
+          buttonCallback={replaceWeaponCallback}
+          buttonText="REPLACE"
+          inventoryUIType={InventoryUIType.WEAPON}
+          selectedWeapon={selectedWeapon}
+        ></InventoryUI>
+      </BaseContainer>
     );
   }
 
   if (selectedWeaponPassive !== null) {
     return (
-      <div className="computer-interface-container">
-        <h1>Choose a weapon to apply the passive</h1>
-        {Array.from({ length: 2 }, (_, index) => {
-          const weapon = game.player.inventory.getWeapons()[index];
-          const isSlotEmpty = game.player.inventory.getWeapons().length <= index;
-
-          // Check if the weapon already has the same passive
-          const hasSamePassive =
-            weapon?.embeddedPassives.some(
-              (passive) => passive === selectedWeaponPassive.weaponPassiveType,
-            ) ?? false;
-
-          // Check if the weapon already has a legendary passive
-          const hasLegendaryPassive =
-            weapon?.embeddedPassives.some((passive) =>
-              Object.values(WeaponPassiveT3).includes(passive as WeaponPassiveT3),
-            ) ?? false;
-          // Determine if the button should be disabled
-          const isDisabled =
-            isSlotEmpty ||
-            hasSamePassive ||
-            (selectedWeaponPassive.rarity === Rarity.LEGENDARY && hasLegendaryPassive);
-
-          // Determine the message to display
-          let message = '';
-          if (hasSamePassive) {
-            message = `This weapon already possesses "${WeaponPassivesManager.getInstance().getPrettyPassiveName(selectedWeaponPassive.weaponPassiveType)}"! Can't apply twice!`;
-          } else if (
-            selectedWeaponPassive.rarity === Rarity.LEGENDARY &&
-            hasLegendaryPassive
-          ) {
-            message = 'One weapon cannot have more than one legendary passive.';
-          }
-
-          return (
-            <div key={index}>
-              {isSlotEmpty ? (
-                <div>Empty slot</div>
-              ) : (
-                <h3
-                  style={{
-                    background: getBackgroundColor(weapon.currentRarity),
-                  }}
-                >
-                  {weapon.weaponData.weaponName}
-                </h3>
-              )}
-              <button
-                onClick={withClickSound(game, () =>
-                  handleApplyWeaponPassive(selectedWeaponPassive, index),
-                )}
-                disabled={isDisabled}
-              >
-                Apply to Weapon
-              </button>
-              {message && <p style={{ color: 'red' }}>{message}</p>}
-            </div>
-          );
-        })}
-        <button onClick={withClickSound(game, () => setSelectedWeaponPassive(null))}>
-          Back
-        </button>
-      </div>
+      <BaseContainer
+        title="INVENTORY"
+        backButtonCallback={withClickSound(game, () => setSelectedWeaponPassive(null))}
+      >
+        <InventoryUI
+          isDisabled={canApplyPassive}
+          buttonCallback={applyPassiveCallback}
+          buttonText="APPLY"
+          inventoryUIType={InventoryUIType.WEAPON_PASSIVE}
+          selectedWeaponPassive={selectedWeaponPassive}
+        ></InventoryUI>
+      </BaseContainer>
     );
   }
 
   return (
-    <div className="computer-interface-container">
-      <h1>SHOP</h1>
-      <button onClick={withClickSound(game, handleCloseUI)}>Close</button>
-      <p>Money: {playerMoney}$</p>
-      <button
-        onClick={withClickSound(game, handleReroll)}
-        disabled={playerMoney < game.shopManager.getRerollCost()}
-      >
-        Reroll ({game.shopManager.getRerollCost()}$)
-      </button>
-      {shopItems.map((item, index) => (
-        <div key={index} style={{ backgroundColor: getBackgroundColor(item.rarity) }}>
-          <hr />
-          <h4 style={{ color: 'black' }}>[{getShopItemType(item)}]</h4>
-          <h3>{item.name}</h3>
-          <p>{item.description}</p>
-          <p>Price: {item.price}$</p>
-          <button
-            onClick={withClickSound(game, () => handleBuyItem(item))}
-            disabled={item.price > playerMoney}
-          >
-            Buy
-          </button>
+    <BaseContainer title="SHOP" backButtonCallback={withClickSound(game, handleCloseUI)}>
+      <div className="computer-interface-container">
+        <div className="shop-container">
+          <div className="shop-header">
+            <div className="shop-money-container">
+              <CreditsCurrencyIcon className="shop-header-currency-icon" />
+              <h2>{playerMoney}</h2>
+            </div>
+            <button
+              className="button shop-header-button"
+              onClick={withClickSound(game, handleReroll)}
+              disabled={playerMoney < game.shopManager.getRerollCost()}
+            >
+              <h2>REROLL {'('}</h2>
+              <CreditsCurrencyIcon className="shop-header-currency-icon" />
+              <h2>
+                {game.shopManager.getRerollCost()} {')'}
+              </h2>
+            </button>
+          </div>
+          <div className="shop-items-container">
+            {shopItems.map((item, index) => (
+              <div
+                key={index}
+                className={`shop-item ${Rarity[item.rarity].toLowerCase()}-border`}
+              >
+                <div className="shop-item-header">
+                  <h2 className={`shop-item-name ${Rarity[item.rarity].toLowerCase()}`}>
+                    {item.name}
+                  </h2>
+                  <h4 className="shop-item-type">{getShopItemType(item)}</h4>
+                </div>
+                <ItemIcon
+                  iconName={item.name.toLowerCase()}
+                  className={`shop-item-icon ${Rarity[item.rarity].toLowerCase()}-shadow`}
+                  shopItemType={item.type}
+                />
+                <p className="shop-item-description">{item.description}</p>
+                <button
+                  className={`button shop-item-button ${Rarity[item.rarity].toLowerCase()}-border ${Rarity[item.rarity].toLowerCase()}`}
+                  onClick={withClickSound(game, () => handleBuyItem(item))}
+                  disabled={item.price > playerMoney}
+                >
+                  <h3>BUY</h3>
+                  <CreditsCurrencyIcon className="shop-item-currency-icon" />
+                  <h3>{item.price}</h3>
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-      <h2>Player Statistics</h2>
-      <ul>
-        <li>
-          Regen speed : {regenSpeedPercentageIncrease >= 0 ? '+' : ''}
-          {Math.floor(regenSpeedPercentageIncrease * 100)}%
-        </li>
-        <li>
-          Chance : {chancePercentageIncrease >= 0 ? '+' : ''}
-          {Math.floor(chancePercentageIncrease * 100)}%
-        </li>
-        <li>
-          Max health : {maxHealthIncrease >= 0 ? '+' : ''}
-          {Math.floor(maxHealthIncrease)}
-        </li>
-        <li>
-          Speed : {speedPercentageIncrease >= 0 ? '+' : ''}
-          {Math.floor(speedPercentageIncrease * 100)}%
-        </li>
-        <li>
-          Dodge chance : {dodgeChancePercentageIncrease >= 0 ? '+' : ''}
-          {Math.floor(dodgeChancePercentageIncrease * 100)}%
-        </li>
-        <li>
-          Slide speed : {slideSpeedPercentageIncrease >= 0 ? '+' : ''}
-          {Math.floor(slideSpeedPercentageIncrease * 100)}%
-        </li>
-      </ul>
-    </div>
+        <div className="stats-container">
+          <h1 className="stats-title">STATISTICS</h1>
+          <div className="stats-list">
+            <ul>
+              <li className="stats-item">
+                <div className="stats-item-title">
+                  <SpeedometerIcon className="stats-icon" />
+                  Speed :
+                </div>
+                <p className="stats-item-value">
+                  {speedPercentageIncrease >= 0 ? '+' : ''}
+                  {Math.floor(speedPercentageIncrease * 100)}%
+                </p>
+              </li>
+              <li className="stats-item">
+                <div className="stats-item-title">
+                  <HeartPlusIcon className="stats-icon" />
+                  Max health :
+                </div>
+                <p className="stats-item-value">
+                  {maxHealthIncrease >= 0 ? '+' : ''}
+                  {Math.floor(maxHealthIncrease)}
+                </p>
+              </li>
+              <li className="stats-item">
+                <div className="stats-item-title">
+                  <EternalLoveIcon className="stats-icon" />
+                  Regen speed :
+                </div>
+                <p className="stats-item-value">
+                  {regenSpeedPercentageIncrease >= 0 ? '+' : ''}
+                  {Math.floor(regenSpeedPercentageIncrease * 100)}%
+                </p>
+              </li>
+              <li className="stats-item">
+                <div className="stats-item-title">
+                  <SprintIcon className="stats-icon" />
+                  Slide speed :
+                </div>
+                <p className="stats-item-value">
+                  {slideSpeedPercentageIncrease >= 0 ? '+' : ''}
+                  {Math.floor(slideSpeedPercentageIncrease * 100)}%
+                </p>
+              </li>
+              <li className="stats-item">
+                <div className="stats-item-title">
+                  <ShamrockIcon className="stats-icon" />
+                  Chance :
+                </div>
+                <p className="stats-item-value">
+                  {chancePercentageIncrease >= 0 ? '+' : ''}
+                  {Math.floor(chancePercentageIncrease * 100)}%
+                </p>
+              </li>
+              <li className="stats-item">
+                <div className="stats-item-title">
+                  <DodgingIcon className="stats-icon" />
+                  Dodge chance :
+                </div>
+                <p className="stats-item-value">
+                  {dodgeChancePercentageIncrease >= 0 ? '+' : ''}
+                  {Math.floor(dodgeChancePercentageIncrease * 100)}%
+                </p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </BaseContainer>
   );
 };
 

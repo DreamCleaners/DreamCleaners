@@ -1,0 +1,193 @@
+import { useContext } from 'react';
+import { GameContext } from '../contexts/GameContext';
+import { Rarity } from '../lib/shop/rarity';
+import { ShopItemType } from '../lib/shop/shopItemType';
+import { WeaponPassivesManager } from '../lib/weapons/passives/weaponPassivesManager';
+import ItemIcon from './ItemIcon';
+import { WeaponItem } from '../lib/shop/weaponItem';
+import { WeaponPassiveItem } from '../lib/shop/weaponPassiveItem';
+import { Weapon } from '../lib/weapons/weapon';
+import '../styles/inventoryUI.css';
+
+export enum InventoryUIType {
+  WEAPON,
+  WEAPON_PASSIVE,
+  WORKBENCH,
+}
+
+const InventoryUI = ({
+  isDisabled,
+  buttonCallback,
+  buttonText,
+  inventoryUIType,
+  selectedWeapon,
+  selectedWeaponPassive,
+}: {
+  isDisabled: (weapon: Weapon, isSlotEmpty: boolean) => boolean;
+  buttonCallback: (weaponIndex: number) => void;
+  buttonText: string;
+  inventoryUIType: InventoryUIType;
+  selectedWeapon?: WeaponItem;
+  selectedWeaponPassive?: WeaponPassiveItem;
+}) => {
+  const game = useContext(GameContext);
+
+  const getTitle = () => {
+    switch (inventoryUIType) {
+      case InventoryUIType.WEAPON:
+        return `CHOOSE A SLOT FOR WEAPON: ${selectedWeapon?.name}`;
+      case InventoryUIType.WEAPON_PASSIVE:
+        return `CHOOSE A SLOT FOR WEAPON PASSIVE: ${selectedWeaponPassive?.name}`;
+      case InventoryUIType.WORKBENCH:
+        return 'CHOOSE A WEAPON TO UPGRADE';
+      default:
+        return '';
+    }
+  };
+
+  const getWeaponStats = (statDiff: number) => {
+    if (statDiff < 0) return ` (${statDiff})`;
+
+    return ` (+${statDiff})`;
+  };
+
+  if (!game) return null;
+
+  return (
+    <div className="inventory-container">
+      <h2>{getTitle()}</h2>
+      <div className="inventory-weapon-container">
+        {Array.from({ length: 2 }, (_, index) => {
+          const weapon = game.player.inventory.getWeapons()[index];
+          const isSlotEmpty = game.player.inventory.getWeapons().length <= index;
+
+          return (
+            <div className="inventory-weapon-item-container" key={index}>
+              <div
+                className={`inventory-weapon-item ${isSlotEmpty ? '' : Rarity[weapon?.currentRarity].toLowerCase()}-border`}
+              >
+                {isSlotEmpty ? (
+                  <h2>EMPTY SLOT</h2>
+                ) : (
+                  <>
+                    <h2 className={`${Rarity[weapon.currentRarity].toLowerCase()}`}>
+                      {weapon.weaponData.weaponName}
+                    </h2>
+                    <ItemIcon
+                      iconName={weapon.weaponType.toLowerCase()}
+                      className={`inventory-weapon-icon ${Rarity[
+                        weapon.currentRarity
+                      ].toLowerCase()}-shadow`}
+                      shopItemType={ShopItemType.WEAPON}
+                    />
+                    <div className="inventory-weapon-stats-container">
+                      <div className="inventory-weapon-stat-item">
+                        <p className="inventory-weapon-stat-text">Damage:</p>
+                        <div className="inventory-weapon-stat-value">
+                          {weapon.weaponData.globalStats[weapon.currentRarity].damage}
+                          {inventoryUIType === InventoryUIType.WEAPON && (
+                            <p className="inventory-weapon-stat-difference">
+                              {getWeaponStats(
+                                game.weaponDataManager.getWeaponData(
+                                  selectedWeapon!.weaponType,
+                                ).globalStats[selectedWeapon!.rarity].damage -
+                                  weapon.weaponData.globalStats[weapon.currentRarity]
+                                    .damage,
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="inventory-weapon-stat-item">
+                        <p className="inventory-weapon-stat-text">Fire rate:</p>
+                        <div className="inventory-weapon-stat-value">
+                          {weapon.weaponData.globalStats[
+                            weapon.currentRarity
+                          ].cadency.toFixed(2)}{' '}
+                          {inventoryUIType === InventoryUIType.WEAPON && (
+                            <p className="inventory-weapon-stat-difference">
+                              {getWeaponStats(
+                                parseFloat(
+                                  (
+                                    game.weaponDataManager.getWeaponData(
+                                      selectedWeapon!.weaponType,
+                                    ).globalStats[selectedWeapon!.rarity].cadency -
+                                    weapon.weaponData.globalStats[weapon.currentRarity]
+                                      .cadency
+                                  ).toFixed(2),
+                                ),
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="inventory-weapon-stat-item">
+                        <p className="inventory-weapon-stat-text">Range:</p>
+                        <div className="inventory-weapon-stat-value">
+                          {weapon.weaponData.globalStats[weapon.currentRarity].range}
+                          {inventoryUIType === InventoryUIType.WEAPON && (
+                            <p className="inventory-weapon-stat-difference">
+                              {getWeaponStats(
+                                game.weaponDataManager.getWeaponData(
+                                  selectedWeapon!.weaponType,
+                                ).globalStats[selectedWeapon!.rarity].range -
+                                  weapon.weaponData.globalStats[weapon.currentRarity]
+                                    .range,
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="inventory-weapon-passive-container">
+                      {weapon.embeddedPassives.length === 0 && <div>NO PASSIVES</div>}
+                      {weapon.embeddedPassives.map((passive, index) => (
+                        <div
+                          className={`inventory-weapon-passive-item ${Rarity[
+                            WeaponPassivesManager.getInstance().getPassiveRarity(passive)
+                          ].toLowerCase()}-border`}
+                          key={index}
+                        >
+                          <p
+                            key={index}
+                            className={`inventory-weapon-passive-text ${Rarity[
+                              WeaponPassivesManager.getInstance().getPassiveRarity(
+                                passive,
+                              )
+                            ].toLowerCase()}`}
+                          >
+                            {WeaponPassivesManager.getInstance().getPrettyPassiveName(
+                              passive,
+                            )}
+                          </p>
+                          <ItemIcon
+                            iconName={passive.toLowerCase()}
+                            className={`inventory-weapon-passive-icon ${Rarity[
+                              WeaponPassivesManager.getInstance().getPassiveRarity(
+                                passive,
+                              )
+                            ].toLowerCase()}-shadow`}
+                            shopItemType={ShopItemType.WEAPON_PASSIVE}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              <button
+                className="button inventory-weapon-button"
+                disabled={isDisabled(weapon, isSlotEmpty)}
+                onClick={buttonCallback.bind(null, index)}
+              >
+                <h2>{buttonText}</h2>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default InventoryUI;

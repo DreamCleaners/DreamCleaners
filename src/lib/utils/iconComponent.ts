@@ -1,4 +1,4 @@
-const rawIcons = import.meta.glob('@/assets/icons/weapons/*.svg', {
+const rawIcons = import.meta.glob('@/assets/icons/*/*.svg', {
   import: 'default',
   eager: true,
   query: '?react',

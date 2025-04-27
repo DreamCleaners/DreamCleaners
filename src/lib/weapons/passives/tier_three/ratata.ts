@@ -3,7 +3,7 @@ import { WeaponPassive } from '../weaponPassive';
 import { WeaponPassiveT3, WeaponPassiveType } from '../weaponPassivesManager';
 
 export class Ratata extends WeaponPassive {
-  public name: string = 'RATATATA';
+  public name: string = 'RATATA';
   private readonly RELOAD_TIME_REDUCTION: number = 0.5; // 50% less reload time
   public description: string =
     'Your weapon can now shoot automatically and its cadency ' +

@@ -1,6 +1,7 @@
 // This singleton class manages the weapon passives.
 // More precisely, it is used to store all passives instances, and is used as a hub
 // to get information about the passives.
+import { Rarity } from '../../shop/rarity';
 import { Weapon } from '../weapon';
 import { Johnny } from './tier_one/johnny';
 import { LuckyShot } from './tier_one/luckyShot';
@@ -72,6 +73,20 @@ export class WeaponPassivesManager {
     } else {
       console.log('Passive not found: ', passiveType);
       return 'UNKOWN_DESCRIPTION';
+    }
+  }
+
+  public getPassiveRarity(passiveType: WeaponPassiveType): Rarity {
+    switch (this.getQualityIndexForPassive(passiveType)) {
+      case 0:
+        return Rarity.COMMON;
+      case 1:
+        return Rarity.EPIC;
+      case 2:
+        return Rarity.LEGENDARY;
+      default:
+        console.log('Unknown passive type: ', passiveType);
+        return Rarity.COMMON; // Default to common if unknown
     }
   }
 

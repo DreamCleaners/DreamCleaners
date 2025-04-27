@@ -8,10 +8,9 @@
   --icon-secondary-color: var(--font-color-primary);
   --border-radius: 20px;
   --shadow-size: 10px;
-  --common-color: #9bbec7;
-  --rare-color: #7cea9c;
-  --epic-color: #ea7af4;
-  --legendary-color: #de3c4b;
+  --rare-color: #ea7af4;
+  --epic-color: #de3c4b;
+  --legendary-color: yellow;
 }
 
 * {
@@ -35,20 +34,4 @@ body {
 canvas {
   width: 100%;
   height: 100%;
-}
-
-.common {
-  background: linear-gradient(-145deg, var(--common-color), var(--primary-color));
-}
-
-.rare {
-  background: linear-gradient(-145deg, var(--rare-color), var(--primary-color));
-}
-
-.epic {
-  background: linear-gradient(-145deg, var(--epic-color), var(--primary-color));
-}
-
-.legendary {
-  background: linear-gradient(-145deg, var(--legendary-color), var(--primary-color));
 }
