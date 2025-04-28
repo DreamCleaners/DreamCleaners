@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import { Rarity } from '../lib/shop/rarity';
 import { ShopItemType } from '../lib/shop/shopItemType';
@@ -9,41 +9,21 @@ import { WeaponPassiveItem } from '../lib/shop/weaponPassiveItem';
 import { Weapon } from '../lib/weapons/weapon';
 import '../styles/inventoryUI.css';
 
-export enum InventoryUIType {
-  WEAPON,
-  WEAPON_PASSIVE,
-  WORKBENCH,
-}
-
 const InventoryUI = ({
   isDisabled,
   buttonCallback,
-  buttonText,
-  inventoryUIType,
+  getButtonText,
   selectedWeapon,
-  selectedWeaponPassive,
+  titleElement,
 }: {
   isDisabled: (weapon: Weapon, isSlotEmpty: boolean) => boolean;
   buttonCallback: (weaponIndex: number) => void;
-  buttonText: string;
-  inventoryUIType: InventoryUIType;
+  getButtonText: (weapon: Weapon | undefined) => React.ReactNode;
   selectedWeapon?: WeaponItem;
   selectedWeaponPassive?: WeaponPassiveItem;
+  titleElement: React.ReactNode;
 }) => {
   const game = useContext(GameContext);
-
-  const getTitle = () => {
-    switch (inventoryUIType) {
-      case InventoryUIType.WEAPON:
-        return `CHOOSE A SLOT FOR WEAPON: ${selectedWeapon?.name}`;
-      case InventoryUIType.WEAPON_PASSIVE:
-        return `CHOOSE A SLOT FOR WEAPON PASSIVE: ${selectedWeaponPassive?.name}`;
-      case InventoryUIType.WORKBENCH:
-        return 'CHOOSE A WEAPON TO UPGRADE';
-      default:
-        return '';
-    }
-  };
 
   const getWeaponStats = (statDiff: number) => {
     if (statDiff < 0) return ` (${statDiff})`;
@@ -55,7 +35,7 @@ const InventoryUI = ({
 
   return (
     <div className="inventory-container">
-      <h2>{getTitle()}</h2>
+      {titleElement}
       <div className="inventory-weapon-container">
         {Array.from({ length: 2 }, (_, index) => {
           const weapon = game.player.inventory.getWeapons()[index];
@@ -85,7 +65,7 @@ const InventoryUI = ({
                         <p className="inventory-weapon-stat-text">Damage:</p>
                         <div className="inventory-weapon-stat-value">
                           {weapon.weaponData.globalStats[weapon.currentRarity].damage}
-                          {inventoryUIType === InventoryUIType.WEAPON && (
+                          {selectedWeapon !== undefined && (
                             <p className="inventory-weapon-stat-difference">
                               {getWeaponStats(
                                 game.weaponDataManager.getWeaponData(
@@ -104,7 +84,7 @@ const InventoryUI = ({
                           {weapon.weaponData.globalStats[
                             weapon.currentRarity
                           ].cadency.toFixed(2)}{' '}
-                          {inventoryUIType === InventoryUIType.WEAPON && (
+                          {selectedWeapon !== undefined && (
                             <p className="inventory-weapon-stat-difference">
                               {getWeaponStats(
                                 parseFloat(
@@ -125,7 +105,7 @@ const InventoryUI = ({
                         <p className="inventory-weapon-stat-text">Range:</p>
                         <div className="inventory-weapon-stat-value">
                           {weapon.weaponData.globalStats[weapon.currentRarity].range}
-                          {inventoryUIType === InventoryUIType.WEAPON && (
+                          {selectedWeapon !== undefined && (
                             <p className="inventory-weapon-stat-difference">
                               {getWeaponStats(
                                 game.weaponDataManager.getWeaponData(
@@ -180,7 +160,7 @@ const InventoryUI = ({
                 disabled={isDisabled(weapon, isSlotEmpty)}
                 onClick={buttonCallback.bind(null, index)}
               >
-                <h2>{buttonText}</h2>
+                {getButtonText(weapon)}
               </button>
             </div>
           );

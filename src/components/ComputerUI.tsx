@@ -20,7 +20,7 @@ import EternalLoveIcon from '@/assets/icons/eternal-love.svg?react';
 import SprintIcon from '@/assets/icons/sprint.svg?react';
 import ShamrockIcon from '@/assets/icons/shamrock.svg?react';
 import DodgingIcon from '@/assets/icons/dodging.svg?react';
-import InventoryUI, { InventoryUIType } from './InventoryUI';
+import InventoryUI from './InventoryUI';
 import { SoundCategory } from '../lib/sound/soundSystem';
 import { Weapon } from '../lib/weapons/weapon';
 
@@ -190,9 +190,9 @@ const ComputerUI = () => {
         <InventoryUI
           isDisabled={() => false}
           buttonCallback={replaceWeaponCallback}
-          buttonText="REPLACE"
-          inventoryUIType={InventoryUIType.WEAPON}
+          getButtonText={() => <h2>REPLACE</h2>}
           selectedWeapon={selectedWeapon}
+          titleElement={<h2>CHOOSE A SLOT FOR WEAPON: {selectedWeapon.name}</h2>}
         ></InventoryUI>
       </BaseContainer>
     );
@@ -207,9 +207,11 @@ const ComputerUI = () => {
         <InventoryUI
           isDisabled={canApplyPassive}
           buttonCallback={applyPassiveCallback}
-          buttonText="APPLY"
-          inventoryUIType={InventoryUIType.WEAPON_PASSIVE}
+          getButtonText={() => <h2>APPLY</h2>}
           selectedWeaponPassive={selectedWeaponPassive}
+          titleElement={
+            <h2>CHOOSE A SLOT FOR WEAPON PASSIVE: {selectedWeaponPassive.name}</h2>
+          }
         ></InventoryUI>
       </BaseContainer>
     );
