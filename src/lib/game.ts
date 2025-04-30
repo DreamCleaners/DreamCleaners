@@ -274,6 +274,7 @@ export class Game {
   // Game over ----------------
   public gameOver(): void {
     console.log('Game over');
+    this.soundManager.stopStageBackgroundMusic();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();
   }

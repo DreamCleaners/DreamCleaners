@@ -316,7 +316,7 @@ export class Player implements IDamageable {
   }
 
   public onGameOver(): void {
-    // We will simply ask for game to handle the game over
+    this.game.soundManager.playPlayerDeath();
     this.game.gameOver();
   }
 
@@ -327,6 +327,7 @@ export class Player implements IDamageable {
     this.timeSinceLastDamage = 0;
     this.onDamageTakenObservable.notifyObservers(damage);
     this.healthController.removeHealth(damage);
+    this.game.soundManager.playPlayerTakesDamage();
   }
 
   public addSpeedPercentage(percentage: number): void {
@@ -344,8 +345,13 @@ export class Player implements IDamageable {
   }
 
   public toggleFlashlight(): void {
-    this.flashlight.intensity =
-      this.flashlight.intensity === 0 ? this.FLASHLIGHT_INTENSITY : 0;
+    if (this.flashlight.intensity === 0) {
+      this.flashlight.intensity = this.FLASHLIGHT_INTENSITY;
+      this.game.soundManager.playFlashlightSound(true);
+    } else {
+      this.flashlight.intensity = 0;
+      this.game.soundManager.playFlashlightSound(false);
+    }
   }
 
   // ----------------------- Health --------------------------

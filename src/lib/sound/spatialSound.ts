@@ -1,27 +1,32 @@
-import { Matrix, StaticSound, UniversalCamera, Vector3 } from '@babylonjs/core';
+import {
+  Matrix,
+  StaticSound,
+  StreamingSound,
+  UniversalCamera,
+  Vector3,
+} from '@babylonjs/core';
 
 export class SpatialSound {
-  private sound: StaticSound;
+  private sound: StaticSound | StreamingSound;
   private startTime: number = 0;
   private position: Vector3;
 
-  constructor(sound: StaticSound, position?: Vector3) {
+  constructor(sound: StaticSound | StreamingSound, position?: Vector3) {
     this.sound = sound;
     this.position = position || sound.spatial?.position || new Vector3(0, 0, 0);
     if (sound.spatial) {
       sound.spatial.position = this.position;
     }
-    console.log('SpatialSound created with position:', sound.spatial?.position);
   }
 
-  /** Returns if the sound is being played, by calculating if we reached the end of the sound duration */
-  public isPlaying(): boolean {
-    return (
-      this.sound.loop ||
-      (this.startTime > 0 &&
-        Date.now() / 1000 - this.startTime < this.sound.buffer?.duration)
-    );
-  }
+  //   /** Returns if the sound is being played, by calculating if we reached the end of the sound duration */
+  //   public isPlaying(): boolean {
+  //     return (
+  //       this.sound.loop ||
+  //       (this.startTime > 0 &&
+  //         Date.now() / 1000 - this.startTime < this.sound.buffer?.duration)
+  //     );
+  //   }
 
   public play(): void {
     this.sound.play();
@@ -99,7 +104,7 @@ export class SpatialSound {
   /**
    * Get the underlying Babylon sound object
    */
-  public getSound(): StaticSound {
+  public getSound(): StaticSound | StreamingSound {
     return this.sound;
   }
 }

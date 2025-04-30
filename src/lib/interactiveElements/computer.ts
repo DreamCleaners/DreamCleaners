@@ -4,10 +4,12 @@ import { GameEntityType } from '../gameEntityType';
 import { InteractiveElement } from './interactiveElement';
 import { UIType } from '../ui/uiType';
 import { MetadataFactory } from '../metadata/metadataFactory';
+import { SoundCategory } from '../sound/soundSystem';
 
 export class Computer extends InteractiveElement {
   override interact(): void {
     this.gameScene.game.uiManager.displayUI(UIType.COMPUTER);
+    this.gameScene.game.soundManager.playSound('pcEnter', SoundCategory.EFFECT);
   }
 
   override async create(position: Vector3): Promise<void> {

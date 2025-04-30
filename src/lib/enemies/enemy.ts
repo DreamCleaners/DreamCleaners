@@ -13,6 +13,7 @@ import { ZombieState } from './zombie';
 import { IDamageable } from '../damageable';
 import { GameScene } from '../scenes/gameScene';
 import { BulletEffectManager } from '../weapons/passives/bulletEffectManager';
+import { EnemyType } from './enemyType';
 
 export abstract class Enemy implements IDamageable {
   public mesh!: Mesh;
@@ -23,6 +24,7 @@ export abstract class Enemy implements IDamageable {
   protected deadState!: ZombieState | null;
   protected isAttacking = false;
   protected agentIndex: number = -1;
+  protected enemyType!: EnemyType;
 
   // Moved agentParameters here
   protected agentParameters = {
@@ -82,6 +84,7 @@ export abstract class Enemy implements IDamageable {
   public onDeath(): void {
     this.state = this.deadState;
     this.showBloodExplosionEffects();
+    this.gameScene.game.soundManager.playEnemyDeath(this.mesh.position, this.enemyType);
     this.dispose();
   }
 

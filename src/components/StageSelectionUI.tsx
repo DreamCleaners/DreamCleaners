@@ -126,7 +126,7 @@ const StageSelectionUI = () => {
         </div>
       </div>
       <div className="select-button-container">
-        <button onClick={withClickSound(game, handleEnterStage)}>Enter Stage</button>
+        <button onClick={withClickSound(game, handleEnterStage)}>Enter Dream</button>
       </div>
     </div>
   );

@@ -467,22 +467,16 @@ export class Weapon {
 
     const end = start.add(direction.scale(this.currentStats.range));
 
-    // Debug shooting line
-    // const line = MeshBuilder.CreateLines(
-    //   'lines',
-    //   { points: [this.firePoint.absolutePosition, end] },
-    //   this.player.game.scene,
-    // );
-
-    // setTimeout(() => {
-    //   line.dispose();
-    // }, 50);
-
     this.physicsEngine.raycastToRef(start, end, this.raycastResult, {
       shouldHitTriggers: true,
     });
 
     if (this.raycastResult.hasHit) {
+      // We ask to play the impact sound at the provided location
+      this.player.game.soundManager.playBulletImpactSound(
+        this.raycastResult.hitPointWorld.clone(),
+      );
+
       const metadata = this.raycastResult.body?.transformNode
         .metadata as IMetadataObject<IDamageable>;
 

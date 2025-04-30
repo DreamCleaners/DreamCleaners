@@ -12,6 +12,7 @@ import {
   WeaponPassiveT3,
 } from '../lib/weapons/passives/weaponPassivesManager';
 import { withClickSound } from './Utils';
+import { SoundCategory } from '../lib/sound/soundSystem';
 
 const ComputerUI = () => {
   const game = useContext(GameContext);
@@ -36,6 +37,7 @@ const ComputerUI = () => {
 
   const handleCloseUI = () => {
     if (!game) return;
+    game.soundManager.playSound('pcLeave', SoundCategory.EFFECT);
     game.uiManager.hideUI();
   };
 

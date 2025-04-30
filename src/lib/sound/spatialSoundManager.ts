@@ -1,4 +1,4 @@
-import { IStaticSoundOptions, StaticSound, UniversalCamera, Vector3 } from '@babylonjs/core';
+import { IStaticSoundOptions, UniversalCamera, Vector3 } from '@babylonjs/core';
 import { SpatialSound } from './spatialSound';
 import { SoundSystem, SoundCategory } from './soundSystem';
 import { Player } from '../player/player';
@@ -6,8 +6,6 @@ import { Player } from '../player/player';
 export class SpatialSoundManager {
   private activeSpatialSounds: SpatialSound[] = [];
   private soundSystem: SoundSystem;
-  private cleanupInterval: number = 5000; // Cleanup every 5 seconds
-  private lastCleanup: number = 0;
 
   constructor(soundSystem: SoundSystem) {
     this.soundSystem = soundSystem;
@@ -23,15 +21,16 @@ export class SpatialSoundManager {
   public async playSpatialSoundAt(
     name: string,
     position: Vector3,
+    soundCategory: SoundCategory,
     options?: Partial<IStaticSoundOptions>,
   ): Promise<SpatialSound | undefined> {
     // Check if sound exists or load it
-    let sound = this.soundSystem.getSound(name, SoundCategory.EFFECT) as StaticSound;
+    let sound = this.soundSystem.getSound(name, soundCategory);
 
     if (!sound) {
       // Load the sound
-      await this.soundSystem.loadStaticSound(name, SoundCategory.EFFECT, options);
-      sound = this.soundSystem.getSound(name, SoundCategory.EFFECT) as StaticSound;
+      await this.soundSystem.loadStaticSound(name, soundCategory, options);
+      sound = this.soundSystem.getSound(name, soundCategory);
 
       if (!sound) {
         console.error(`Failed to load spatial sound: ${name}`);
@@ -54,29 +53,11 @@ export class SpatialSoundManager {
    * @param camera The camera to use as the listener
    */
   public update(camera: UniversalCamera, player: Player): void {
-    const currentTime = Date.now();
-
     // Update positions of all active sounds
     for (const sound of this.activeSpatialSounds) {
       sound.updatePosition(camera, player.getPosition());
     }
-
-    // Periodically clean up finished sounds
-    if (currentTime - this.lastCleanup > this.cleanupInterval) {
-      this.cleanupFinishedSounds();
-      this.lastCleanup = currentTime;
-    }
   }
-
-  /**
-   * Removes finished sounds from the tracking list
-   */
-  private cleanupFinishedSounds(): void {
-    this.activeSpatialSounds = this.activeSpatialSounds.filter((sound) =>
-      sound.isPlaying(),
-    );
-  }
-
   /**
    * Stops and removes all active spatial sounds
    */
