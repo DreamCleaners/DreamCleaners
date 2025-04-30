@@ -363,8 +363,8 @@ export class SoundSystem {
       spatialMaxDistance: 30,
       spatialMinDistance: 1,
       spatialRolloffFactor: 2,
-      spatialDistanceModel: 'exponential',
-      spatialAutoUpdate: true,
+      spatialDistanceModel: 'linear',
+      spatialAutoUpdate: false,
     };
   }
 

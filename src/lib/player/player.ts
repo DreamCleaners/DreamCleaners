@@ -183,6 +183,10 @@ export class Player implements IDamageable {
     this.hitbox.position = position;
   }
 
+  public getPosition(): Vector3 {
+    return this.hitbox.position;
+  }
+
   private initPhysicsAggregate(): void {
     this.hitbox = MeshBuilder.CreateCapsule(
       GameEntityType.PLAYER,

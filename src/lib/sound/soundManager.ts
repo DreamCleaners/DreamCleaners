@@ -1,7 +1,10 @@
-import { StaticSound, Vector3 } from '@babylonjs/core';
+import { StaticSound, UniversalCamera, Vector3 } from '@babylonjs/core';
 import { SoundSystem, SoundCategory } from './soundSystem';
 import { IStaticSoundOptions, IStreamingSoundOptions } from '@babylonjs/core';
 import { WeaponType } from '../weapons/weaponType';
+import { SpatialSoundManager } from './spatialSoundManager';
+import { SpatialSound } from './spatialSound';
+import { Player } from '../player/player';
 
 enum StageMusic {
   ELECTRO_ONE = 'electroOne',
@@ -12,11 +15,18 @@ enum StageMusic {
  */
 export class SoundManager {
   private soundSystem: SoundSystem;
+  private spatialSoundManager: SpatialSoundManager;
+
+  public cameraListener: UniversalCamera;
+  public playerListener: Player;
 
   public static readonly DEFAULT_MUSIC_VOLUME = 0.2;
 
-  constructor() {
+  constructor(playerListener: Player) {
     this.soundSystem = new SoundSystem();
+    this.spatialSoundManager = new SpatialSoundManager(this.soundSystem);
+    this.cameraListener = playerListener.cameraManager.getCamera();
+    this.playerListener = playerListener;
   }
 
   public async init(): Promise<void> {
@@ -109,23 +119,26 @@ export class SoundManager {
     this.soundSystem.play(name, type);
   }
 
-  public async playSpatialSoundAt(name: string, position: Vector3): Promise<void> {
-    const sound = this.soundSystem.getSound(name, SoundCategory.EFFECT);
+  /**
+   * Play a spatial sound at the specified position
+   * @param name The name of the sound
+   * @param position The 3D position to play the sound
+   * @param options Optional sound parameters
+   * @returns Promise that resolves with the created SpatialSound
+   */
+  public async playSpatialSoundAt(
+    name: string,
+    position: Vector3,
+    options?: Partial<IStaticSoundOptions>,
+  ): Promise<SpatialSound | undefined> {
+    return await this.spatialSoundManager.playSpatialSoundAt(name, position, options);
+  }
 
-    if (!sound) {
-      console.log('Sound not loaded, loading it');
-      const options = this.soundSystem.getDefaultStaticOptions();
-      options.spatialPosition = position;
-      await this.loadStaticSound(name, SoundCategory.EFFECT, options);
-    } else {
-      // Update position for existing sound
-      this.soundSystem.updateSoundOptions(name, SoundCategory.EFFECT, {
-        spatialPosition: position,
-      });
-    }
-
-    await this.soundSystem.unlockAudio();
-    this.soundSystem.play(name, SoundCategory.EFFECT);
+  /**
+   * Stops all active spatial sounds
+   */
+  public stopAllSpatialSounds(): void {
+    this.spatialSoundManager.stopAllSpatialSounds();
   }
 
   /**
@@ -177,28 +190,6 @@ export class SoundManager {
   }
 
   /**
-   * Play sound from a pool with spatial positioning
-   * @param soundName The name of the sound pool
-   * @param position Position to play at
-   * @param volume Optional volume override
-   */
-  public playSpatialFromPool(
-    soundName: string,
-    position: Vector3,
-    volume?: number,
-  ): void {
-    const options: Partial<IStaticSoundOptions> = {
-      spatialPosition: position,
-    };
-
-    if (volume !== undefined) {
-      options.volume = volume;
-    }
-
-    this.soundSystem.playFromPool(soundName, options);
-  }
-
-  /**
    * Get the duration of a loaded static sound
    * @param name The name of the sound
    * @param type The sound category
@@ -224,6 +215,15 @@ export class SoundManager {
     }
 
     return -1;
+  }
+
+  /**
+   * Updates all spatial sounds based on camera position
+   * This should be called in your game update loop
+   * @param camera The camera representing the listener
+   */
+  public updateSpatialSounds(): void {
+    this.spatialSoundManager.update(this.cameraListener, this.playerListener);
   }
 
   // ----------------------------------------
@@ -381,6 +381,7 @@ export class SoundManager {
 
   public dispose(): void {
     this.soundSystem.dispose();
+    this.spatialSoundManager.dispose();
   }
 }
 

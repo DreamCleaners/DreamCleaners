@@ -61,6 +61,12 @@ export class SceneManager {
     this.currentScene = scene;
 
     this.game.soundManager.stopLoadingAmbience();
+
+    // Spatial sound test
+    await this.game.soundManager.playSpatialSoundAt('akShot', new Vector3(0, 1, 0), {
+      spatialEnabled: true,
+      loop: true,
+    });
   }
 
   public async changeSceneToProceduralStage(): Promise<void> {
