@@ -5,10 +5,6 @@ export class MoneyManager implements ISaveable {
   private playerMoney = 0;
   public onPlayerMoneyChange = new Observable<number>();
 
-  public convertScoreToMoney(score: number): void {
-    this.addPlayerMoney(score);
-  }
-
   public getPlayerMoney(): number {
     return this.playerMoney;
   }

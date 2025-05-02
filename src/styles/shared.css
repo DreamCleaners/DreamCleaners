@@ -7,6 +7,7 @@
   border-bottom-right-radius: var(--border-radius);
   box-shadow: 0px 0px var(--shadow-size) var(--border-color);
   padding-left: 60px;
+  padding-right: 80px;
   color: var(--font-color-primary);
   display: flex;
   align-items: center;
@@ -57,7 +58,7 @@
   transition: transform 0.1s ease;
 }
 
-.button:active {
+.button:not(:disabled):active {
   transform: scale(1);
   transition: 0.1s ease;
 }

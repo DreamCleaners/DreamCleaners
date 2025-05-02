@@ -37,13 +37,4 @@ export abstract class GameScene {
   public setStageInformation(stageInfo: StageInformation): void {
     this.stageInfo = stageInfo;
   }
-
-  // public setStageParameters(difficultyFactor: number, enemyTypes: EnemyType[]): void {
-  //   this.difficultyFactor = difficultyFactor;
-  //   this.enemyTypesToSpawn = enemyTypes;
-  // }
-
-  // public setStageReward(stageReward: StageReward | null): void {
-  //   this.stageReward = stageReward;
-  // }
 }

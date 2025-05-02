@@ -1,107 +1,162 @@
-/* Main container for the entire UI */
 .score-interface-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100vw;
-  height: 100vh;
-  padding: 20px;
-  background-color: rgba(0, 0, 0, 0.7); /* Transparent black background */
-  color: white;
-  position: relative;
-}
-
-/* Score section on the left */
-.score-section {
-  flex: 0 0 20%; /* Take 20% of the screen width */
-  text-align: left;
-  padding: 20px;
-  background-color: rgba(0, 0, 0, 0.8);
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  height: auto;
-  max-width: 300px; /* Optional: Limit the maximum width */
-}
-
-/* Reward section on the right */
-.reward-section {
-  flex: 0 0 20%; /* Take 20% of the screen width */
-  text-align: right;
-  padding: 20px;
-  background-color: rgba(0, 0, 0, 0.8);
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  height: auto;
-  max-width: 300px; /* Optional: Limit the maximum width */
-}
-
-/* Center container for reward weapon and back-to-hub button */
-.center-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-/* Weapon reward container */
-.weapon-reward-container {
-  background-color: rgba(0, 0, 0, 0.9);
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  color: white;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  width: 400px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Weapon 1 and Weapon 2 containers */
-.player-weapons {
   width: 100%;
+  height: 80%;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3%;
+  animation: slide-in-top-5 0.2s ease-out;
+}
+
+.score-fixed-interface-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3%;
+}
+
+.score-stats-container {
+  width: 600px;
+  height: 400px;
+  background: var(--primary-color);
+  border: 3px solid var(--border-color);
+  border-top-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  box-shadow: 0px 0px var(--shadow-size) var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 3%;
+  color: var(--font-color-primary);
+}
+
+.score-stats-list {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.score-stats-item {
+  width: 100%;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 1.4rem;
+}
+
+.score-stats-item-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.score-stats-item-value {
+  color: var(--font-color-secondary);
+}
+
+.score-stats-icon {
+  width: 60px !important;
+  height: 60px !important;
+  filter: drop-shadow(0 0 10px var(--border-color));
+}
+
+.score-button-continue {
+  width: 300px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+}
+
+.score-weapon-reward {
+  width: 300px;
+  height: 400px;
+  border: 3px solid var(--border-color);
+  background-color: var(--primary-color);
+  color: var(--font-color-secondary);
+  border-top-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  box-shadow: 0px 0px var(--shadow-size) var(--border-color);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
 }
 
-.player-weapon {
-  width: 45%;
-  background-color: rgba(0, 0, 0, 0.8);
-  padding: 10px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.score-weapon-header {
+  width: 100%;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Label for current weapons */
-.current-weapons-label {
-  margin: 10px 0;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
+.score-weapon-name {
   text-align: center;
 }
 
-/* Back to hub button container */
-.back-to-hub-container {
+.score-weapon-icon {
+  width: 100px !important;
+  height: 100px !important;
+  filter: drop-shadow(0 0 10px var(--border-color));
+}
+
+.score-weapon-button {
+  width: 160px;
+  height: 45px;
+  border-top-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--font-color-primary);
+}
+
+.score-weapon-passive-container {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5%;
+}
+
+.score-weapon-passive-item {
+  width: 100px;
+  height: 100px;
+  border: 3px solid var(--border-color);
+  background: var(--primary-color);
+  color: var(--font-color-secondary);
+  border-top-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.score-weapon-passive-text {
   text-align: center;
+  font-size: 0.9rem;
 }
 
-.back-to-hub-container button {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.back-to-hub-container button:hover {
-  background-color: #0056b3;
+.score-weapon-passive-icon {
+  width: 45px !important;
+  height: 45px !important;
+  filter: drop-shadow(0 0 10px var(--border-color));
+  color: var(--font-color-secondary) !important;
 }

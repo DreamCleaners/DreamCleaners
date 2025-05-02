@@ -192,20 +192,9 @@ export class FixedStageScene extends GameScene {
     this.game.soundManager.stopStageBackgroundMusic();
 
     this.game.uiManager.displayUI(UIType.SCORE);
-    this.onUIChangeObserver = this.game.uiManager.onUIChange.add(
-      this.onUIChange.bind(this),
-    );
   }
 
-  private onUIChange(uiType: UIType): void {
-    if (uiType === UIType.MAIN_MENU) {
-      this.onUIChangeObserver.remove();
-      return;
-    }
-
-    if (uiType !== UIType.PLAYER_HUD) return;
-
-    this.onUIChangeObserver.remove();
+  public changeSceneToHub(): void {
     this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
   }
 

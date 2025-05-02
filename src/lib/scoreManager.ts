@@ -89,6 +89,11 @@ export class ScoreManager {
     return this.score;
   }
 
+  public convertScoreToMoney(score: number): number {
+    const moneyEarned = score; // 1:1 conversion for now
+    return moneyEarned;
+  }
+
   public onEnemyDeath(): void {
     this.totalKill++;
   }

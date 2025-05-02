@@ -8,6 +8,10 @@
   padding: 3%;
   color: var(--font-color-primary);
   animation: slide-in-top-5 0.2s ease-out;
+
+  @media (max-width: 1500px) {
+    padding: 2%;
+  }
 }
 
 .inventory-weapon-container {
@@ -17,6 +21,10 @@
   align-items: center;
   justify-content: center;
   gap: 5%;
+
+  @media (max-width: 1500px) {
+    gap: 2%;
+  }
 }
 
 .inventory-weapon-item-container {
@@ -44,6 +52,11 @@
   align-items: center;
   justify-content: center;
   gap: 30px;
+
+  @media (max-width: 1500px) {
+    height: 430px;
+    width: 90%;
+  }
 }
 
 .inventory-weapon-button {
@@ -54,6 +67,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 1500px) {
+    width: 85%;
+  }
 }
 
 .inventory-weapon-icon {
@@ -76,6 +93,10 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
   scroll-behavior: smooth;
+
+  @media (max-width: 1500px) {
+    height: 150px;
+  }
 }
 
 .inventory-weapon-passive-container::-webkit-scrollbar {
@@ -104,11 +125,20 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+
+  @media (max-width: 1500px) {
+    width: 100px;
+    height: 100px;
+  }
 }
 
 .inventory-weapon-passive-text {
   text-align: center;
   font-size: 0.9rem;
+
+  @media (max-width: 1500px) {
+    font-size: 0.7rem;
+  }
 }
 
 .inventory-weapon-passive-icon {
@@ -116,6 +146,11 @@
   height: 50px !important;
   filter: drop-shadow(0 0 10px var(--border-color));
   color: var(--font-color-secondary) !important;
+
+  @media (max-width: 1500px) {
+    width: 40px !important;
+    height: 40px !important;
+  }
 }
 
 .inventory-weapon-stat-difference {

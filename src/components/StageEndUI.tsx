@@ -1,51 +1,46 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { GameContext } from '../contexts/GameContext';
 import { Rarity } from '../lib/shop/rarity.ts';
 import '../styles/stageEndUI.css';
+import '../styles/shared.css';
 import { WeaponPassivesManager } from '../lib/weapons/passives/weaponPassivesManager';
 import { withClickSound } from '../lib/utils/withClickSound';
+import BaseContainer from './BaseContainer.tsx';
+import { ShopItemType } from '../lib/shop/shopItemType.ts';
+import InventoryUI from './InventoryUI.tsx';
+import { FixedStageScene } from '../lib/scenes/fixedStageScene.ts';
+
+import WilliamTellSkullIcon from '@/assets/icons/william-tell-skull.svg?react';
+import StopwatchIcon from '@/assets/icons/stopwatch.svg?react';
+import InternalInjuryIcon from '@/assets/icons/internal-injury.svg?react';
+import HolyGrailIcon from '@/assets/icons/holy-grail.svg?react';
+import MoneyStackIcon from '@/assets/icons/money-stack.svg?react';
+import ItemIcon from './ItemIcon.tsx';
 
 const StageEndUI = () => {
   const game = useContext(GameContext);
-  const [rewardUsed, setRewardUsed] = useState(false); // Track if the reward has been used
-  const [playerWeapons, setPlayerWeapons] = useState(game?.player.getWeapons() || []); // Track player weapons
-
-  useEffect(() => {
-    if (!game) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Backspace') {
-        game.uiManager.hideUI();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [game]);
+  const [rewardUsed, setRewardUsed] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
 
   if (!game) return null;
 
   const stageReward = game.sceneManager.getCurrentScene()?.stageInfo.stageReward;
-  const stageRewardGold = stageReward?.getMoneyReward() ?? 0;
+  const stageRewardGold =
+    (stageReward?.getMoneyReward() ?? 0) +
+    game.scoreManager.convertScoreToMoney(game.scoreManager.getScore());
   const weaponReward = stageReward?.getWeaponReward();
 
   const handleReplaceWeapon = async (weaponIndex: number) => {
     if (!stageReward || !weaponReward) return;
 
     try {
-      // Call the abstract method of StageReward to get the new weapon
       const newWeapon = await stageReward.createWeapon(game.player);
 
-      // Replace the weapon at the specified index
       game.player.replaceWeaponAtIndex(weaponIndex, newWeapon);
 
-      // Update the player weapons state
-      setPlayerWeapons(game.player.getWeapons());
-
-      // Mark the reward as used
       setRewardUsed(true);
+
+      setShowInventory(false);
     } catch (error) {
       console.error('Failed to create weapon:', error);
     }
@@ -53,94 +48,145 @@ const StageEndUI = () => {
 
   const handleHideUI = () => {
     game.uiManager.hideUI();
+    // change this when procedural stages are implemented
+    const scene = game.sceneManager.getCurrentScene() as FixedStageScene;
+    scene.changeSceneToHub();
   };
 
+  const getPrettyTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  if (showInventory) {
+    return (
+      <BaseContainer
+        title="INVENTORY"
+        backButtonCallback={withClickSound(game, () => setShowInventory(false))}
+      >
+        <InventoryUI
+          isDisabled={() => false}
+          buttonCallback={handleReplaceWeapon}
+          getButtonText={() => <h2>REPLACE</h2>}
+          titleElement={
+            <h2>CHOOSE A SLOT FOR WEAPON: {weaponReward?.weaponType.toUpperCase()}</h2>
+          }
+        ></InventoryUI>
+      </BaseContainer>
+    );
+  }
+
   return (
-    <div className="score-interface-container">
-      <div className="score-section">
-        <h1>Stage score</h1>
-        <p>
-          <strong>press backspace to skip</strong>
-        </p>
-        <p>
-          Enemies killed: {game.scoreManager.totalKill}, score: +
-          {game.scoreManager.totalKillScore}
-        </p>
-        <p>
-          Time elapsed: {game.scoreManager.timeElapsed}s, score: +
-          {game.scoreManager.totalTimeBonus}
-        </p>
-        <p>
-          Damage taken: {game.scoreManager.totalDamageTaken}, score: -
-          {game.scoreManager.totalDamageTakenMalus}
-        </p>
-        <h3>Final score: {game.scoreManager.getScore()}</h3>
-      </div>
-      <div className="reward-section">
-        <h2>Rewards</h2>
-        <p>Gold reward: {stageRewardGold}$</p>
-      </div>
-      <div className="center-container">
-        {weaponReward && (
-          <div className="weapon-reward-container">
-            {!rewardUsed && (
-              <div className="reward-weapon">
-                <h3>Reward Weapon</h3>
-                <p>Type: {weaponReward.weaponType}</p>
-                <p>Rarity: {Rarity[weaponReward.rarity]}</p>
-                {weaponReward.embeddedPassives.map((passive, index) => (
-                  <p key={index}>
-                    Passive {index + 1}:{' '}
-                    {WeaponPassivesManager.getInstance().getPrettyPassiveName(passive)}
+    <BaseContainer title="DREAM CLEARED">
+      <div className="score-interface-container">
+        <div className="score-fixed-interface-container">
+          <div className="score-stats-container">
+            <div className="score-stats-list">
+              <ul>
+                <li className="score-stats-item">
+                  <div className="score-stats-item-title">
+                    <WilliamTellSkullIcon className="score-stats-icon" />
+                    Enemies killed :
+                  </div>
+                  <p className="score-stats-item-value">{game.scoreManager.totalKill}</p>
+                </li>
+                <li className="score-stats-item">
+                  <div className="score-stats-item-title">
+                    <StopwatchIcon className="score-stats-icon" />
+                    Time elapsed :
+                  </div>
+                  <p className="score-stats-item-value">
+                    {getPrettyTime(game.scoreManager.timeElapsed)}
                   </p>
-                ))}
-              </div>
-            )}
-            <h4 className="current-weapons-label">Current Weapons</h4>
-            <div className="player-weapons">
-              <div className="player-weapon left">
-                <p>Type: {playerWeapons[0].weaponType}</p>
-                <p>Rarity: {Rarity[playerWeapons[0].currentRarity]}</p>
-                {!rewardUsed && (
-                  <button onClick={withClickSound(game, () => handleReplaceWeapon(0))}>
-                    Replace
-                  </button>
-                )}
-              </div>
-              <div className="player-weapon right">
-                {playerWeapons[1] ? (
-                  <>
-                    <p>Type: {playerWeapons[1].weaponType}</p>
-                    <p>Rarity: {Rarity[playerWeapons[1].currentRarity]}</p>
-                    {!rewardUsed && (
-                      <button
-                        onClick={withClickSound(game, () => handleReplaceWeapon(1))}
-                      >
-                        Replace
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p>You have no weapon in this emplacement !</p>
-                    {!rewardUsed && (
-                      <button
-                        onClick={withClickSound(game, () => handleReplaceWeapon(1))}
-                      >
-                        Choose
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
+                </li>
+                <li className="score-stats-item">
+                  <div className="score-stats-item-title">
+                    <InternalInjuryIcon className="score-stats-icon" />
+                    Damage taken :
+                  </div>
+                  <p className="score-stats-item-value">
+                    {game.scoreManager.totalDamageTaken}
+                  </p>
+                </li>
+                <li className="score-stats-item">
+                  <div className="score-stats-item-title">
+                    <HolyGrailIcon className="score-stats-icon" />
+                    Score :
+                  </div>
+                  <p className="score-stats-item-value">{game.scoreManager.getScore()}</p>
+                </li>
+                <li className="score-stats-item">
+                  <div className="score-stats-item-title">
+                    <MoneyStackIcon className="score-stats-icon" />
+                    Gold reward :
+                  </div>
+                  <p className="score-stats-item-value">{stageRewardGold}</p>
+                </li>
+              </ul>
             </div>
           </div>
-        )}
-        <div className="back-to-hub-container">
-          <button onClick={withClickSound(game, handleHideUI)}>Back to Hub</button>
+          {weaponReward && !rewardUsed && (
+            <div
+              className={`score-weapon-reward ${Rarity[weaponReward.rarity].toLowerCase()}-border`}
+            >
+              <div className="score-weapon-header">
+                <h2
+                  className={`score-weapon-name ${Rarity[weaponReward.rarity].toLowerCase()}`}
+                >
+                  {weaponReward.weaponType.toUpperCase()}
+                </h2>
+              </div>
+              <ItemIcon
+                iconName={weaponReward.weaponType}
+                className={`score-weapon-icon ${Rarity[weaponReward.rarity].toLowerCase()}-shadow`}
+                shopItemType={ShopItemType.WEAPON}
+              />
+              <div className="score-weapon-passive-container">
+                {weaponReward.embeddedPassives.length === 0 && <div>NO PASSIVES</div>}
+                {weaponReward.embeddedPassives.map((passive, index) => (
+                  <div
+                    className={`score-weapon-passive-item ${Rarity[
+                      WeaponPassivesManager.getInstance().getPassiveRarity(passive)
+                    ].toLowerCase()}-border`}
+                    key={index}
+                  >
+                    <p
+                      key={index}
+                      className={`score-weapon-passive-text ${Rarity[
+                        WeaponPassivesManager.getInstance().getPassiveRarity(passive)
+                      ].toLowerCase()}`}
+                    >
+                      {WeaponPassivesManager.getInstance().getPrettyPassiveName(passive)}
+                    </p>
+                    <ItemIcon
+                      iconName={passive.toLowerCase()}
+                      className={`score-weapon-passive-icon ${Rarity[
+                        WeaponPassivesManager.getInstance().getPassiveRarity(passive)
+                      ].toLowerCase()}-shadow`}
+                      shopItemType={ShopItemType.WEAPON_PASSIVE}
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
+                className={`button score-weapon-button ${Rarity[weaponReward.rarity].toLowerCase()}-border ${Rarity[weaponReward.rarity].toLowerCase()}`}
+                onClick={withClickSound(game, () => setShowInventory(true))}
+              >
+                <h3>GET WEAPON</h3>
+              </button>
+            </div>
+          )}
+          <div></div>
         </div>
+        <button
+          className="score-button-continue button"
+          onClick={withClickSound(game, handleHideUI)}
+        >
+          <h2>CONTINUE</h2>
+        </button>
       </div>
-    </div>
+    </BaseContainer>
   );
 };
 
