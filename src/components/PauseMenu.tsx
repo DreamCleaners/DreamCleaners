@@ -26,9 +26,6 @@ const PauseMenu = () => {
           >
             <h2>RESUME</h2>
           </button>
-          <button className="pause-menu-button button">
-            <h2>SETTINGS</h2>
-          </button>
           <button
             className="pause-menu-button button"
             onClick={withClickSound(game, handleMainMenu)}

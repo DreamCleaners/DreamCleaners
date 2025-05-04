@@ -2,7 +2,7 @@ import { GlobalStats } from './globalStats';
 
 export type WeaponData = {
   weaponName: string;
-  crosshairName: string;
+  crosshair: CrosshairData;
   globalStats: GlobalStats[];
   staticStats: StaticStats;
   transform: WeaponTransform;
@@ -35,4 +35,9 @@ export type Vec3 = {
   x: number;
   y: number;
   z: number;
+};
+
+export type CrosshairData = {
+  name: string;
+  scale: number;
 };

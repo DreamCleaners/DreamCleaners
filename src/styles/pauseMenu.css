@@ -8,9 +8,10 @@
   height: 300px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   gap: 8px;
+  padding: 40px 0;
 }
 
 .pause-menu-button {

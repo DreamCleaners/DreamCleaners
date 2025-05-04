@@ -1,7 +1,10 @@
 {
   "ak": {
     "weaponName": "AK",
-    "crosshairName": "crosshair-ak",
+    "crosshair": {
+      "name": "crosshair-ak",
+      "scale": 1
+    },
     "globalStats": {
       "damage": [26, 34, 44, 56],
       "reloadTime": [1.2, 1.1, 1.0, 0.9],
@@ -46,7 +49,10 @@
   },
   "glock": {
     "weaponName": "GLOCK",
-    "crosshairName": "crosshair-glock",
+    "crosshair": {
+      "name": "crosshair-glock",
+      "scale": 1
+    },
     "globalStats": {
       "damage": [40, 50, 60, 70],
       "reloadTime": [0.7, 0.6, 0.5, 0.4],
@@ -91,7 +97,10 @@
   },
   "shotgun": {
     "weaponName": "SHOTGUN",
-    "crosshairName": "crosshair-shotgun",
+    "crosshair": {
+      "name": "crosshair-shotgun",
+      "scale": 1.6
+    },
     "globalStats": {
       "damage": [100, 150, 200, 250],
       "reloadTime": [2.0, 1.8, 1.6, 1.4],

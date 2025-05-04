@@ -6,12 +6,14 @@ import { GameContext } from '../contexts/GameContext';
 import { Observer } from '@babylonjs/core';
 import { Weapon } from '../lib/weapons/weapon';
 
+const CROSSHAIR_SIZE = 32;
+
 const GameCanvas = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const gameRef = useRef<Game | null>(null);
   const [isCrosshairVisible, setIsCrosshairVisible] = useState<boolean>(false);
-  const [crosshairName, setCrosshairName] = useState<string>('crosshair-glock');
+  const [currentWeapon, setCurrentWeapon] = useState<Weapon | null>(null);
 
   const onCrosshairChangeObserverRef = useRef<Observer<boolean> | null>(null);
   const onWeaponChangeObserverRef = useRef<Observer<Weapon> | null>(null);
@@ -26,7 +28,7 @@ const GameCanvas = () => {
 
     onWeaponChangeObserverRef.current = gameRef.current.player.onWeaponChange.add(
       (weapon: Weapon) => {
-        setCrosshairName(weapon.weaponData.crosshairName);
+        setCurrentWeapon(weapon);
       },
     );
   };
@@ -46,10 +48,14 @@ const GameCanvas = () => {
 
   return (
     <GameContext.Provider value={game}>
-      {isCrosshairVisible && (
+      {isCrosshairVisible && currentWeapon !== null && (
         <img
           className="player-crosshair"
-          src={`/src/assets/img/crosshairs/${crosshairName}.png`}
+          src={`/src/assets/img/crosshairs/${currentWeapon.weaponData.crosshair.name}.png`}
+          style={{
+            width: CROSSHAIR_SIZE * currentWeapon.weaponData.crosshair.scale,
+            height: CROSSHAIR_SIZE * currentWeapon.weaponData.crosshair.scale,
+          }}
         />
       )}
       <UserInterface />

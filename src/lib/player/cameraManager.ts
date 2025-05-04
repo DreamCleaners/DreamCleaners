@@ -5,13 +5,21 @@ import { InputState } from '../inputs/inputState';
 export class CameraManager {
   private camera!: UniversalCamera;
   private readonly FOV = 0.9;
+  private readonly MAX_ANGULAR_SENSIBILITY = 5000;
+  private readonly DEFAULT_SENSIVITY = 0.5;
+  private sensivity = this.DEFAULT_SENSIVITY;
 
   // tilt
   private readonly MAX_TILT_ANGLE = 0.8; // degrees
   private readonly TILT_TRANSITION_SPEED = 6;
 
   constructor(private player: Player) {
+    // We don't use the save system here because the camera settings are independent of the player's progression.
+    this.sensivity = parseFloat(
+      window.localStorage.getItem('cameraSensivity') ?? this.DEFAULT_SENSIVITY.toString(),
+    );
     this.initCamera();
+    this.setCameraSensivity(this.sensivity);
   }
 
   private initCamera(): void {
@@ -36,8 +44,7 @@ export class CameraManager {
 
     // No deceleration
     this.camera.inertia = 0;
-    // Cam sensitivity
-    this.camera.angularSensibility = 1000;
+
     // Allows no "near clipping" of meshes when close to the camera
     this.camera.minZ = 0.01;
     this.camera.fov = this.FOV;
@@ -84,5 +91,18 @@ export class CameraManager {
 
   public getCamera(): UniversalCamera {
     return this.camera;
+  }
+
+  public getCameraSensivity(): number {
+    return this.sensivity;
+  }
+
+  public setCameraSensivity(sensivity: number): void {
+    this.sensivity = sensivity;
+
+    this.camera.angularSensibility =
+      this.MAX_ANGULAR_SENSIBILITY + 1 - this.sensivity * this.MAX_ANGULAR_SENSIBILITY;
+
+    window.localStorage.setItem('cameraSensivity', this.sensivity.toString());
   }
 }
