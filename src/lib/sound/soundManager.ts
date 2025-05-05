@@ -1,12 +1,15 @@
-import { StaticSound, Vector3 } from '@babylonjs/core';
+import { StaticSound, UniversalCamera, Vector3 } from '@babylonjs/core';
 import { SoundSystem, SoundCategory } from './soundSystem';
 import { IStaticSoundOptions, IStreamingSoundOptions } from '@babylonjs/core';
 import { WeaponType } from '../weapons/weaponType';
+import { SpatialSoundManager } from './spatialSoundManager';
+import { SpatialSound } from './spatialSound';
+import { Player } from '../player/player';
+import { EnemyType } from '../enemies/enemyType';
+import { Radio } from '../interactiveElements/radio';
 
 enum StageMusic {
-  MUSIC_ONE = 'placeholder1',
-  MUSIC_TWO = 'placeholder2',
-  MUSIC_THREE = 'placeholder3',
+  ELECTRO_ONE = 'electroOne',
 }
 
 /**
@@ -14,11 +17,23 @@ enum StageMusic {
  */
 export class SoundManager {
   private soundSystem: SoundSystem;
+  private spatialSoundManager: SpatialSoundManager;
+
+  public cameraListener: UniversalCamera;
+  public playerListener: Player;
+
+  private readonly computerPosition = new Vector3(-0.53, 1.8, 4.2);
+  private readonly radioPosition = new Vector3(2.779, 1.87, 4.37);
 
   public static readonly DEFAULT_MUSIC_VOLUME = 0.2;
 
-  constructor() {
+  public radio!: Radio;
+
+  constructor(playerListener: Player) {
     this.soundSystem = new SoundSystem();
+    this.spatialSoundManager = new SpatialSoundManager(this.soundSystem);
+    this.cameraListener = playerListener.cameraManager.getCamera();
+    this.playerListener = playerListener;
   }
 
   public async init(): Promise<void> {
@@ -31,6 +46,47 @@ export class SoundManager {
       loop: false,
     });
     await this.loadMusic('hub', 'hub-music', SoundCategory.MUSIC, { loop: true });
+    await this.loadMusic('radioMusic1', 'radioMusic1', SoundCategory.RADIO_MUSIC, {
+      loop: true,
+      volume: 0.2,
+      spatialEnabled: true,
+      spatialDistanceModel: 'exponential',
+      spatialMaxDistance: 15,
+      spatialMinDistance: 2,
+      spatialRolloffFactor: 1,
+      stereoEnabled: false,
+      spatialConeInnerAngle: 270,
+      spatialConeOuterAngle: 340,
+      spatialConeOuterVolume: 0.4,
+    });
+
+    await this.loadMusic('radioMusic2', 'radioMusic2', SoundCategory.RADIO_MUSIC, {
+      loop: true,
+      volume: 0.2,
+      spatialEnabled: true,
+      spatialDistanceModel: 'exponential',
+      spatialMaxDistance: 15,
+      spatialMinDistance: 2,
+      spatialRolloffFactor: 1,
+      stereoEnabled: false,
+      spatialConeInnerAngle: 270,
+      spatialConeOuterAngle: 340,
+      spatialConeOuterVolume: 0.4,
+    });
+
+    await this.loadMusic('radioMusic3', 'radioMusic3', SoundCategory.RADIO_MUSIC, {
+      loop: true,
+      volume: 0.2,
+      spatialEnabled: true,
+      spatialDistanceModel: 'exponential',
+      spatialMaxDistance: 15,
+      spatialMinDistance: 2,
+      spatialRolloffFactor: 1,
+      stereoEnabled: false,
+      spatialConeInnerAngle: 270,
+      spatialConeOuterAngle: 340,
+      spatialConeOuterVolume: 0.4,
+    });
 
     await this.loadMusic('loading', 'loading-ambiance', SoundCategory.AMBIENT);
 
@@ -45,6 +101,29 @@ export class SoundManager {
       volume: 0.1,
     });
 
+    await this.loadStaticSound('flashlightSwitchOn', SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.5,
+    });
+
+    await this.loadStaticSound('flashlightSwitchOff', SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.5,
+    });
+
+    await this.loadStaticSound('pcEnter', SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.5,
+    });
+    await this.loadStaticSound('pcLeave', SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.5,
+    });
+
+    await this.loadStaticSound('playerDamageTaken', SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.5,
+    });
     // ...
   }
 
@@ -106,22 +185,45 @@ export class SoundManager {
     this.soundSystem.play(name, type);
   }
 
-  public async playSpatialSoundAt(name: string, position: Vector3): Promise<void> {
-    const sound = this.soundSystem.getSound(name, SoundCategory.EFFECT);
+  /**
+   * Play a spatial sound at the specified position
+   * @param name The name of the sound
+   * @param position The 3D position to play the sound
+   * @param options Optional sound parameters
+   * @returns Promise that resolves with the created SpatialSound
+   */
+  public async playSpatialSoundAt(
+    name: string,
+    position: Vector3,
+    soundType: SoundCategory,
+    options?: Partial<IStaticSoundOptions>,
+  ): Promise<SpatialSound | undefined> {
+    return await this.spatialSoundManager.playSpatialSoundAt(
+      name,
+      position,
+      soundType,
+      options,
+    );
+  }
 
-    if (!sound) {
-      const options = this.soundSystem.getDefaultStaticOptions();
-      options.spatialPosition = position;
-      await this.loadStaticSound(name, SoundCategory.EFFECT, options);
-    } else {
-      // Update position for existing sound
-      this.soundSystem.updateSoundOptions(name, SoundCategory.EFFECT, {
-        spatialPosition: position,
-      });
-    }
+  public async playRadioMusic(
+    name: string,
+    soundType: SoundCategory,
+    options?: Partial<IStaticSoundOptions>,
+  ): Promise<SpatialSound | undefined> {
+    return await this.spatialSoundManager.playSpatialSoundAt(
+      name,
+      this.radioPosition,
+      soundType,
+      options,
+    );
+  }
 
-    await this.soundSystem.unlockAudio();
-    this.soundSystem.play(name, SoundCategory.EFFECT);
+  /**
+   * Stops all active spatial sounds
+   */
+  public stopAllSpatialSounds(): void {
+    this.spatialSoundManager.stopAllSpatialSounds();
   }
 
   /**
@@ -173,28 +275,6 @@ export class SoundManager {
   }
 
   /**
-   * Play sound from a pool with spatial positioning
-   * @param soundName The name of the sound pool
-   * @param position Position to play at
-   * @param volume Optional volume override
-   */
-  public playSpatialFromPool(
-    soundName: string,
-    position: Vector3,
-    volume?: number,
-  ): void {
-    const options: Partial<IStaticSoundOptions> = {
-      spatialPosition: position,
-    };
-
-    if (volume !== undefined) {
-      options.volume = volume;
-    }
-
-    this.soundSystem.playFromPool(soundName, options);
-  }
-
-  /**
    * Get the duration of a loaded static sound
    * @param name The name of the sound
    * @param type The sound category
@@ -222,13 +302,22 @@ export class SoundManager {
     return -1;
   }
 
+  /**
+   * Updates all spatial sounds based on camera position
+   * This should be called in your game update loop
+   * @param camera The camera representing the listener
+   */
+  public updateSpatialSounds(): void {
+    this.spatialSoundManager.update(this.cameraListener, this.playerListener);
+  }
+
   // ----------------------------------------
   // GAME-SPECIFIC SOUND FUNCTIONALITY
   // ----------------------------------------
 
   /** Plays the loading music and pauses every other possible sounds/musics */
   public playLoadingAmbience(): void {
-    this.soundSystem.stopAllSounds();
+    this.stopAllSounds();
     // Resume is somehow necessary even if it was not playing nor paused
     this.soundSystem.resume('loading-ambiance', SoundCategory.AMBIENT);
     this.playBackgroundMusic('loading', 'loading-ambiance');
@@ -345,7 +434,68 @@ export class SoundManager {
     this.soundSystem.stopAllSounds();
     this.soundSystem.resume('hub-music', SoundCategory.MUSIC);
     this.playBackgroundMusic('hub', 'hub-music', {
-      volume: SoundManager.DEFAULT_MUSIC_VOLUME,
+      volume: SoundManager.DEFAULT_MUSIC_VOLUME / 2,
+    });
+  }
+
+  public playHubAmbience(): void {
+    // Computer sounds
+    this.playSpatialSoundAt('pcSound', this.computerPosition, SoundCategory.AMBIENT, {
+      loop: true,
+      volume: 0.7,
+      spatialMaxDistance: 10,
+    });
+
+    // Radio music
+    this.playSpatialSoundAt('radioMusic1', this.radioPosition, SoundCategory.RADIO_MUSIC);
+  }
+
+  public playBulletImpactSound(position: Vector3): void {
+    this.playSpatialSoundAt('wall-hitmarker', position, SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.1,
+      spatialMaxDistance: 60,
+      spatialRolloffFactor: 20,
+    });
+  }
+
+  public playEnemyDeath(position: Vector3, enemyType: EnemyType) {
+    let path = enemyType + 'Death';
+    const n = Math.floor(Math.random() * 3) + 1;
+    // 3 possible sounds for the enemy's death
+    path += n;
+
+    this.playSpatialSoundAt(path, position, SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.5,
+      spatialMaxDistance: 60,
+      spatialRolloffFactor: 20,
+    });
+  }
+
+  public playFlashlightSound(isSwitchingOn: boolean): void {
+    this.playSound(
+      isSwitchingOn ? 'flashlightSwitchOn' : 'flashlightSwitchOff',
+      SoundCategory.EFFECT,
+    );
+  }
+
+  public playPlayerTakesDamage(): void {
+    this.playSound('playerDamageTaken', SoundCategory.EFFECT);
+  }
+
+  public playPlayerDeath(): void {
+    this.playSound('playerDeath', SoundCategory.EFFECT);
+  }
+
+  public playEnemyAttackSound(position: Vector3, enemyType: EnemyType): void {
+    const path = enemyType + 'Attack';
+
+    this.playSpatialSoundAt(path, position, SoundCategory.EFFECT, {
+      loop: false,
+      volume: 0.5,
+      spatialMaxDistance: 60,
+      spatialRolloffFactor: 20,
     });
   }
 
@@ -366,15 +516,23 @@ export class SoundManager {
   }
 
   public pauseAllSounds(): void {
+    this.radio.pauseRadioMusic();
     this.soundSystem.pauseAllSounds();
   }
 
   public resumeAllSounds(): void {
+    this.radio.resumeRadioMusic();
     this.soundSystem.resumeAllSounds();
+  }
+
+  public stopAllSounds(): void {
+    if (this.radio) this.radio.stopAllMusics();
+    this.soundSystem.stopAllSounds();
   }
 
   public dispose(): void {
     this.soundSystem.dispose();
+    this.spatialSoundManager.dispose();
   }
 }
 

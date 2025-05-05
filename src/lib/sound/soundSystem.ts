@@ -17,6 +17,7 @@ export enum SoundCategory {
   EFFECT = 'effects',
   UI = 'ui',
   AMBIENT = 'ambients',
+  RADIO_MUSIC = 'radio_musics',
 }
 
 /**
@@ -26,6 +27,7 @@ export class SoundSystem {
   private loadedMusics: Map<string, StreamingSound>;
   private loadedSounds: Map<string, StaticSound>;
   private loadedUISounds: Map<string, StaticSound>;
+  private loadedRadioMusics: Map<string, StaticSound>;
   private audioEngine!: AudioEngineV2;
 
   // Sound pool related properties
@@ -40,6 +42,7 @@ export class SoundSystem {
     this.soundPools = new Map<string, StaticSound[]>();
     this.poolSizes = new Map<string, number>();
     this.currentPoolIndexes = new Map<string, number>();
+    this.loadedRadioMusics = new Map<string, StaticSound>();
   }
 
   public async init(): Promise<void> {
@@ -145,6 +148,9 @@ export class SoundSystem {
       case SoundCategory.UI:
         this.loadedUISounds.set(name, sound as StaticSound);
         break;
+      case SoundCategory.RADIO_MUSIC:
+        this.loadedRadioMusics.set(name, sound as StaticSound);
+        break;
       default:
         console.error('Unknown sound type: ' + type);
         break;
@@ -178,6 +184,8 @@ export class SoundSystem {
         return this.loadedSounds.get(name);
       case SoundCategory.UI:
         return this.loadedUISounds.get(name);
+      case SoundCategory.RADIO_MUSIC:
+        return this.loadedRadioMusics.get(name);
       default:
         console.error('Unknown sound type: ' + type);
         return undefined;
@@ -354,11 +362,11 @@ export class SoundSystem {
       autoplay: false,
       volume: 0.7,
       spatialEnabled: true,
-      spatialMaxDistance: 30,
+      spatialMaxDistance: 15,
       spatialMinDistance: 1,
-      spatialRolloffFactor: 2,
-      spatialDistanceModel: 'exponential',
-      spatialAutoUpdate: true,
+      spatialRolloffFactor: 3,
+      spatialDistanceModel: 'linear',
+      spatialAutoUpdate: false,
     };
   }
 

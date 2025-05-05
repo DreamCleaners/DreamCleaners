@@ -82,7 +82,7 @@ export class Game {
     this.player = new Player(this);
     this.sceneManager = new SceneManager(this);
 
-    this.soundManager = new SoundManager();
+    this.soundManager = new SoundManager(this.player);
     await this.soundManager.init();
     //this.soundManager.playBackgroundMusic('main-menu', 'main-menu-default');
 
@@ -187,6 +187,7 @@ export class Game {
 
     this.player.update();
     this.sceneManager.update();
+    this.soundManager.updateSpatialSounds();
 
     // fixed update loop
     const deltaTime = this.getDeltaTime();
@@ -275,6 +276,7 @@ export class Game {
   // Game over ----------------
   public gameOver(): void {
     console.log('Game over');
+    this.soundManager.stopStageBackgroundMusic();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();
   }

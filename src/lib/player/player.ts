@@ -183,6 +183,10 @@ export class Player implements IDamageable {
     this.hitbox.position = position;
   }
 
+  public getPosition(): Vector3 {
+    return this.hitbox.position;
+  }
+
   private initPhysicsAggregate(): void {
     this.hitbox = MeshBuilder.CreateCapsule(
       GameEntityType.PLAYER,
@@ -312,7 +316,7 @@ export class Player implements IDamageable {
   }
 
   public onGameOver(): void {
-    // We will simply ask for game to handle the game over
+    this.game.soundManager.playPlayerDeath();
     this.game.gameOver();
   }
 
@@ -323,6 +327,7 @@ export class Player implements IDamageable {
     this.timeSinceLastDamage = 0;
     this.onDamageTakenObservable.notifyObservers(damage);
     this.healthController.removeHealth(damage);
+    this.game.soundManager.playPlayerTakesDamage();
   }
 
   public addSpeedPercentage(percentage: number): void {
@@ -340,8 +345,13 @@ export class Player implements IDamageable {
   }
 
   public toggleFlashlight(): void {
-    this.flashlight.intensity =
-      this.flashlight.intensity === 0 ? this.FLASHLIGHT_INTENSITY : 0;
+    if (this.flashlight.intensity === 0) {
+      this.flashlight.intensity = this.FLASHLIGHT_INTENSITY;
+      this.game.soundManager.playFlashlightSound(true);
+    } else {
+      this.flashlight.intensity = 0;
+      this.game.soundManager.playFlashlightSound(false);
+    }
   }
 
   // ----------------------- Health --------------------------
@@ -749,8 +759,6 @@ export class Player implements IDamageable {
   }
 
   private hideInteractionUI(): void {
-    if (!this.isInteractionUIVisible) return;
-
     this.isInteractionUIVisible = false;
     this.gui.removeControl(this.container);
   }

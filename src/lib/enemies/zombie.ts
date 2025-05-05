@@ -15,6 +15,7 @@ import { GameEntityType } from '../gameEntityType';
 import { MetadataFactory } from '../metadata/metadataFactory';
 import { IDamageable } from '../damageable';
 import { GameScene } from '../scenes/gameScene';
+import { EnemyType } from './enemyType';
 
 export enum ZombieState {
   START_WALK,
@@ -42,7 +43,7 @@ export class Zombie extends Enemy {
     this.deadState = ZombieState.DEAD;
     this.attackingState = ZombieState.ATTACK;
     this.state = ZombieState.START_WALK;
-
+    this.enemyType = EnemyType.ZOMBIE;
     this.init(position);
   }
 
@@ -168,6 +169,10 @@ export class Zombie extends Enemy {
     this.isAttacking = true;
 
     this.gameScene.game.player.takeDamage(this.ATTACK_RANGE);
+    this.gameScene.game.soundManager.playEnemyAttackSound(
+      this.mesh.position,
+      this.enemyType,
+    );
 
     const animation = this.animationController.startAnimation(ZombieAnimation.BITE, {
       loop: false,

@@ -47,6 +47,7 @@ const ComputerUI = () => {
 
   const handleCloseUI = () => {
     if (!game) return;
+    game.soundManager.playSound('pcLeave', SoundCategory.EFFECT);
     game.uiManager.hideUI();
   };
 

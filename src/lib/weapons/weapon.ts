@@ -115,6 +115,7 @@ export class Weapon {
     this.initAnimations();
     this.initMuzzleFlashParticleSystem();
     this.player.fireLight.parent = this.firePoint;
+    this.player.fireLight.setEnabled(false);
   }
 
   private async initMesh(): Promise<void> {
@@ -147,6 +148,8 @@ export class Weapon {
       weaponTransform.scale.z,
     );
 
+    this.preventMeshFromClipping(weaponMesh);
+
     this.firePoint = new Mesh('firePoint', this.player.game.scene);
     this.rootMesh.addChild(this.firePoint);
     this.firePoint.position = new Vector3(
@@ -156,6 +159,19 @@ export class Weapon {
     );
 
     this.hideInScene();
+  }
+
+  private preventMeshFromClipping(weaponMesh: Mesh): void {
+    const meshes = weaponMesh.getChildMeshes ? weaponMesh.getChildMeshes() : [];
+    meshes.push(weaponMesh);
+
+    for (const mesh of meshes) {
+      if (!mesh.isVisible) continue;
+      mesh.renderingGroupId = 1;
+    }
+
+    const weaponRoot = this.rootMesh as Mesh;
+    weaponRoot.renderingGroupId = 1;
   }
 
   private initAnimations(): void {
@@ -451,22 +467,16 @@ export class Weapon {
 
     const end = start.add(direction.scale(this.currentStats.range));
 
-    // Debug shooting line
-    // const line = MeshBuilder.CreateLines(
-    //   'lines',
-    //   { points: [this.firePoint.absolutePosition, end] },
-    //   this.player.game.scene,
-    // );
-
-    // setTimeout(() => {
-    //   line.dispose();
-    // }, 50);
-
     this.physicsEngine.raycastToRef(start, end, this.raycastResult, {
       shouldHitTriggers: true,
     });
 
     if (this.raycastResult.hasHit) {
+      // We ask to play the impact sound at the provided location
+      this.player.game.soundManager.playBulletImpactSound(
+        this.raycastResult.hitPointWorld.clone(),
+      );
+
       const metadata = this.raycastResult.body?.transformNode
         .metadata as IMetadataObject<IDamageable>;
 
