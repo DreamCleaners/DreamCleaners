@@ -534,6 +534,16 @@ export class SoundManager {
     this.soundSystem.dispose();
     this.spatialSoundManager.dispose();
   }
+
+  // setings related
+
+  public setGlobalVolume(volume: number): void {
+    this.soundSystem.setGlobalVolume(volume);
+  }
+
+  public getGlobalVolume(): number {
+    return this.soundSystem.getGlobalVolume();
+  }
 }
 
 export { SoundCategory } from './soundSystem';

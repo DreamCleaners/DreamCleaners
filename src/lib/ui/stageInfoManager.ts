@@ -6,7 +6,7 @@ export class StageInformationManager {
     return `/src/assets/img/stage-images/${stageName}.png`;
   }
 
-  public getStageName(stageLayout: FixedStageLayout) {
+  public getStageName(stageLayout: FixedStageLayout | undefined | null) {
     switch (stageLayout) {
       case FixedStageLayout.LABORATORY:
         return 'Laboratory';

@@ -73,7 +73,10 @@ const StageSelectionUI = () => {
 
   return (
     <BaseContainer
-      title={stageInfo?.proposedFixedStageLayout?.toUpperCase() || 'Procedural Stage'}
+      title={
+        game?.stageInformationManager.getStageName(stageInfo?.proposedFixedStageLayout) ||
+        'Procedural Stage'
+      }
       backButtonCallback={withClickSound(game, handleHideUI)}
     >
       <div className="stage-selection-container">

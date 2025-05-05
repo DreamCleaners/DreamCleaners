@@ -35,6 +35,8 @@ export class SoundSystem {
   private poolSizes: Map<string, number>;
   private currentPoolIndexes: Map<string, number>;
 
+  private globalVolume: number = 1;
+
   constructor() {
     this.loadedMusics = new Map<string, StreamingSound>();
     this.loadedSounds = new Map<string, StaticSound>();
@@ -46,7 +48,7 @@ export class SoundSystem {
   }
 
   public async init(): Promise<void> {
-    this.audioEngine = await CreateAudioEngineAsync();
+    this.audioEngine = await CreateAudioEngineAsync({ volume: this.globalVolume });
   }
 
   // ----------------------------------------
@@ -380,5 +382,14 @@ export class SoundSystem {
       ...baseOptions,
       ...partialOptions,
     } as T;
+  }
+
+  public setGlobalVolume(volume: number): void {
+    this.globalVolume = volume;
+    this.audioEngine.volume = volume;
+  }
+
+  public getGlobalVolume(): number {
+    return this.globalVolume;
   }
 }

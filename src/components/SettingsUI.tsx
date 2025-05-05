@@ -4,11 +4,16 @@ import { GameContext } from '../contexts/GameContext';
 import { withClickSound } from '../lib/utils/withClickSound';
 import { UIType } from '../lib/ui/uiType';
 import '../styles/settingsUI.css';
+import { SoundCategory } from '../lib/sound/soundManager';
 
 const SettingsUI = () => {
   const game = useContext(GameContext);
   const [sensivity, setSensivity] = useState(
     game?.player.cameraManager.getCameraSensivity() ?? 0.5,
+  );
+  // Single volume state variable
+  const [masterVolume, setMasterVolume] = useState(
+    game?.soundManager.getGlobalVolume() ?? 0.5,
   );
 
   const handleSensivityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,8 +26,30 @@ const SettingsUI = () => {
     game.saveManager.save();
   };
 
+  // Master volume handler
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!game) return;
+
+    const value = parseFloat(e.target.value);
+    setMasterVolume(value);
+
+    game?.soundManager.setGlobalVolume(value);
+    game.saveManager.save();
+  };
+
+  // Add handler for slider release
+  const handleSliderRelease = () => {
+    if (!game) return;
+    game.soundManager.playSound('placeholder', SoundCategory.UI);
+  };
+
   const handleHideUI = () => {
     game?.uiManager.setCurrentUI(UIType.MAIN_MENU);
+  };
+
+  // Format value as percentage where 0 is 0% and 2 is 100%
+  const formatAsPercentage = (value: number): string => {
+    return `${Math.round((value / 2) * 100)}%`;
   };
 
   if (!game) return null;
@@ -47,6 +74,27 @@ const SettingsUI = () => {
                 step="0.01"
                 onChange={handleSensivityChange}
               />
+            </div>
+          </div>
+
+          {/* Single Sound Volume Control */}
+          <div className="settings-menu-item">
+            <h2>Sound</h2>
+            <div className="settings-menu-item-content">
+              <div className="settings-volume-control">
+                <h3>Volume</h3>
+                <h3>{formatAsPercentage(masterVolume)}</h3>
+                <input
+                  type="range"
+                  min="0"
+                  max="2"
+                  defaultValue={masterVolume}
+                  step="0.01"
+                  onChange={handleVolumeChange}
+                  onMouseUp={handleSliderRelease}
+                  onTouchEnd={handleSliderRelease}
+                />
+              </div>
             </div>
           </div>
         </div>
