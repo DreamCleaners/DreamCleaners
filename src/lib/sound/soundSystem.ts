@@ -48,7 +48,9 @@ export class SoundSystem {
   }
 
   public async init(): Promise<void> {
+    this.globalVolume = parseFloat(window.localStorage.getItem('globalVolume') ?? '1');
     this.audioEngine = await CreateAudioEngineAsync({ volume: this.globalVolume });
+    this.setGlobalVolume(this.globalVolume);
   }
 
   // ----------------------------------------
@@ -387,6 +389,8 @@ export class SoundSystem {
   public setGlobalVolume(volume: number): void {
     this.globalVolume = volume;
     this.audioEngine.volume = volume;
+
+    window.localStorage.setItem('globalVolume', volume.toString());
   }
 
   public getGlobalVolume(): number {

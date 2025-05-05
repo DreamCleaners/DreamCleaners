@@ -29,8 +29,9 @@ export class FixedStageScene extends GameScene {
   public fixedStageName!: FixedStageLayout;
 
   private onPlayerDamageTakenObserver!: Observer<number>;
-  private onUIChangeObserver!: Observer<UIType>;
   private onCollisionObserver!: Observer<IBasePhysicsCollisionEvent>;
+
+  private unityScene!: UnityScene;
 
   constructor(game: Game, fixedStageName: FixedStageLayout) {
     super(game);
@@ -39,14 +40,14 @@ export class FixedStageScene extends GameScene {
 
   public async load(): Promise<void> {
     // We import the stage scene based on the name
-    const unityScene = await this.game.assetManager.instantiateUnityScene(
+    this.unityScene = await this.game.assetManager.instantiateUnityScene(
       this.fixedStageName,
     );
-    this.gameAssetContainer = unityScene.container;
+    this.gameAssetContainer = this.unityScene.container;
 
-    unityScene.rootMesh.position = new Vector3(0, 0, 0);
+    this.unityScene.rootMesh.position = new Vector3(0, 0, 0);
 
-    this.initArrivalPoint(unityScene);
+    this.initArrivalPoint(this.unityScene);
 
     this.onCollisionObserver = this.game.physicsPlugin.onTriggerCollisionObservable.add(
       this.onCollision.bind(this),
@@ -75,7 +76,7 @@ export class FixedStageScene extends GameScene {
       detailSampleMaxError: 1,
     };
 
-    const meshes = unityScene.rootMesh.getChildMeshes();
+    const meshes = this.unityScene.rootMesh.getChildMeshes();
     this.navigationManager.createNavmesh(meshes as Mesh[], parameters);
 
     this.game.player.setPosition(new Vector3(0, 1, 0));
@@ -90,12 +91,21 @@ export class FixedStageScene extends GameScene {
   public dispose(): void {
     super.dispose();
 
+    this.unityScene.rootMesh.dispose();
+    this.unityScene.arrivalPoint?.dispose();
+    this.unityScene.spawnTriggers.forEach((spawnTrigger) => {
+      spawnTrigger.dispose();
+    });
+    this.unityScene.container.dispose();
+
     this.enemies.forEach((enemy) => {
       enemy.dispose();
     });
     this.enemies = [];
 
     this.onPlayerDamageTakenObserver.remove();
+
+    this.onCollisionObserver.remove();
   }
 
   private initArrivalPoint(unityScene: UnityScene): void {

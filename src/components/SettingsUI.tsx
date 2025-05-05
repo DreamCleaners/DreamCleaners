@@ -11,7 +11,6 @@ const SettingsUI = () => {
   const [sensivity, setSensivity] = useState(
     game?.player.cameraManager.getCameraSensivity() ?? 0.5,
   );
-  // Single volume state variable
   const [masterVolume, setMasterVolume] = useState(
     game?.soundManager.getGlobalVolume() ?? 0.5,
   );
@@ -23,7 +22,6 @@ const SettingsUI = () => {
     setSensivity(value);
 
     game.player.cameraManager.setCameraSensivity(value);
-    game.saveManager.save();
   };
 
   // Master volume handler
@@ -34,7 +32,6 @@ const SettingsUI = () => {
     setMasterVolume(value);
 
     game?.soundManager.setGlobalVolume(value);
-    game.saveManager.save();
   };
 
   // Add handler for slider release
@@ -73,28 +70,25 @@ const SettingsUI = () => {
                 defaultValue={sensivity}
                 step="0.01"
                 onChange={handleSensivityChange}
+                onMouseUp={handleSliderRelease}
+                onTouchEnd={handleSliderRelease}
               />
             </div>
           </div>
-
-          {/* Single Sound Volume Control */}
           <div className="settings-menu-item">
-            <h2>Sound</h2>
+            <h2>Sound volume</h2>
             <div className="settings-menu-item-content">
-              <div className="settings-volume-control">
-                <h3>Volume</h3>
-                <h3>{formatAsPercentage(masterVolume)}</h3>
-                <input
-                  type="range"
-                  min="0"
-                  max="2"
-                  defaultValue={masterVolume}
-                  step="0.01"
-                  onChange={handleVolumeChange}
-                  onMouseUp={handleSliderRelease}
-                  onTouchEnd={handleSliderRelease}
-                />
-              </div>
+              <h2>{formatAsPercentage(masterVolume)}</h2>
+              <input
+                type="range"
+                min="0"
+                max="2"
+                defaultValue={masterVolume}
+                step="0.01"
+                onChange={handleVolumeChange}
+                onMouseUp={handleSliderRelease}
+                onTouchEnd={handleSliderRelease}
+              />
             </div>
           </div>
         </div>

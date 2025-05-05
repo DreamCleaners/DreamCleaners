@@ -77,7 +77,6 @@ export class AssetManager {
   }
 
   private createSky(sceneName: string, assetContainer: GameAssetContainer): void {
-    console.log('Creating skybox for scene: ' + sceneName);
     const skybox = MeshBuilder.CreateBox('skyBox', { size: 1000 }, this.scene);
 
     // Create material for the skybox
@@ -99,7 +98,6 @@ export class AssetManager {
     skybox.material = skyboxMaterial;
     skybox.infiniteDistance = true;
 
-    console.log('Adding skybox to asset container');
     assetContainer.addMesh(skybox);
   }
 
@@ -129,7 +127,6 @@ export class AssetManager {
   }
 
   private handleArrivalPoint(node: Mesh): TransformNode {
-    //node.position.x *= -1;
     return node;
   }
 
@@ -139,11 +136,9 @@ export class AssetManager {
     tokens: string[],
   ): void {
     const diameter = parseInt(tokens[1]);
-    //node.position.x *= -1;
 
     const spawnPoints: TransformNode[] = [];
     node.getChildTransformNodes(true).forEach((child) => {
-      //child.position.x *= -1;
       spawnPoints.push(child);
     });
 
