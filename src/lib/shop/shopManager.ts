@@ -211,7 +211,7 @@ export class ShopManager {
 
     return new WeaponItem(
       weaponData.weaponName,
-      'weapon description...',
+      weaponData.shopDescription,
       100,
       ShopItemType.WEAPON,
       rarity,

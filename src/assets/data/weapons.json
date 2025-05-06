@@ -1,6 +1,7 @@
 {
   "ak": {
     "weaponName": "AK",
+    "shopDescription": "A powerful and reliable automatic assault rifle.",
     "crosshair": {
       "name": "crosshair-ak",
       "scale": 1
@@ -49,6 +50,7 @@
   },
   "glock": {
     "weaponName": "GLOCK",
+    "shopDescription": "The starting weapon for all employees. A simple yet effective pistol.",
     "crosshair": {
       "name": "crosshair-glock",
       "scale": 1
@@ -97,6 +99,7 @@
   },
   "shotgun": {
     "weaponName": "SHOTGUN",
+    "shopDescription": "A polyvalent shotgun good at close and medium range.",
     "crosshair": {
       "name": "crosshair-shotgun",
       "scale": 1.6

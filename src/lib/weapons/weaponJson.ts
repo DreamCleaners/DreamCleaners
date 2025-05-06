@@ -9,6 +9,7 @@ import {
 
 export type WeaponJson = {
   weaponName: string;
+  shopDescription: string;
   crosshair: CrosshairData;
   globalStats: GlobalStatsJson;
   staticStats: StaticStats;
