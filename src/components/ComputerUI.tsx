@@ -150,14 +150,14 @@ const ComputerUI = () => {
   const replaceWeaponCallback = (weaponIndex: number) => {
     if (!selectedWeapon || !game) return;
 
-    game.soundManager.playSound('placeholder', SoundCategory.UI);
+    game.soundManager.playSound('uiClick', SoundCategory.UI);
     handleReplaceWeapon(selectedWeapon, weaponIndex);
   };
 
   const applyPassiveCallback = (weaponIndex: number) => {
     if (!selectedWeaponPassive || !game) return;
 
-    game.soundManager.playSound('placeholder', SoundCategory.UI);
+    game.soundManager.playSound('uiClick', SoundCategory.UI);
     handleApplyWeaponPassive(selectedWeaponPassive, weaponIndex);
   };
 

@@ -16,4 +16,6 @@ export type WeaponJson = {
   transform: WeaponTransform;
   firePoint: Vec3;
   animationsSpeed: WeaponAnimationsSpeed;
+  akimboTransform?: WeaponTransform;
+  akimboFirePoint?: Vec3;
 };

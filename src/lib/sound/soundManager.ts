@@ -22,8 +22,15 @@ export class SoundManager {
   public cameraListener: UniversalCamera;
   public playerListener: Player;
 
+  // We are forced to hardcode the positions of these static objects are they are not easily accessible
+  // In the object fields, because their position is set directly from within the glb object
   private readonly computerPosition = new Vector3(-0.53, 1.8, 4.2);
   private readonly radioPosition = new Vector3(2.779, 1.87, 4.37);
+  private readonly bedPositions = [
+    new Vector3(4.2, 0.178, -9.26),
+    new Vector3(4.2, 0.178, -15.47),
+    new Vector3(4.2, 0.178, -21.24),
+  ];
 
   public static readonly DEFAULT_MUSIC_VOLUME = 0.2;
 
@@ -46,85 +53,105 @@ export class SoundManager {
       loop: false,
     });
     await this.loadMusic('hub', 'hub-music', SoundCategory.MUSIC, { loop: true });
-    await this.loadMusic('radioMusic1', 'radioMusic1', SoundCategory.RADIO_MUSIC, {
-      loop: true,
-      volume: 0.2,
-      spatialEnabled: true,
-      spatialDistanceModel: 'exponential',
-      spatialMaxDistance: 15,
-      spatialMinDistance: 2,
-      spatialRolloffFactor: 1,
-      stereoEnabled: false,
-      spatialConeInnerAngle: 270,
-      spatialConeOuterAngle: 340,
-      spatialConeOuterVolume: 0.4,
-    });
 
-    await this.loadMusic('radioMusic2', 'radioMusic2', SoundCategory.RADIO_MUSIC, {
-      loop: true,
-      volume: 0.2,
-      spatialEnabled: true,
-      spatialDistanceModel: 'exponential',
-      spatialMaxDistance: 15,
-      spatialMinDistance: 2,
-      spatialRolloffFactor: 1,
-      stereoEnabled: false,
-      spatialConeInnerAngle: 270,
-      spatialConeOuterAngle: 340,
-      spatialConeOuterVolume: 0.4,
-    });
+    // Radio musics loading
+    await this.loadMultipleStreamingSounds(
+      ['radioMusic1', 'radioMusic2', 'radioMusic3'],
+      SoundCategory.RADIO_MUSIC,
+      {
+        loop: true,
+        volume: 0.2,
+        spatialEnabled: true,
+        spatialDistanceModel: 'exponential',
+        spatialMaxDistance: 15,
+        spatialMinDistance: 2,
+        spatialRolloffFactor: 1,
+        stereoEnabled: false,
+        spatialConeInnerAngle: 270,
+        spatialConeOuterAngle: 340,
+        spatialConeOuterVolume: 0.4,
+      },
+    );
 
-    await this.loadMusic('radioMusic3', 'radioMusic3', SoundCategory.RADIO_MUSIC, {
-      loop: true,
-      volume: 0.2,
-      spatialEnabled: true,
-      spatialDistanceModel: 'exponential',
-      spatialMaxDistance: 15,
-      spatialMinDistance: 2,
-      spatialRolloffFactor: 1,
-      stereoEnabled: false,
-      spatialConeInnerAngle: 270,
-      spatialConeOuterAngle: 340,
-      spatialConeOuterVolume: 0.4,
-    });
+    // Sleeping ambience loading
+    // Sleeping ambience loading
+    await this.loadMultipleStreamingSounds(
+      ['sleeping0', 'sleeping1', 'sleeping2', 'sleepingEasterEgg'],
+      SoundCategory.AMBIENT,
+      {
+        loop: true,
+        volume: 1,
+        spatialEnabled: true,
+        spatialDistanceModel: 'exponential',
+        spatialMaxDistance: 10,
+        spatialMinDistance: 2,
+        spatialRolloffFactor: 3,
+        stereoEnabled: false,
+        spatialConeInnerAngle: 270,
+        spatialConeOuterAngle: 340,
+        spatialConeOuterVolume: 0.4,
+      },
+    );
 
     await this.loadMusic('loading', 'loading-ambiance', SoundCategory.AMBIENT);
 
-    // Create sound pools weapon (and UI?)
+    // Create sound pools weapon
     await this.createSoundPool('glockShot', 10, { volume: 0.1 });
-    await this.createSoundPool('shotgunShot', 6, { volume: 0.2 });
+    await this.createSoundPool('winchesterShot', 6, { volume: 0.2 });
+    await this.createSoundPool('sawed-offShot', 6, { volume: 0.2 });
+    await this.createSoundPool('aa-12Shot', 8, { volume: 0.2 });
+    await this.createSoundPool('peace-of-mindShot', 6, { volume: 0.2 });
     await this.createSoundPool('akShot', 30, { volume: 0.1 });
+    await this.createSoundPool('famasShot', 30, { volume: 0.1 });
+    await this.createSoundPool('augShot', 30, { volume: 0.1 });
+    await this.createSoundPool('revolverShot', 6, { volume: 0.4 });
+    await this.createSoundPool('desert-eagleShot', 6, { volume: 0.3 });
+    await this.createSoundPool('p90Shot', 6, { volume: 0.2 });
 
     // Preload all UI sounds, as they are light and used everywhere
-    await this.loadStaticSound('placeholder', SoundCategory.UI, {
+    await this.loadStaticSound('uiClick', SoundCategory.UI, {
       loop: false,
       volume: 0.1,
     });
 
-    await this.loadStaticSound('flashlightSwitchOn', SoundCategory.EFFECT, {
-      loop: false,
-      volume: 0.5,
-    });
-
-    await this.loadStaticSound('flashlightSwitchOff', SoundCategory.EFFECT, {
-      loop: false,
-      volume: 0.5,
-    });
-
-    await this.loadStaticSound('pcEnter', SoundCategory.EFFECT, {
-      loop: false,
-      volume: 0.5,
-    });
-    await this.loadStaticSound('pcLeave', SoundCategory.EFFECT, {
-      loop: false,
-      volume: 0.5,
-    });
-
-    await this.loadStaticSound('playerDamageTaken', SoundCategory.EFFECT, {
-      loop: false,
-      volume: 0.5,
-    });
+    // Load common effect sounds with same parameters
+    await this.loadMultipleStaticSounds(
+      [
+        'flashlightSwitchOn',
+        'flashlightSwitchOff',
+        'pcEnter',
+        'pcLeave',
+        'playerDamageTaken',
+      ],
+      SoundCategory.EFFECT,
+      {
+        loop: false,
+        volume: 0.5,
+      },
+    );
     // ...
+  }
+
+  // Used to load multiple sounds at once with the same parameters
+  private async loadMultipleStreamingSounds(
+    soundNames: string[],
+    category: SoundCategory,
+    options?: Partial<IStreamingSoundOptions>,
+  ): Promise<void> {
+    for (const name of soundNames) {
+      await this.loadMusic(name, name, category, options);
+    }
+  }
+
+  // Used to load multiple sounds at once with the same parameters
+  private async loadMultipleStaticSounds(
+    soundNames: string[],
+    category: SoundCategory,
+    options?: Partial<IStaticSoundOptions>,
+  ): Promise<void> {
+    for (const name of soundNames) {
+      await this.loadStaticSound(name, category, options);
+    }
   }
 
   // ----------------------------------------
@@ -329,19 +356,14 @@ export class SoundManager {
   }
 
   public playWeaponShot(type: WeaponType) {
-    switch (type) {
-      case WeaponType.GLOCK:
-        this.playFromPool('glockShot');
-        break;
-      case WeaponType.SHOTGUN:
-        this.playFromPool('shotgunShot');
-        break;
-      case WeaponType.AK:
-        this.playFromPool('akShot');
-        break;
-      default:
-        console.warn(`No sound for weapon type ${type}`);
-        break;
+    const soundName = type.toLowerCase() + 'Shot';
+
+    const formattedSoundName = soundName.replace('_', '-');
+
+    try {
+      this.playFromPool(formattedSoundName);
+    } catch (error) {
+      console.warn(`Error playing shoot sound for weapon type ${type}, trace: ${error}`);
     }
   }
 
@@ -372,24 +394,9 @@ export class SoundManager {
    * @returns Promise that resolves when sound starts playing
    */
   public async playWeaponReload(type: WeaponType, reloadTime: number): Promise<void> {
-    let soundName!: string;
-    let volume = 0.5;
-    switch (type) {
-      case WeaponType.GLOCK:
-        soundName = 'glockReload';
-        volume = 0.2;
-        break;
-      case WeaponType.SHOTGUN:
-        soundName = 'shotgunReload';
-        volume = 0.35;
-        break;
-      case WeaponType.AK:
-        soundName = 'akReload';
-        volume = 0.2;
-        break;
-      default:
-        console.warn(`No sound for weapon type ${type}`);
-    }
+    const volume = 0.2;
+    const soundName = type.toLowerCase() + 'Reload';
+    soundName.replace('_', '-');
 
     // Check if sound is already loaded
     let sound = this.soundSystem.getSound(soundName, SoundCategory.EFFECT) as StaticSound;
@@ -448,6 +455,31 @@ export class SoundManager {
 
     // Radio music
     this.playSpatialSoundAt('radioMusic1', this.radioPosition, SoundCategory.RADIO_MUSIC);
+
+    // Sleeping ambience
+    this.playSleepingAmbience();
+  }
+
+  private playSleepingAmbience(): void {
+    // Sleeping ambience
+
+    const sleepingAmbienceIndex = Math.floor(Math.random() * 3);
+
+    for (let i = 0; i < this.bedPositions.length; i++) {
+      if (Math.random() < 0.05) {
+        this.playSpatialSoundAt(
+          'sleepingEasterEgg',
+          this.bedPositions[i],
+          SoundCategory.AMBIENT,
+        );
+      } else {
+        this.playSpatialSoundAt(
+          'sleeping' + ((sleepingAmbienceIndex + i) % 3),
+          this.bedPositions[i],
+          SoundCategory.AMBIENT,
+        );
+      }
+    }
   }
 
   public playBulletImpactSound(position: Vector3): void {
@@ -516,7 +548,7 @@ export class SoundManager {
   }
 
   public pauseAllSounds(): void {
-    this.radio.pauseRadioMusic();
+    if (this.radio != undefined) this.radio.pauseRadioMusic();
     this.soundSystem.pauseAllSounds();
   }
 

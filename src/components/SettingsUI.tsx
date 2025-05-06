@@ -38,7 +38,7 @@ const SettingsUI = () => {
 
   const playUISound = () => {
     if (!game) return;
-    game.soundManager.playSound('placeholder', SoundCategory.UI);
+    game.soundManager.playSound('uiClick', SoundCategory.UI);
   };
 
   const handleGraphicsQualityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

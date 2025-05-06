@@ -13,4 +13,5 @@ export interface SerializedStageInformation {
   difficulty: number;
   enemyTypes: EnemyType[];
   stageReward: SerializedStageReward;
+  description: string;
 }

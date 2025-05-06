@@ -14,7 +14,7 @@ export const withClickSound = <E extends React.SyntheticEvent = React.MouseEvent
       // We currently always play the same sound, but we could
       // receive the sound name as a parameter in the future
       // if we want to play different sounds for different buttons
-      game.soundManager.playSound('placeholder', SoundCategory.UI);
+      game.soundManager.playSound('uiClick', SoundCategory.UI);
     }
 
     // Call the original handler if provided
