@@ -1,4 +1,10 @@
-import { Engine, HavokPlugin, Scene, Vector3 } from '@babylonjs/core';
+import {
+  Engine,
+  HavokPlugin,
+  Scene,
+  ScenePerformancePriority,
+  Vector3,
+} from '@babylonjs/core';
 import HavokPhysics from '@babylonjs/havok';
 import { Inspector } from '@babylonjs/inspector';
 import { SceneManager } from './scenes/sceneManager';
@@ -76,6 +82,9 @@ export class Game {
     this.physicsPlugin = await this.getPhysicsPlugin();
     const gravity = Vector3.Zero();
     this.scene.enablePhysics(gravity, this.physicsPlugin);
+
+    this.scene.performancePriority = ScenePerformancePriority.Aggressive;
+    this.engine.setHardwareScalingLevel(2);
 
     this.playerPassiveFactory = new PlayerPassiveFactory(this);
 
@@ -167,6 +176,7 @@ export class Game {
    * Update loop called each frame
    */
   private update(): void {
+    console.log(this.engine.getFps().toFixed() + ' fps');
     this.scene.render();
 
     if (
