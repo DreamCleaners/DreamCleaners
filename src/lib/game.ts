@@ -1,4 +1,4 @@
-import { Engine, HavokPlugin, Scene, Vector3 } from '@babylonjs/core';
+import { Engine, HavokPlugin, Observable, Scene, Vector3 } from '@babylonjs/core';
 import HavokPhysics from '@babylonjs/havok';
 import { Inspector } from '@babylonjs/inspector';
 import { SceneManager } from './scenes/sceneManager';
@@ -21,6 +21,7 @@ import { PlayerPassiveFactory } from './shop/playerPassiveFactory';
 import { WorkbenchManager } from './shop/workbench/workbenchManager';
 import { StageInformationManager } from './ui/stageInfoManager';
 import { SoundManager } from './sound/soundManager';
+import { SettingType } from './settingType';
 
 export class Game {
   public scene!: Scene;
@@ -62,6 +63,11 @@ export class Game {
   private endPauseTime = 0;
   private isFirstFrameAfterPause = false;
 
+  private readonly DEFAULT_GRAPHICS_QUALITY = 1;
+
+  private showFPS: boolean = false;
+  public onFPSChange = new Observable<number>();
+
   /**
    * Called one time when the canvas is initialized
    */
@@ -72,6 +78,15 @@ export class Game {
     this.assetManager = new AssetManager(this.scene);
     this.inputManager = new InputManager(this.engine);
     this.recastInjection = await Recast.bind({})();
+
+    this.setGraphicsQuality(
+      parseInt(
+        window.localStorage.getItem(SettingType.GRAPHICS_QUALITY) ??
+          this.DEFAULT_GRAPHICS_QUALITY.toString(),
+      ),
+    );
+
+    this.showFPS = window.localStorage.getItem(SettingType.SHOW_FPS) === 'true';
 
     this.physicsPlugin = await this.getPhysicsPlugin();
     const gravity = Vector3.Zero();
@@ -167,6 +182,8 @@ export class Game {
    * Update loop called each frame
    */
   private update(): void {
+    this.onFPSChange.notifyObservers(this.engine.getFps());
+
     this.scene.render();
 
     if (
@@ -279,5 +296,28 @@ export class Game {
     this.soundManager.stopStageBackgroundMusic();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();
+  }
+
+  // Settings ----------------
+
+  public getGraphicsQuality(): number {
+    return this.engine.getHardwareScalingLevel();
+  }
+
+  public setGraphicsQuality(quality: number): void {
+    this.engine.setHardwareScalingLevel(quality);
+    this.engine.resize();
+
+    window.localStorage.setItem(SettingType.GRAPHICS_QUALITY, quality.toString());
+  }
+
+  public isFPSVisible(): boolean {
+    return this.showFPS;
+  }
+
+  public setFPSVisibility(visible: boolean): void {
+    this.showFPS = visible;
+
+    window.localStorage.setItem(SettingType.SHOW_FPS, visible.toString());
   }
 }

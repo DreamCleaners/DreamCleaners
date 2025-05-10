@@ -1,6 +1,7 @@
 import { Quaternion, Scalar, UniversalCamera, Vector3 } from '@babylonjs/core';
 import { Player } from './player';
 import { InputState } from '../inputs/inputState';
+import { SettingType } from '../settingType';
 
 export class CameraManager {
   private camera!: UniversalCamera;
@@ -16,7 +17,8 @@ export class CameraManager {
   constructor(private player: Player) {
     // We don't use the save system here because the camera settings are independent of the player's progression.
     this.sensivity = parseFloat(
-      window.localStorage.getItem('cameraSensivity') ?? this.DEFAULT_SENSIVITY.toString(),
+      window.localStorage.getItem(SettingType.CAMERA_SENSIVITY) ??
+        this.DEFAULT_SENSIVITY.toString(),
     );
     this.initCamera();
     this.setCameraSensivity(this.sensivity);
@@ -103,6 +105,6 @@ export class CameraManager {
     this.camera.angularSensibility =
       this.MAX_ANGULAR_SENSIBILITY + 1 - this.sensivity * this.MAX_ANGULAR_SENSIBILITY;
 
-    window.localStorage.setItem('cameraSensivity', this.sensivity.toString());
+    window.localStorage.setItem(SettingType.CAMERA_SENSIVITY, this.sensivity.toString());
   }
 }

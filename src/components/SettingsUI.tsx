@@ -3,8 +3,10 @@ import BaseContainer from './BaseContainer';
 import { GameContext } from '../contexts/GameContext';
 import { withClickSound } from '../lib/utils/withClickSound';
 import { UIType } from '../lib/ui/uiType';
-import '../styles/settingsUI.css';
 import { SoundCategory } from '../lib/sound/soundManager';
+
+import '../styles/settingsUI.css';
+import '../styles/shared.css';
 
 const SettingsUI = () => {
   const game = useContext(GameContext);
@@ -34,10 +36,16 @@ const SettingsUI = () => {
     game?.soundManager.setGlobalVolume(value);
   };
 
-  // Add handler for slider release
-  const handleSliderRelease = () => {
+  const playUISound = () => {
     if (!game) return;
     game.soundManager.playSound('placeholder', SoundCategory.UI);
+  };
+
+  const handleGraphicsQualityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (!game) return;
+
+    const quality = parseFloat(e.target.value);
+    game.setGraphicsQuality(quality);
   };
 
   const handleHideUI = () => {
@@ -70,8 +78,8 @@ const SettingsUI = () => {
                 defaultValue={sensivity}
                 step="0.01"
                 onChange={handleSensivityChange}
-                onMouseUp={handleSliderRelease}
-                onTouchEnd={handleSliderRelease}
+                onMouseUp={playUISound}
+                onTouchEnd={playUISound}
               />
             </div>
           </div>
@@ -86,9 +94,37 @@ const SettingsUI = () => {
                 defaultValue={masterVolume}
                 step="0.01"
                 onChange={handleVolumeChange}
-                onMouseUp={handleSliderRelease}
-                onTouchEnd={handleSliderRelease}
+                onMouseUp={playUISound}
+                onTouchEnd={playUISound}
               />
+            </div>
+          </div>
+          <div className="settings-menu-item">
+            <h2>Graphics quality</h2>
+            <div className="settings-menu-item-content">
+              <select
+                onChange={handleGraphicsQualityChange}
+                onMouseUp={playUISound}
+                defaultValue={game?.getGraphicsQuality()}
+              >
+                <option value="2">Low</option>
+                <option value="1.5">Medium</option>
+                <option value="1">High</option>
+              </select>
+            </div>
+          </div>
+          <div className="settings-menu-item">
+            <h2>Show FPS</h2>
+            <div className="settings-menu-item-content">
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  defaultChecked={game?.isFPSVisible()}
+                  onChange={(e) => game?.setFPSVisibility(e.target.checked)}
+                  onClick={playUISound}
+                />
+                <span className="slider"></span>
+              </label>
             </div>
           </div>
         </div>

@@ -21,6 +21,8 @@ const PlayerHUD = () => {
   const [timer, setTimer] = useState<string>('0:00:00');
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
+  const [fps, setFPS] = useState<number>(60);
+
   const onWeaponChange = (weapon: Weapon) => {
     if (weapon === undefined) return;
     // remove previous observer so we don't have multiple observers
@@ -62,6 +64,8 @@ const PlayerHUD = () => {
       game.scoreManager.onStateChange.add(setIsTimerRunning);
     const onTimerChangeObserver = game.scoreManager.onTimerChange.add(updateTimer);
 
+    const onFPSChangeObserver = game.onFPSChange.add(setFPS);
+
     return () => {
       // remove observers when component unmounts
       onHealthChangeObserver.remove();
@@ -70,6 +74,7 @@ const PlayerHUD = () => {
       onAmmoChangeObserverRef.current?.remove();
       onStageStateChangeObserver.remove();
       onTimerChangeObserver.remove();
+      onFPSChangeObserver.remove();
     };
   }, [game]);
 
@@ -97,6 +102,11 @@ const PlayerHUD = () => {
           </div>
         </div>
       </div>
+      {game?.isFPSVisible() && (
+        <div className="hud-fps">
+          <h3>FPS : {fps.toFixed(0)}</h3>
+        </div>
+      )}
     </div>
   );
 };

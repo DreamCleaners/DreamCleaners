@@ -8,6 +8,7 @@ import {
   StaticSound,
   StreamingSound,
 } from '@babylonjs/core';
+import { SettingType } from '../settingType';
 
 /**
  * Enum for different sound categories
@@ -48,7 +49,9 @@ export class SoundSystem {
   }
 
   public async init(): Promise<void> {
-    this.globalVolume = parseFloat(window.localStorage.getItem('globalVolume') ?? '1');
+    this.globalVolume = parseFloat(
+      window.localStorage.getItem(SettingType.SOUND_VOLUME) ?? '1',
+    );
     this.audioEngine = await CreateAudioEngineAsync({ volume: this.globalVolume });
     this.setGlobalVolume(this.globalVolume);
   }
@@ -390,7 +393,7 @@ export class SoundSystem {
     this.globalVolume = volume;
     this.audioEngine.volume = volume;
 
-    window.localStorage.setItem('globalVolume', volume.toString());
+    window.localStorage.setItem(SettingType.SOUND_VOLUME, volume.toString());
   }
 
   public getGlobalVolume(): number {

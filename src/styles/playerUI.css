@@ -101,3 +101,10 @@
   box-shadow: 0px 0px var(--shadow-size) var(--border-color);
   color: var(--font-color-primary);
 }
+
+.hud-fps {
+  position: absolute;
+  top: 15px;
+  right: 6%;
+  color: var(--font-color-secondary);
+}

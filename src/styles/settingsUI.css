@@ -123,3 +123,65 @@ input[type='range']:focus::-moz-range-thumb {
   outline: 3px solid #808080;
   outline-offset: 0.125rem;
 }
+
+select {
+  background: linear-gradient(-180deg, var(--secondary-color), var(--primary-color));
+  color: var(--font-color-primary);
+  border: 3px solid var(--border-color);
+  border-top-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  padding: 10px;
+  box-shadow: 0px 0px var(--shadow-size) var(--border-color);
+  width: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+}
+
+/* From Uiverse.io by TimTrayler */
+.switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 3.7em;
+  height: 1.8em;
+}
+
+.switch input {
+  display: none;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: 0.2s;
+  border-radius: 7px;
+  box-shadow: 0px 0px var(--shadow-size) var(--border-color);
+  border: 3px solid var(--border-color);
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 1.4em;
+  width: 1.4em;
+  border-radius: 5px;
+  background-color: var(--font-color-primary);
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: var(--secondary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(1.9em);
+}
