@@ -534,8 +534,6 @@ export class Weapon {
 
     // Apply health gain per hit
     this.player.healthController.addHealth(this.hpPerHitModifier);
-
-    console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
   }
 
   private isEnemy(entity: IDamageable): entity is Enemy {

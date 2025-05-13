@@ -1,3 +1,4 @@
+import { Vec3 } from '../utils/jsonTypes';
 import { GlobalStats } from './globalStats';
 
 export type WeaponData = {
@@ -30,12 +31,6 @@ export type WeaponTransform = {
 export type WeaponAnimationsSpeed = {
   shoot?: number;
   reload?: number;
-};
-
-export type Vec3 = {
-  x: number;
-  y: number;
-  z: number;
 };
 
 export type CrosshairData = {

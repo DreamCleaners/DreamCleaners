@@ -106,7 +106,7 @@ const StageEndUI = () => {
                     Damage taken :
                   </div>
                   <p className="score-stats-item-value">
-                    {game.scoreManager.totalDamageTaken}
+                    {game.scoreManager.totalDamageTaken.toFixed(0)}
                   </p>
                 </li>
                 <li className="score-stats-item">

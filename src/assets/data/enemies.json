@@ -1,0 +1,74 @@
+{
+  "zombie": {
+    "name": "Zombie",
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 2.5,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 0.5,
+      "height": 2.5,
+      "scale": 0.3,
+      "hitboxOffset": {
+        "x": 0.2,
+        "y": 0.25
+      }
+    },
+    "attackAnimation": {
+      "name": "Zombie|ZombieBite",
+      "options": {
+        "from": 50,
+        "to": 150,
+        "speedRatio": 1.25
+      }
+    },
+    "idleAnimation": {
+      "name": "Zombie|ZombieIdle",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "Zombie|ZombieWalk",
+      "options": {
+        "speedRatio": 1.75
+      }
+    }
+  },
+  "spider": {
+    "name": "Spider",
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 2.5,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 1,
+      "height": 1,
+      "scale": 0.45,
+      "hitboxOffset": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "attackAnimation": {
+      "name": "SpiderArmature|Spider_Attack",
+      "options": {
+        "speedRatio": 1.25
+      }
+    },
+    "idleAnimation": {
+      "name": "SpiderArmature|Spider_Idle",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "SpiderArmature|Spider_Walk",
+      "options": {
+        "speedRatio": 1.5
+      }
+    }
+  }
+}
