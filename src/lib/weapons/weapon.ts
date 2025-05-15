@@ -28,6 +28,7 @@ import { BulletEffect } from './passives/bulletEffect.ts';
 import { Enemy } from '../enemies/enemy.ts';
 import { AnimationController } from '../animations/animationController.ts';
 import { SoundManager } from '../sound/soundManager.ts';
+import { ColliderMask } from '../colliderMask.ts';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -469,6 +470,7 @@ export class Weapon {
 
     this.physicsEngine.raycastToRef(start, end, this.raycastResult, {
       shouldHitTriggers: true,
+      collideWith: ColliderMask.ENEMY,
     });
 
     if (this.raycastResult.hasHit) {

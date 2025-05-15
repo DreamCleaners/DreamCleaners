@@ -24,6 +24,7 @@ import { EnemyAnimation } from './enemyAnimation';
 import { GameEntityType } from '../gameEntityType';
 import { MetadataFactory } from '../metadata/metadataFactory';
 import { FireBall } from './fireBall';
+import { ColliderMask } from '../colliderMask';
 
 export class Enemy implements IDamageable {
   public mesh!: Mesh;
@@ -128,6 +129,7 @@ export class Enemy implements IDamageable {
     // disablePreStep to false so we can rotate the mesh without affecting the physics body
     this.physicsAggregate.body.disablePreStep = false;
     this.physicsAggregate.shape.isTrigger = true;
+    this.physicsAggregate.shape.filterMembershipMask = ColliderMask.ENEMY;
 
     this.setAnimations();
 

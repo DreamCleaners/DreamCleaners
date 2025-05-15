@@ -25,6 +25,7 @@ import {
 import { Game } from '../game';
 import { GameEntityType } from '../gameEntityType';
 import { Enemy } from './enemy';
+import { ColliderMask } from '../colliderMask';
 
 export class FireBall {
   private mesh!: Mesh;
@@ -71,6 +72,7 @@ export class FireBall {
     // disablePreStep to false so we can rotate the mesh without affecting the physics body
     this.physicsAggregate.body.disablePreStep = false;
     this.physicsAggregate.shape.isTrigger = true;
+    this.physicsAggregate.shape.filterMembershipMask = ColliderMask.OBJECT;
     const observer = this.game.physicsPlugin.onTriggerCollisionObservable;
     this.onCollisionObserver = observer.add(this.onCollision.bind(this));
 

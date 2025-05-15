@@ -9,6 +9,7 @@ import {
 } from '@babylonjs/core';
 import { GameEntityType } from '../gameEntityType';
 import { MetadataFactory } from '../metadata/metadataFactory';
+import { ColliderMask } from '../colliderMask';
 
 export class SpawnTrigger {
   private physicsAggregate!: PhysicsAggregate;
@@ -39,6 +40,7 @@ export class SpawnTrigger {
       this.scene,
     );
     this.physicsAggregate.shape.isTrigger = true;
+    this.physicsAggregate.shape.filterMembershipMask = ColliderMask.OBJECT;
   }
 
   public dispose(): void {
