@@ -104,6 +104,12 @@ export class FireBall {
     ) {
       this.enemy.applyDamageToPlayer();
       this.dispose();
+    } else if (
+      collider.transformNode.name === GameEntityType.PROJECTILE &&
+      collidedAgainst.transformNode.name !== GameEntityType.ENEMY &&
+      collider.transformNode.id === this.mesh.id
+    ) {
+      this.dispose();
     }
   }
 
