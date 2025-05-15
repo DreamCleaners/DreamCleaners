@@ -23,6 +23,7 @@ import { EnemyData } from './enemyData';
 import { EnemyAnimation } from './enemyAnimation';
 import { GameEntityType } from '../gameEntityType';
 import { MetadataFactory } from '../metadata/metadataFactory';
+import { FireBall } from './fireBall';
 
 export class Enemy implements IDamageable {
   public mesh!: Mesh;
@@ -47,7 +48,6 @@ export class Enemy implements IDamageable {
     };
   }
 
-  private enemyType!: EnemyType;
   private target: Vector3 = Vector3.Zero();
   private initialized = false;
   private state = EnemyState.START_WALK;
@@ -65,6 +65,7 @@ export class Enemy implements IDamageable {
     private entries: InstantiatedEntries,
     position: Vector3,
     private enemyData: EnemyData,
+    private enemyType: EnemyType,
   ) {
     this.onDeathObservable = this.healthController.onDeath;
     this.healthController.onDeath.add(this.onDeath.bind(this));
@@ -209,16 +210,39 @@ export class Enemy implements IDamageable {
     animation.onAnimationGroupEndObservable.addOnce(() => {
       if (this.state === EnemyState.DEAD) return;
 
-      // apply damage to the player
-      this.gameScene.game.player.takeDamage(this.attackDamage);
       this.gameScene.game.soundManager.playEnemyAttackSound(
         this.mesh.position,
         this.enemyType,
       );
 
+      if (this.enemyData.isMelee) {
+        this.applyDamageToPlayer();
+      } else {
+        this.createProjectile();
+      }
+
       this.playIdleAnimation();
       this.state = EnemyState.IN_ATTACK_RANGE;
     });
+  }
+
+  private createProjectile(): void {
+    new FireBall(
+      this.gameScene.game,
+      this,
+      this.mesh.position
+        .clone()
+        .addInPlaceFromFloats(
+          this.enemyData.meshData.hitboxOffset.x,
+          this.enemyData.meshData.height * 0.5,
+          this.enemyData.meshData.hitboxOffset.y,
+        ),
+      this.target.clone().addInPlaceFromFloats(0, 0.6, 0),
+    );
+  }
+
+  public applyDamageToPlayer(): void {
+    this.gameScene.game.player.takeDamage(this.attackDamage);
   }
 
   private playWalkAnimation(): void {

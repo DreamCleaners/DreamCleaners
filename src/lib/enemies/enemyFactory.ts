@@ -51,6 +51,13 @@ export class EnemyFactory {
     const entries = await this.getEnemyEntries(enemyType, gameScene.game);
     const enemyData = gameScene.game.enemyDataManager.getEnemyData(enemyType);
 
-    return new Enemy(gameScene, difficultyFactor, entries, position, enemyData);
+    return new Enemy(
+      gameScene,
+      difficultyFactor,
+      entries,
+      position,
+      enemyData,
+      enemyType,
+    );
   }
 }

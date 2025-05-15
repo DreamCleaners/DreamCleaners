@@ -719,7 +719,7 @@ export class Weapon {
 
     // bullet impact
     const impactParticleSystem = new ParticleSystem(
-      'impact particles',
+      'impactParticles',
       2,
       this.player.game.scene,
     );

@@ -1,10 +1,11 @@
 {
   "zombie": {
     "name": "Zombie",
+    "isMelee": false,
     "baseStats": {
       "attackDamage": 100,
       "speed": 3,
-      "attackRange": 2.5,
+      "attackRange": 20.5,
       "attackSpeed": 1.5,
       "health": 200
     },
@@ -38,10 +39,11 @@
   },
   "spider": {
     "name": "Spider",
+    "isMelee": false,
     "baseStats": {
       "attackDamage": 100,
       "speed": 3,
-      "attackRange": 2.5,
+      "attackRange": 20.5,
       "attackSpeed": 1.5,
       "health": 200
     },

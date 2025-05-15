@@ -3,6 +3,7 @@ import { Vec2 } from '../utils/jsonTypes';
 
 export type EnemyData = {
   name: string;
+  isMelee: boolean;
   baseStats: BaseEnemyStats;
   meshData: EnemyMesh;
   attackAnimation: EnemyAnimationData;

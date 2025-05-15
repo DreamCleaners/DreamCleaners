@@ -1,4 +1,11 @@
-import { Engine, HavokPlugin, Observable, Scene, Vector3 } from '@babylonjs/core';
+import {
+  Engine,
+  GlowLayer,
+  HavokPlugin,
+  Observable,
+  Scene,
+  Vector3,
+} from '@babylonjs/core';
 import HavokPhysics from '@babylonjs/havok';
 import { Inspector } from '@babylonjs/inspector';
 import { SceneManager } from './scenes/sceneManager';
@@ -57,6 +64,7 @@ export class Game {
   public workbenchManager!: WorkbenchManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
   public soundManager!: SoundManager;
+  public glowLayer!: GlowLayer;
 
   private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -93,6 +101,10 @@ export class Game {
     this.physicsPlugin = await this.getPhysicsPlugin();
     const gravity = Vector3.Zero();
     this.scene.enablePhysics(gravity, this.physicsPlugin);
+
+    this.glowLayer = new GlowLayer('glow', this.scene);
+    this.glowLayer.intensity = 0.5;
+    this.glowLayer.renderingGroupId = 0;
 
     this.playerPassiveFactory = new PlayerPassiveFactory(this);
 
