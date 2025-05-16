@@ -1,11 +1,11 @@
 {
   "zombie": {
     "name": "Zombie",
-    "isMelee": false,
+    "isMelee": true,
     "baseStats": {
       "attackDamage": 100,
       "speed": 3,
-      "attackRange": 20.5,
+      "attackRange": 2.5,
       "attackSpeed": 1.5,
       "health": 200
     },
@@ -39,11 +39,11 @@
   },
   "spider": {
     "name": "Spider",
-    "isMelee": false,
+    "isMelee": true,
     "baseStats": {
       "attackDamage": 100,
       "speed": 3,
-      "attackRange": 20.5,
+      "attackRange": 2.5,
       "attackSpeed": 1.5,
       "health": 200
     },
@@ -71,6 +71,206 @@
       "options": {
         "speedRatio": 1.5
       }
+    }
+  },
+  "ghostSkull": {
+    "name": "Ghost Skull",
+    "isMelee": false,
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 10,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 0.5,
+      "height": 1.5,
+      "scale": 0.5,
+      "hitboxOffset": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "attackAnimation": {
+      "name": "CharacterArmature|Headbutt",
+      "options": {
+        "to": 30
+      }
+    },
+    "idleAnimation": {
+      "name": "CharacterArmature|Flying_Idle",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "CharacterArmature|Flying_Idle",
+      "options": {}
+    }
+  },
+  "dragon": {
+    "name": "Dragon",
+    "isMelee": false,
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 10,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 0.7,
+      "height": 1.7,
+      "scale": 0.6,
+      "hitboxOffset": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "attackAnimation": {
+      "name": "CharacterArmature|Headbutt",
+      "options": {
+        "to": 30
+      }
+    },
+    "idleAnimation": {
+      "name": "CharacterArmature|Flying_Idle",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "CharacterArmature|Flying_Idle",
+      "options": {}
+    }
+  },
+  "yeti": {
+    "name": "Yeti",
+    "isMelee": true,
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 3,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 0.9,
+      "height": 2.5,
+      "scale": 1,
+      "hitboxOffset": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "attackAnimation": {
+      "name": "CharacterArmature|Punch",
+      "options": {
+        "to": 40
+      }
+    },
+    "idleAnimation": {
+      "name": "CharacterArmature|Idle",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "CharacterArmature|Walk",
+      "options": {}
+    }
+  },
+  "snake": {
+    "name": "Snake",
+    "isMelee": true,
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 2.5,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 0.5,
+      "height": 1.5,
+      "scale": 0.5,
+      "hitboxOffset": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "attackAnimation": {
+      "name": "SnakeArmature|Snake_Attack",
+      "options": {}
+    },
+    "idleAnimation": {
+      "name": "SnakeArmature|Snake_Idle",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "SnakeArmature|Snake_Walk",
+      "options": {}
+    }
+  },
+  "piranha": {
+    "name": "Piranha",
+    "isMelee": true,
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 2.5,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 0.9,
+      "height": 1.5,
+      "scale": 0.4,
+      "hitboxOffset": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "attackAnimation": {
+      "name": "Fish_Armature|Attack",
+      "options": {}
+    },
+    "idleAnimation": {
+      "name": "Fish_Armature|Swimming_Normal",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "Fish_Armature|Out_Of_Water",
+      "options": {}
+    }
+  },
+  "alien": {
+    "name": "Alien",
+    "isMelee": true,
+    "baseStats": {
+      "attackDamage": 100,
+      "speed": 3,
+      "attackRange": 2.5,
+      "attackSpeed": 1.5,
+      "health": 200
+    },
+    "meshData": {
+      "radius": 0.5,
+      "height": 2,
+      "scale": 0.7,
+      "hitboxOffset": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "attackAnimation": {
+      "name": "AlienArmature|Alien_SwordSlash",
+      "options": {
+        "to": 32
+      }
+    },
+    "idleAnimation": {
+      "name": "AlienArmature|Alien_Idle",
+      "options": {}
+    },
+    "walkAnimation": {
+      "name": "AlienArmature|Alien_Run",
+      "options": {}
     }
   }
 }

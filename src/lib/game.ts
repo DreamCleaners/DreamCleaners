@@ -29,7 +29,6 @@ import { WorkbenchManager } from './shop/workbench/workbenchManager';
 import { StageInformationManager } from './ui/stageInfoManager';
 import { SoundManager } from './sound/soundManager';
 import { SettingType } from './settingType';
-import { EnemyDataManager } from './enemies/enemyDataManager';
 
 export class Game {
   public scene!: Scene;
@@ -59,7 +58,6 @@ export class Game {
   public recastInjection: RecastInjection;
   public runManager = new RunManager();
   public weaponDataManager = new weaponDataManager();
-  public enemyDataManager = new EnemyDataManager();
   public shopManager!: ShopManager;
   public workbenchManager!: WorkbenchManager;
   public playerPassiveFactory!: PlayerPassiveFactory;

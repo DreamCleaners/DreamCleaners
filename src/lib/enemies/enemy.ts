@@ -138,11 +138,24 @@ export class Enemy implements IDamageable {
 
   private setAnimations(): void {
     this.entries.animationGroups.forEach((animationGroup) => {
-      if (animationGroup.name === this.enemyData.walkAnimation.name) {
+      if (
+        animationGroup.name === this.enemyData.walkAnimation.name &&
+        !this.animationController.hasAnimation(EnemyAnimation.WALK)
+      ) {
         this.animationController.addAnimation(EnemyAnimation.WALK, animationGroup);
-      } else if (animationGroup.name === this.enemyData.attackAnimation.name) {
+      }
+
+      if (
+        animationGroup.name === this.enemyData.attackAnimation.name &&
+        !this.animationController.hasAnimation(EnemyAnimation.ATTACK)
+      ) {
         this.animationController.addAnimation(EnemyAnimation.ATTACK, animationGroup);
-      } else if (animationGroup.name === this.enemyData.idleAnimation.name) {
+      }
+
+      if (
+        animationGroup.name === this.enemyData.idleAnimation.name &&
+        !this.animationController.hasAnimation(EnemyAnimation.IDLE)
+      ) {
         this.animationController.addAnimation(EnemyAnimation.IDLE, animationGroup);
       }
     });
@@ -253,7 +266,6 @@ export class Enemy implements IDamageable {
     this.animationController.startAnimation(EnemyAnimation.WALK, {
       loop: true,
       smoothTransition: true,
-      transitionSpeed: this.enemyData.walkAnimation.options.transitionSpeed ?? 0.02,
       speedRatio: baseAnimationSpeedRatio * (this.speed / this.enemyData.baseStats.speed),
       from: this.enemyData.walkAnimation.options.from,
       to: this.enemyData.walkAnimation.options.to,
@@ -267,7 +279,6 @@ export class Enemy implements IDamageable {
     const animation = this.animationController.startAnimation(EnemyAnimation.ATTACK, {
       loop: false,
       smoothTransition: true,
-      transitionSpeed: this.enemyData.walkAnimation.options.transitionSpeed ?? 0.02,
       speedRatio:
         baseAnimationSpeedRatio /
         (this.attackSpeed / this.enemyData.baseStats.attackSpeed),
@@ -284,7 +295,6 @@ export class Enemy implements IDamageable {
     this.animationController.startAnimation(EnemyAnimation.IDLE, {
       loop: true,
       smoothTransition: true,
-      transitionSpeed: this.enemyData.walkAnimation.options.transitionSpeed ?? 0.01,
       speedRatio: baseAnimationSpeedRatio,
       from: this.enemyData.idleAnimation.options.from,
       to: this.enemyData.idleAnimation.options.to,

@@ -5,6 +5,7 @@ import { Game } from '../game';
 import { Enemy } from './enemy';
 import { EnemyType } from './enemyType';
 import { GameScene } from '../scenes/gameScene';
+import { EnemyDataManager } from './enemyDataManager';
 
 // Singleton
 export class EnemyFactory {
@@ -49,7 +50,7 @@ export class EnemyFactory {
     position: Vector3,
   ): Promise<Enemy> {
     const entries = await this.getEnemyEntries(enemyType, gameScene.game);
-    const enemyData = gameScene.game.enemyDataManager.getEnemyData(enemyType);
+    const enemyData = EnemyDataManager.getInstance().getEnemyData(enemyType);
 
     return new Enemy(
       gameScene,

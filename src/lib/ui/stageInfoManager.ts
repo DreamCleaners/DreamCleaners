@@ -1,3 +1,4 @@
+import { EnemyDataManager } from '../enemies/enemyDataManager';
 import { EnemyType } from '../enemies/enemyType';
 import { FixedStageLayout } from '../scenes/fixedStageLayout';
 
@@ -36,6 +37,7 @@ export class StageInformationManager {
   }
 
   private enemyTypeToString(enemyType: EnemyType): string {
-    return enemyType.toString();
+    const enemyData = EnemyDataManager.getInstance().getEnemyData(enemyType);
+    return enemyData.name;
   }
 }

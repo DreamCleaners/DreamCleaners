@@ -2,6 +2,7 @@ import { EnemyType } from '../enemies/enemyType';
 import { Bed } from '../interactiveElements/bed';
 import { ISaveable } from '../saveable';
 import { FixedStageLayout } from '../scenes/fixedStageLayout';
+import { randomInt } from '../utils/random';
 import { SerializedStageInformation } from './serializedStageInformation';
 import { StageInformation } from './stageInformation';
 import { StageReward } from './stageReward';
@@ -13,6 +14,8 @@ export class StagesManager implements ISaveable {
 
   private previouslyProposedStages: StageInformation[] = [];
   private mustLoadPreviousStages: boolean = false;
+
+  private readonly MAX_ENEMY_TYPES: number = 3;
 
   private constructor() {}
 
@@ -137,18 +140,17 @@ export class StagesManager implements ISaveable {
   /** Picks enemyTypes to spawn in the stage, completely random ! */
   private pickRandomEnemyTypes(): EnemyType[] {
     const enemyTypesKeys = Object.keys(EnemyType).filter((key) => isNaN(Number(key))); // Get only the string keys of the enum
-    const enemyTypesLength = enemyTypesKeys.length;
-    const amountOfTypesToSpawn = Math.floor(Math.random() * enemyTypesLength) + 1;
+    const amountOfTypesToSpawn = randomInt(1, this.MAX_ENEMY_TYPES);
 
     const enemyTypes: EnemyType[] = [];
 
     for (let i = 0; i < amountOfTypesToSpawn; i++) {
-      let randomTypeIndex = Math.floor(Math.random() * enemyTypesLength);
+      let randomTypeIndex = randomInt(0, enemyTypesKeys.length - 1);
       let randomType =
         EnemyType[enemyTypesKeys[randomTypeIndex] as keyof typeof EnemyType];
 
       while (enemyTypes.includes(randomType)) {
-        randomTypeIndex = Math.floor(Math.random() * enemyTypesLength);
+        randomTypeIndex = randomInt(0, enemyTypesKeys.length - 1);
         randomType = EnemyType[enemyTypesKeys[randomTypeIndex] as keyof typeof EnemyType];
       }
 
