@@ -1,6 +1,7 @@
 import { EnemyDataManager } from '../enemies/enemyDataManager';
 import { EnemyType } from '../enemies/enemyType';
 import { FixedStageLayout } from '../scenes/fixedStageLayout';
+import stageDescriptions from '../../assets/data/stageDescriptions.json' assert { type: 'json' };
 
 export class StageInformationManager {
   public getStageImagePath(stageName: string): string {
@@ -19,21 +20,21 @@ export class StageInformationManager {
   }
 
   public buildStageDescription(enemies: EnemyType[]): string {
-    let desc = '';
-    desc += " The patient's dream is infested of ";
+    // Create enemy list string with highlighted spans
+    const enemyList = enemies
+      .map((enemy, index) => {
+        const enemyName = this.enemyTypeToString(enemy);
+        return `<span class="enemy-highlight">${enemyName}s</span>${index < enemies.length - 1 ? ', ' : ''}`;
+      })
+      .join('');
 
-    for (let i = 0; i < enemies.length; i++) {
-      const enemy = enemies[i];
-      desc += `${this.enemyTypeToString(enemy)}`;
-      desc += 's';
-      if (i < enemies.length - 1) {
-        desc += ', ';
-      }
-    }
+    // Get a random description template from the JSON
+    const templates = stageDescriptions.templates;
+    const randomIndex = Math.floor(Math.random() * templates.length);
+    const template = templates[randomIndex];
 
-    desc += '. Your job is to enter this dream and clean up everything.';
-
-    return desc;
+    // Replace the {enemies} placeholder with our enemy list
+    return template.replace('{enemies}', enemyList);
   }
 
   private enemyTypeToString(enemyType: EnemyType): string {

@@ -24,9 +24,11 @@ export class Bed extends InteractiveElement {
   }
 
   override async create(position: Vector3): Promise<void> {
+    const targetBedMesh = 'bed' + (Math.floor(Math.random() * 3) + 1);
+
     this.gameAssetContainer =
       await this.gameScene.game.assetManager.loadGameAssetContainer(
-        'bed',
+        targetBedMesh,
         AssetType.OBJECT,
       );
 
@@ -51,6 +53,7 @@ export class Bed extends InteractiveElement {
     difficulty: number;
     enemies: EnemyType[];
     reward: StageReward;
+    description: string;
   }): void {
     this.stageInfo = new StageInformation(
       properties.isProcedural,
@@ -58,6 +61,7 @@ export class Bed extends InteractiveElement {
       properties.difficulty,
       properties.enemies,
       properties.reward,
+      properties.description,
     );
   }
 
@@ -75,6 +79,7 @@ export class Bed extends InteractiveElement {
       this.stageInfo.difficulty,
       this.stageInfo.enemyTypes,
       this.stageInfo.stageReward,
+      this.stageInfo.description,
     );
   }
 }

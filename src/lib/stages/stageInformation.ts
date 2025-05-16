@@ -14,17 +14,21 @@ export class StageInformation {
 
   public stageReward!: StageReward;
 
+  public description: string = '';
+
   constructor(
     isStageProcedural: boolean,
     proposedFixedStageLayout: FixedStageLayout | null,
     difficulty: number,
     enemyTypes: EnemyType[],
     stageReward: StageReward,
+    description: string,
   ) {
     this.isStageProcedural = isStageProcedural;
     this.proposedFixedStageLayout = proposedFixedStageLayout;
     this.difficulty = difficulty;
     this.enemyTypes = enemyTypes;
     this.stageReward = stageReward;
+    this.description = description;
   }
 }

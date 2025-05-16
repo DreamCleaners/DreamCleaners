@@ -1,0 +1,10 @@
+{
+  "templates": [
+    "The patient's dream is infested with {enemies}. Your job is to enter this dream and clean up everything.",
+    "A swarm of {enemies} has invaded this dream. Your mission is to eradicate them all.",
+    "This client's dream is corrupted by {enemies}, requiring immediate attention. Do your job.",
+    "The patient can't rest peacefully with {enemies} haunting their dreams. Time to do some cleaning.",
+    "This dream has become a breeding ground for {enemies}. Your expertise as a dream cleaner is urgently needed.",
+    "Poor guy is having a nightmare filled with {enemies}. Go in there and help him out."
+]
+}

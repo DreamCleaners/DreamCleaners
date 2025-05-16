@@ -87,19 +87,22 @@ const InventoryUI = ({
                       <div className="inventory-weapon-stat-item">
                         <p className="inventory-weapon-stat-text">Fire rate:</p>
                         <div className="inventory-weapon-stat-value">
-                          {weapon.weaponData.globalStats[
-                            weapon.currentRarity
-                          ].cadency.toFixed(2)}{' '}
+                          {(
+                            1 /
+                            weapon.weaponData.globalStats[weapon.currentRarity].cadency
+                          ).toFixed(2)}{' '}
                           {selectedWeapon !== undefined && (
                             <p className="inventory-weapon-stat-difference">
                               {getWeaponStats(
                                 parseFloat(
                                   (
-                                    game.weaponDataManager.getWeaponData(
-                                      selectedWeapon!.weaponType,
-                                    ).globalStats[selectedWeapon!.rarity].cadency -
-                                    weapon.weaponData.globalStats[weapon.currentRarity]
-                                      .cadency
+                                    1 /
+                                      game.weaponDataManager.getWeaponData(
+                                        selectedWeapon!.weaponType,
+                                      ).globalStats[selectedWeapon!.rarity].cadency -
+                                    1 /
+                                      weapon.weaponData.globalStats[weapon.currentRarity]
+                                        .cadency
                                   ).toFixed(2),
                                 ),
                               )}

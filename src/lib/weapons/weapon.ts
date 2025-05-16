@@ -98,12 +98,16 @@ export class Weapon {
     public player: Player,
     public weaponType: WeaponType,
     rarity: Rarity,
+    isAkimboWeapon: boolean = false,
   ) {
     this.player = player;
     this.currentRarity = rarity;
     this.physicsEngine = player.physicsEngine;
     this.soundManager = player.game.soundManager;
-    this.weaponData = this.player.game.weaponDataManager.getWeaponData(this.weaponType);
+    this.weaponData = this.player.game.weaponDataManager.getWeaponData(
+      this.weaponType,
+      isAkimboWeapon,
+    );
     this.applyCurrentStats();
   }
 
@@ -317,7 +321,7 @@ export class Weapon {
       return;
     }
 
-    if (this.currentAmmoRemaining <= 0) {
+    if (this.currentAmmoRemaining <= 0 && this.akimboWeapon && this.akimboWeapon.currentAmmoRemaining! <= 0) {
       return;
     }
 
@@ -389,14 +393,14 @@ export class Weapon {
   }
 
   /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
-   * depending on the projection cone of the weapon (The most obvious example is the shotgun)
+   * depending on the projection cone of the weapon (The most obvious example is the winchester)
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
     this.showMuzzleFlashEffects();
-    this.animationController.startAnimation('Shoot', {
-      speedRatio: this.weaponData.animationsSpeed.shoot,
-      maxDuration: this.currentStats.cadency,
-    });
+    // this.animationController.startAnimation('Shoot', {
+    //   speedRatio: this.weaponData.animationsSpeed.shoot,
+    //   maxDuration: this.currentStats.cadency,
+    // });
 
     let shotLandedOnEnemy = false;
 
@@ -475,9 +479,9 @@ export class Weapon {
 
     if (this.raycastResult.hasHit) {
       // We ask to play the impact sound at the provided location
-      this.player.game.soundManager.playBulletImpactSound(
-        this.raycastResult.hitPointWorld.clone(),
-      );
+      // this.player.game.soundManager.playBulletImpactSound(
+      //   this.raycastResult.hitPointWorld.clone(),
+      // );
 
       const metadata = this.raycastResult.body?.transformNode
         .metadata as IMetadataObject<IDamageable>;
@@ -559,10 +563,10 @@ export class Weapon {
       return;
     }
 
-    this.animationController.startAnimation('Reload', {
-      speedRatio: this.weaponData.animationsSpeed.reload,
-      maxDuration: this.currentStats.reloadTime,
-    });
+    // this.animationController.startAnimation('Reload', {
+    //   speedRatio: this.weaponData.animationsSpeed.reload,
+    //   maxDuration: this.currentStats.reloadTime,
+    // });
 
     this.soundManager.playWeaponReload(this.weaponType, this.currentStats.reloadTime);
     this.isReloading = true;

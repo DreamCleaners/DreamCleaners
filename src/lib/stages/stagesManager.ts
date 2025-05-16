@@ -45,6 +45,7 @@ export class StagesManager implements ISaveable {
           difficulty: stageInfo.difficulty,
           enemies: stageInfo.enemyTypes,
           reward: stageInfo.stageReward,
+          description: stageInfo.description,
         });
       }
 
@@ -86,6 +87,10 @@ export class StagesManager implements ISaveable {
         difficulty: difficultyFactor,
         enemies: enemyTypes,
         reward: reward,
+        description:
+          beds[i].gameScene.game.stageInformationManager.buildStageDescription(
+            enemyTypes,
+          ),
       });
 
       // We also store the stage information for saving purposes
@@ -206,6 +211,7 @@ export class StagesManager implements ISaveable {
           moneyReward: stage.stageReward.getMoneyReward(),
           weaponReward: stage.stageReward.getWeaponReward() || null, // Explicitly store null if undefined
         },
+        description: stage.description,
       }));
 
     return JSON.stringify(serializedStages);
@@ -225,6 +231,7 @@ export class StagesManager implements ISaveable {
         stage.difficulty,
         stage.enemyTypes,
         stageReward,
+        stage.description,
       );
     });
   }
