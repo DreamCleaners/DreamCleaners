@@ -10,6 +10,7 @@ import { Radio } from '../interactiveElements/radio';
 
 enum StageMusic {
   ELECTRO_ONE = 'electroOne',
+  ELECTRO_TWO = 'electroTwo',
 }
 
 /**
@@ -369,13 +370,18 @@ export class SoundManager {
 
   /** Picks a random music for the current stage and plays it */
   public playStageBackgroundMusic(): void {
+
+    // We try to dispose the previous music
+    // This is required as all stage musics are loaded with the same name
+    // To override the previous one, we need to dispose it first
+    this.soundSystem.disposeSound('stageMusic', SoundCategory.MUSIC);
     const musicKeys = Object.keys(StageMusic);
 
-    const randomIndex = Math.floor((Math.random() * musicKeys.length) / 2);
+    const randomIndex = Math.floor(Math.random() * musicKeys.length);
     const musicValue = StageMusic[musicKeys[randomIndex] as keyof typeof StageMusic];
     const musicFileName = `stage-music_${musicValue}`;
 
-    // Play the new music (use same name for both parameters)
+    // Play the new music
     this.playBackgroundMusic(musicFileName, 'stageMusic', {
       loop: true,
       volume: SoundManager.DEFAULT_MUSIC_VOLUME,

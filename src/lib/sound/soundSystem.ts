@@ -349,6 +349,33 @@ export class SoundSystem {
     this.loadedSounds.clear();
   }
 
+  public disposeSound(name: string, type: SoundCategory): void {
+    const sound = this.getSound(name, type);
+    if (!sound) {
+      return;
+    }
+
+    sound.dispose();
+    switch (type) {
+      case SoundCategory.MUSIC:
+      case SoundCategory.AMBIENT:
+        this.loadedMusics.delete(name);
+        break;
+      case SoundCategory.EFFECT:
+        this.loadedSounds.delete(name);
+        break;
+      case SoundCategory.UI:
+        this.loadedUISounds.delete(name);
+        break;
+      case SoundCategory.RADIO_MUSIC:
+        this.loadedRadioMusics.delete(name);
+        break;
+      default:
+        console.error('Unknown sound type: ' + type);
+        break;
+    }
+  }
+
   // ---------------------------------------------
   // Options management
   // ---------------------------------------------
