@@ -6,5 +6,4 @@ export enum UIType {
   STAGE_SELECTION,
   GAME_OVER,
   WORKBENCH,
-  SETTINGS,
 }

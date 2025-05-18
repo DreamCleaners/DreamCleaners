@@ -624,7 +624,7 @@ export class Weapon {
     }
   }
 
-    /** Continuously moves the weapon up and down to match the player's movements */
+  /** Continuously moves the weapon up and down to match the player's movements */
   private animateWeaponMovement(velocity: Vector3): void {
     if (this.initialYPosition === null) {
       this.initialYPosition = this.rootMesh.position.y;
@@ -649,11 +649,11 @@ export class Weapon {
       const elapsedTime = performance.now() - startTime;
       const time = (elapsedTime / 1000) * frequency;
       const offsetY = Math.sin(time) * amplitude;
-      
+
       // Clamp the position within allowed range
       const newY = initialYPosition + offsetY;
       this.rootMesh.position.y = Math.max(minY, Math.min(maxY, newY));
-      
+
       requestAnimationFrame(animate);
     };
 
@@ -678,7 +678,7 @@ export class Weapon {
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1);
         const newY = currentYPosition + t * (targetYPosition - currentYPosition);
-        
+
         // Ensure the position stays within allowed range even during reset
         this.rootMesh.position.y = Math.max(minY, Math.min(maxY, newY));
 

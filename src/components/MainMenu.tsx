@@ -8,7 +8,6 @@ import GraduateCapIcon from '@/assets/icons/graduate-cap.svg?react';
 import CogIcon from '@/assets/icons/cog.svg?react';
 import BackwardTimeIcon from '@/assets/icons/backward-time.svg?react';
 import PlayButtonIcon from '@/assets/icons/play-button.svg?react';
-import { UIType } from '../lib/ui/uiType';
 
 const MainMenu = () => {
   const game = useContext(GameContext);
@@ -65,9 +64,7 @@ const MainMenu = () => {
               </button>
               <button
                 className="main-menu-button"
-                onClick={withClickSound(game, () =>
-                  game.uiManager.displayUI(UIType.SETTINGS),
-                )}
+                onClick={withClickSound(game, () => game.uiManager.displaySettingsMenu())}
               >
                 <div className="main-menu-button-icon-container">
                   <CogIcon className="main-menu-button-icon settings-icon" />
