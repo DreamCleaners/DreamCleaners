@@ -321,7 +321,11 @@ export class Weapon {
       return;
     }
 
-    if (this.currentAmmoRemaining <= 0 && this.akimboWeapon && this.akimboWeapon.currentAmmoRemaining! <= 0) {
+    if (
+      this.currentAmmoRemaining <= 0 &&
+      this.akimboWeapon &&
+      this.akimboWeapon.currentAmmoRemaining! <= 0
+    ) {
       return;
     }
 
@@ -620,7 +624,7 @@ export class Weapon {
     }
   }
 
-  /** Continuously moves the weapon up and down to match the player's movements */
+    /** Continuously moves the weapon up and down to match the player's movements */
   private animateWeaponMovement(velocity: Vector3): void {
     if (this.initialYPosition === null) {
       this.initialYPosition = this.rootMesh.position.y;
@@ -630,8 +634,12 @@ export class Weapon {
       this.MOVING_ANIMATION_SPEED *
       (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
     this.isPlayingMovingAnimating = true;
-    const initialYPosition = this.rootMesh.position.y;
+    const initialYPosition = this.initialYPosition;
     const startTime = performance.now();
+
+    // Define min/max bounds for weapon position
+    const minY = initialYPosition - amplitude;
+    const maxY = initialYPosition + amplitude;
 
     const animate = () => {
       if (!this.isPlayingMovingAnimating) {
@@ -641,7 +649,11 @@ export class Weapon {
       const elapsedTime = performance.now() - startTime;
       const time = (elapsedTime / 1000) * frequency;
       const offsetY = Math.sin(time) * amplitude;
-      this.rootMesh.position.y = initialYPosition + offsetY;
+      
+      // Clamp the position within allowed range
+      const newY = initialYPosition + offsetY;
+      this.rootMesh.position.y = Math.max(minY, Math.min(maxY, newY));
+      
       requestAnimationFrame(animate);
     };
 
@@ -657,11 +669,18 @@ export class Weapon {
       const duration = 300;
       const startTime = performance.now();
 
+      // Define min/max bounds for weapon position
+      const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
+      const minY = targetYPosition - amplitude;
+      const maxY = targetYPosition + amplitude;
+
       const smoothReset = (time: number) => {
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1);
-        this.rootMesh.position.y =
-          currentYPosition + t * (targetYPosition - currentYPosition);
+        const newY = currentYPosition + t * (targetYPosition - currentYPosition);
+        
+        // Ensure the position stays within allowed range even during reset
+        this.rootMesh.position.y = Math.max(minY, Math.min(maxY, newY));
 
         if (t < 1) {
           requestAnimationFrame(smoothReset);

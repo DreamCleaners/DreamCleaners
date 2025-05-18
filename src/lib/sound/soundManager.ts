@@ -370,7 +370,6 @@ export class SoundManager {
 
   /** Picks a random music for the current stage and plays it */
   public playStageBackgroundMusic(): void {
-
     // We try to dispose the previous music
     // This is required as all stage musics are loaded with the same name
     // To override the previous one, we need to dispose it first
