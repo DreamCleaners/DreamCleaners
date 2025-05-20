@@ -1,11 +1,11 @@
 import { Vector3 } from '@babylonjs/core';
 import { EnemyType } from '../enemies/enemyType';
 import { Game } from '../game';
-import { FixedStageLayout } from './fixedStageLayout';
 import { GameScene } from './gameScene';
 import { SceneFactory } from './sceneFactory';
 import { StageReward } from '../stages/stageReward';
 import { StageInformation } from '../stages/stageInformation';
+import { StageLayout } from './stageLayout';
 
 export class SceneManager {
   private currentScene: GameScene | null = null;
@@ -13,7 +13,7 @@ export class SceneManager {
   constructor(private game: Game) {}
 
   public start(): void {
-    this.changeSceneToFixedStage(FixedStageLayout.HUB);
+    this.changeScene(StageLayout.HUB);
   }
 
   public stop(): void {
@@ -26,8 +26,8 @@ export class SceneManager {
   /**
    * Dispose of the current scene and load the new scene.
    */
-  public async changeSceneToFixedStage(
-    layout: FixedStageLayout,
+  public async changeScene(
+    layout: StageLayout,
     difficultyFactor: number = 1,
     enemyTypes: EnemyType[] = [],
     stageReward: StageReward | null = null,
@@ -44,11 +44,10 @@ export class SceneManager {
     this.game.player.setPosition(new Vector3(0, 1, 0));
     this.game.player.cameraManager.getCamera().setTarget(new Vector3(0, 1, 1));
 
-    const scene = SceneFactory.createFixedStageScene(layout, this.game);
+    const scene = SceneFactory.createStageScene(layout, this.game);
 
     scene.setStageInformation(
       new StageInformation(
-        false,
         layout,
         difficultyFactor,
         enemyTypes,
@@ -61,10 +60,6 @@ export class SceneManager {
     this.currentScene = scene;
 
     this.game.soundManager.stopLoadingAmbience();
-  }
-
-  public async changeSceneToProceduralStage(): Promise<void> {
-    // TODO!
   }
 
   public update(): void {

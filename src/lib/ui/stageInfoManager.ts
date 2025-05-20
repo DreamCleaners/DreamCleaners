@@ -1,20 +1,8 @@
 import { EnemyType } from '../enemies/enemyType';
-import { FixedStageLayout } from '../scenes/fixedStageLayout';
 
 export class StageInformationManager {
   public getStageImagePath(stageName: string): string {
     return `/src/assets/img/stage-images/${stageName}.png`;
-  }
-
-  public getStageName(stageLayout: FixedStageLayout | undefined | null) {
-    switch (stageLayout) {
-      case FixedStageLayout.LABORATORY:
-        return 'Laboratory';
-      case FixedStageLayout.OPEN_FARM:
-        return 'Farm';
-      default:
-        return 'Unknown Stage';
-    }
   }
 
   public buildStageDescription(enemies: EnemyType[]): string {

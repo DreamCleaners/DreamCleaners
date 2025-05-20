@@ -1,6 +1,5 @@
 import { Vector3 } from '@babylonjs/core';
 import { GameScene } from './gameScene';
-import { FixedStageLayout } from './fixedStageLayout';
 import { Bed } from '../interactiveElements/bed';
 import { Computer } from '../interactiveElements/computer';
 import { StagesManager } from '../stages/stagesManager';
@@ -19,12 +18,13 @@ export class HubScene extends GameScene {
   private radio!: Radio;
 
   public async load(): Promise<void> {
-    const unityScene = await this.game.assetManager.instantiateUnityScene(
-      FixedStageLayout.HUB,
-    );
-    this.gameAssetContainer = unityScene.container;
+    this.gameAssetContainer = await this.loadFixedStageContainer();
 
-    unityScene.rootMesh.position = new Vector3(0, 0, 0);
+    this.unityScene = await this.game.assetManager.instantiateUnityScene(
+      this.gameAssetContainer,
+    );
+
+    this.unityScene.rootMesh.position = new Vector3(0, 0, 0);
 
     this.navigationManager = new NavigationManager(
       this.game.recastInjection,

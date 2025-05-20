@@ -8,6 +8,7 @@ import {
   ParticleSystem,
   PhysicsAggregate,
   Scene,
+  TransformNode,
 } from '@babylonjs/core';
 
 export class GameAssetContainer {
@@ -48,11 +49,19 @@ export class GameAssetContainer {
   public addAssetsToScene(): Mesh {
     this.assetContainer.addAllToScene();
 
+    return this.getRootMesh();
+  }
+
+  public getRootMesh(): Mesh {
     if (this.assetContainer.meshes.length === 0) {
       return this.assetContainer.createRootMesh();
     } else {
       return this.assetContainer.meshes[0] as Mesh;
     }
+  }
+
+  public addTransformNode(node: TransformNode): void {
+    this.assetContainer.transformNodes.push(node);
   }
 
   public addMesh(mesh: Mesh | InstancedMesh): void {

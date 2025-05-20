@@ -8,7 +8,6 @@ import { withClickSound } from '../lib/utils/withClickSound';
 import BaseContainer from './BaseContainer.tsx';
 import { ShopItemType } from '../lib/shop/shopItemType.ts';
 import InventoryUI from './InventoryUI.tsx';
-import { FixedStageScene } from '../lib/scenes/fixedStageScene.ts';
 
 import WilliamTellSkullIcon from '@/assets/icons/william-tell-skull.svg?react';
 import StopwatchIcon from '@/assets/icons/stopwatch.svg?react';
@@ -16,6 +15,7 @@ import InternalInjuryIcon from '@/assets/icons/internal-injury.svg?react';
 import HolyGrailIcon from '@/assets/icons/holy-grail.svg?react';
 import MoneyStackIcon from '@/assets/icons/money-stack.svg?react';
 import ItemIcon from './ItemIcon.tsx';
+import { StageLayout } from '../lib/scenes/stageLayout.ts';
 
 const StageEndUI = () => {
   const game = useContext(GameContext);
@@ -48,9 +48,7 @@ const StageEndUI = () => {
 
   const handleHideUI = () => {
     game.uiManager.hideUI();
-    // change this when procedural stages are implemented
-    const scene = game.sceneManager.getCurrentScene() as FixedStageScene;
-    scene.changeSceneToHub();
+    game.sceneManager.changeScene(StageLayout.HUB);
   };
 
   const getPrettyTime = (time: number) => {

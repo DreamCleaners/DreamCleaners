@@ -13,6 +13,8 @@ import ItemIcon from './ItemIcon.tsx';
 import MoneyStackIcon from '@/assets/icons/money-stack.svg?react';
 import CreditsCurrencyIcon from '@/assets/icons/credits-currency.svg?react';
 import { ShopItemType } from '../lib/shop/shopItemType.ts';
+import { StageDataManager } from '../lib/scenes/stageDataManager.ts';
+import { StageLayout } from '../lib/scenes/stageLayout.ts';
 
 const StageSelectionUI = () => {
   const game = useContext(GameContext);
@@ -32,11 +34,11 @@ const StageSelectionUI = () => {
     // Get the image path for the stage if available
     if (selectedBedInfo && game?.stageInformationManager) {
       const imagePath = game.stageInformationManager.getStageImagePath(
-        selectedBedInfo.proposedFixedStageLayout || 'procedural',
+        selectedBedInfo.stageLayout || 'procedural',
       );
       setStageImagePath(imagePath);
     }
-  }, [game?.stageInformationManager]);
+  }, [game]);
 
   const handleHideUI = () => {
     game?.uiManager.hideUI();
@@ -74,8 +76,9 @@ const StageSelectionUI = () => {
   return (
     <BaseContainer
       title={
-        game?.stageInformationManager.getStageName(stageInfo?.proposedFixedStageLayout) ||
-        'Procedural Stage'
+        StageDataManager.getInstance().getStageData(
+          stageInfo?.stageLayout || StageLayout.FARM,
+        ).name
       }
       backButtonCallback={withClickSound(game, handleHideUI)}
     >
@@ -133,7 +136,11 @@ const StageSelectionUI = () => {
               {stageImagePath && (
                 <img
                   src={stageImagePath}
-                  alt={`Stage ${stageInfo?.proposedFixedStageLayout || 'image'}`}
+                  alt={`Stage ${
+                    StageDataManager.getInstance().getStageData(
+                      stageInfo?.stageLayout || StageLayout.FARM,
+                    ).name
+                  } Image`}
                   className="stage-selection-image"
                 />
               )}

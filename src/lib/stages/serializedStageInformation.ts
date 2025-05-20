@@ -1,5 +1,5 @@
 import { EnemyType } from '../enemies/enemyType';
-import { FixedStageLayout } from '../scenes/fixedStageLayout';
+import { StageLayout } from '../scenes/stageLayout';
 import { RewardWeaponDescription } from './rewardWeaponDescription';
 
 export interface SerializedStageReward {
@@ -8,8 +8,7 @@ export interface SerializedStageReward {
 }
 
 export interface SerializedStageInformation {
-  isStageProcedural: boolean;
-  proposedFixedStageLayout: FixedStageLayout | null;
+  proposedStageLayout: StageLayout;
   difficulty: number;
   enemyTypes: EnemyType[];
   stageReward: SerializedStageReward;

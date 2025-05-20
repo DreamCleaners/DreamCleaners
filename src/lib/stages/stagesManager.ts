@@ -1,7 +1,7 @@
 import { EnemyType } from '../enemies/enemyType';
 import { Bed } from '../interactiveElements/bed';
 import { ISaveable } from '../saveable';
-import { FixedStageLayout } from '../scenes/fixedStageLayout';
+import { StageLayout } from '../scenes/stageLayout';
 import { SerializedStageInformation } from './serializedStageInformation';
 import { StageInformation } from './stageInformation';
 import { StageReward } from './stageReward';
@@ -37,8 +37,7 @@ export class StagesManager implements ISaveable {
       for (let i = 0; i < beds.length; i++) {
         const stageInfo = this.previouslyProposedStages[i];
         beds[i].setStageInfo({
-          isProcedural: stageInfo.isStageProcedural,
-          layout: stageInfo.proposedFixedStageLayout as FixedStageLayout,
+          layout: stageInfo.stageLayout,
           difficulty: stageInfo.difficulty,
           enemies: stageInfo.enemyTypes,
           reward: stageInfo.stageReward,
@@ -62,7 +61,7 @@ export class StagesManager implements ISaveable {
 
     // For each bed we need to set the difficulty factor, the enemy types to spawn, the stage reward and finally the layout
     // (if the stage is not procedural)
-    const alreadyPickedFixedLayouts = new Set<FixedStageLayout>();
+    const alreadyPickedLayouts = new Set<StageLayout>();
 
     for (let i = 0; i < n; i++) {
       const bed = beds[i];
@@ -70,15 +69,11 @@ export class StagesManager implements ISaveable {
       const difficultyFactor = this.pickDifficulty(reward, runProgession);
       const enemyTypes = this.pickRandomEnemyTypes();
 
-      // Currently only proposes fixed stages
-      // If we want to add procedural stages, we will need to add a logic of choosing
-      // between fixed and procedural stages and adapting our stage info
-      const layout = this.pickRandomFixedLayout(alreadyPickedFixedLayouts);
-      alreadyPickedFixedLayouts.add(layout);
+      const layout = this.pickRandomLayout(alreadyPickedLayouts);
+      alreadyPickedLayouts.add(layout);
 
       // For now only fixed stages are implemented
       bed.setStageInfo({
-        isProcedural: false, // For now only fixed stages are implemented
         layout: layout,
         difficulty: difficultyFactor,
         enemies: enemyTypes,
@@ -90,22 +85,20 @@ export class StagesManager implements ISaveable {
     }
   }
 
-  /** Picks a random fixed layout, tries not to re-pick an already proposed scene */
-  private pickRandomFixedLayout(
-    alreadyPickedFixedLayouts: Set<FixedStageLayout>,
-  ): FixedStageLayout {
-    const keys = Object.keys(FixedStageLayout) as Array<keyof typeof FixedStageLayout>;
+  /** Picks a random layout, tries not to re-pick an already proposed scene */
+  private pickRandomLayout(alreadyPickedLayouts: Set<StageLayout>): StageLayout {
+    const keys = Object.keys(StageLayout) as Array<keyof typeof StageLayout>;
 
     // All pickable layouts, meaning every layouts (even already picked) except the HUB
     const layouts = keys
-      .map((key) => FixedStageLayout[key])
-      .filter((layout) => layout !== FixedStageLayout.HUB);
+      .map((key) => StageLayout[key])
+      .filter((layout) => layout !== StageLayout.HUB);
 
     // We create a weighted array, we give a weight of each pickable layout
     // Unpicked layouts have a higher weight
-    const weightedLayouts: FixedStageLayout[] = [];
+    const weightedLayouts: StageLayout[] = [];
     layouts.forEach((layout) => {
-      const weight = alreadyPickedFixedLayouts.has(layout) ? 1 : 5;
+      const weight = alreadyPickedLayouts.has(layout) ? 1 : 5;
       // Higher weight for unpicked layouts
       for (let i = 0; i < weight; i++) {
         weightedLayouts.push(layout);
@@ -115,7 +108,6 @@ export class StagesManager implements ISaveable {
     // Pick a random layout from the weighted array
     const randomIndex = Math.floor(Math.random() * weightedLayouts.length);
     return weightedLayouts[randomIndex];
-    //return FixedStageLayout.CLOSED_SCENE;
   }
 
   private pickDifficulty(stageReward: StageReward, runProgress: number): number {
@@ -196,8 +188,7 @@ export class StagesManager implements ISaveable {
     // Custom serialization of the stage information because json stringify does not work with undefined values
     const serializedStages: SerializedStageInformation[] =
       this.previouslyProposedStages.map((stage) => ({
-        isStageProcedural: stage.isStageProcedural,
-        proposedFixedStageLayout: stage.proposedFixedStageLayout,
+        proposedStageLayout: stage.stageLayout,
         difficulty: stage.difficulty,
         enemyTypes: stage.enemyTypes,
         stageReward: {
@@ -218,8 +209,7 @@ export class StagesManager implements ISaveable {
       stageReward['weaponReward'] = stage.stageReward.weaponReward || undefined; // Back to undefined
 
       return new StageInformation(
-        stage.isStageProcedural,
-        stage.proposedFixedStageLayout,
+        stage.proposedStageLayout,
         stage.difficulty,
         stage.enemyTypes,
         stageReward,

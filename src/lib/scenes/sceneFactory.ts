@@ -1,20 +1,16 @@
 import { Game } from '../game';
 import { GameScene } from './gameScene';
 import { HubScene } from './hubScene';
-import { FixedStageLayout } from './fixedStageLayout';
-import { FixedStageScene } from './fixedStageScene';
+import { StageLayout } from './stageLayout';
+import { StageScene } from './stageScene';
 
 export class SceneFactory {
-  public static createFixedStageScene(layout: FixedStageLayout, game: Game): GameScene {
-    if (layout === FixedStageLayout.HUB) {
-      // HUB is a particular case of fixed scene and needs its own class
-      return new HubScene(game);
+  public static createStageScene(layout: StageLayout, game: Game): GameScene {
+    if (layout === StageLayout.HUB) {
+      // HUB is a particular stage scene and needs its own class
+      return new HubScene(game, layout);
     } else {
-      return new FixedStageScene(game, layout);
+      return new StageScene(game, layout);
     }
-  }
-
-  public static createProceduralStageScene(game: Game): GameScene {
-    return new HubScene(game);
   }
 }

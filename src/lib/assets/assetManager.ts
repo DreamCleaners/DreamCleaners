@@ -5,6 +5,7 @@ import {
   LoadAssetContainerAsync,
   Mesh,
   MeshBuilder,
+  Node,
   PhysicsAggregate,
   PhysicsShapeType,
   Scene,
@@ -15,9 +16,14 @@ import {
 import '@babylonjs/loaders';
 import { AssetType } from './assetType';
 import { GameAssetContainer } from './gameAssetContainer';
-import { UnityPhysicShapeToken, UnityTypeToken } from './unityTokens';
+import {
+  UnityPhysicShapeToken,
+  UnityProceduralGenerationToken,
+  UnityTypeToken,
+} from './unityTokens';
 import { UnityScene } from './unityScene';
 import { SpawnTrigger } from '../stages/spawnTrigger';
+import { UnityProceduralScene } from './unityProceduralScene';
 
 export class AssetManager {
   constructor(private scene: Scene) {}
@@ -35,13 +41,19 @@ export class AssetManager {
     return new Texture(`img/textures/${name}.png`, this.scene);
   }
 
-  public async instantiateUnityScene(sceneName: string): Promise<UnityScene> {
-    const gameAssetContainer = await this.loadGameAssetContainer(
-      sceneName,
-      AssetType.SCENE,
-    );
+  private getTokens(node: Node): string[] {
+    const name = node.name;
+    const match = name.match(/#[A-Z]+(-[A-Z0-9]+)*#/);
+    if (!match) return [];
+
+    return match[0].slice(1, -1).split('-');
+  }
+
+  public async instantiateUnityScene(
+    gameAssetContainer: GameAssetContainer,
+  ): Promise<UnityScene> {
     // Create the skybox
-    this.createSky(sceneName, gameAssetContainer);
+    // this.createSky(sceneName, gameAssetContainer);
 
     const spawnTriggers: SpawnTrigger[] = [];
     let arrivalPoint: TransformNode | undefined = undefined;
@@ -74,6 +86,68 @@ export class AssetManager {
       spawnTriggers: spawnTriggers,
       arrivalPoint: arrivalPoint,
     };
+  }
+
+  /**
+   * Load all necessary elements to create a procedural scene
+   * This method does not instantiate the scene, it only loads the assets
+   */
+  public async loadProceduralSceneFromUnity(
+    sceneName: string,
+  ): Promise<UnityProceduralScene> {
+    const gameAssetContainer = await this.loadGameAssetContainer(
+      sceneName,
+      AssetType.SCENE,
+    );
+
+    const rootMesh = gameAssetContainer.getRootMesh();
+
+    let spawnRoom!: Mesh;
+    let endRoom!: Mesh;
+    let link!: Mesh;
+    const rooms: Mesh[] = [];
+
+    rootMesh.getDescendants().forEach((node) => {
+      const tokens = this.getTokens(node);
+      const type = tokens[0];
+
+      if (type !== UnityTypeToken.PROCEDURAL_GENERATION) return;
+
+      if (tokens[1] === UnityProceduralGenerationToken.SPAWN) {
+        spawnRoom = node as Mesh;
+      } else if (tokens[1] === UnityProceduralGenerationToken.END) {
+        endRoom = node as Mesh;
+      } else if (tokens[1] === UnityProceduralGenerationToken.LINK) {
+        link = node as Mesh;
+      } else if (tokens[1] === UnityProceduralGenerationToken.ROOM) {
+        rooms.push(node as Mesh);
+      }
+    });
+
+    return {
+      spawnRoom: spawnRoom,
+      endRoom: endRoom,
+      link: link,
+      rooms: rooms,
+      rootMesh: rootMesh,
+      container: gameAssetContainer,
+    };
+  }
+
+  public getAnchor(node: TransformNode): Mesh {
+    const anchor = node.getDescendants().find((child) => {
+      const tokens = this.getTokens(child);
+      return (
+        tokens[0] === UnityTypeToken.PROCEDURAL_GENERATION &&
+        tokens[1] === UnityProceduralGenerationToken.ANCHOR
+      );
+    });
+
+    if (!anchor) {
+      throw new Error(`Anchor not found for node ${node.name}`);
+    }
+
+    return anchor as Mesh;
   }
 
   private createSky(sceneName: string, assetContainer: GameAssetContainer): void {

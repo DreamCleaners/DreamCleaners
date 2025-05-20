@@ -1,0 +1,14 @@
+{
+  "hub": {
+    "name": "Hub"
+  },
+  "farm": {
+    "name": "Farm"
+  },
+  "floating_islands": {
+    "name": "Floating Islands",
+    "proceduralOptions": {
+      "roomsToGenerate": 1
+    }
+  }
+}

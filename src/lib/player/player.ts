@@ -89,6 +89,8 @@ export class Player implements IDamageable {
   private physicsAggregate!: PhysicsAggregate;
   private surfaceNormal: Vector3 = Vector3.Zero(); // the normal of the surface the player is standing on
   private readonly MAX_SLOPE_ANGLE = 50; // degrees
+  private readonly MAX_SLOPE_CLIMB_ANGLE = 10; // degrees
+  private surfaceAngle = 0; // degrees
 
   // jump
   private readonly JUMP_FORCE = 9;
@@ -480,7 +482,10 @@ export class Player implements IDamageable {
 
       // if the slide speed is less than the crouching speed or if the player is moving up a slope
       // we change the player's state to crouching
-      if (this.currentSlidingSpeed < this.movementSpeed / 2 || slopDirection.y > 0) {
+      if (
+        this.currentSlidingSpeed < this.movementSpeed / 2 ||
+        (slopDirection.y > 0 && this.surfaceAngle > this.MAX_SLOPE_CLIMB_ANGLE)
+      ) {
         this.isSliding = false;
         this.currentSlidingSpeed = this.movementSpeed / 2; // Reset sliding speed
       }
@@ -533,11 +538,11 @@ export class Player implements IDamageable {
 
     if (hitWorldResult.hasHit) {
       this.surfaceNormal = hitWorldResult.hitNormal;
-      const surfaceAngle =
+      this.surfaceAngle =
         Math.acos(Vector3.Dot(hitWorldResult.hitNormal, Vector3.Up())) * (180 / Math.PI);
 
       // if the angle is too steep, the player is not grounded
-      if (surfaceAngle < this.MAX_SLOPE_ANGLE) {
+      if (this.surfaceAngle < this.MAX_SLOPE_ANGLE) {
         isGrounded = true;
       }
     }

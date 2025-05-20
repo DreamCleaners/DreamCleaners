@@ -1,49 +1,52 @@
 import {
-  Vector3,
-  Observer,
+  IBasePhysicsCollisionEvent,
   Mesh,
   MeshBuilder,
+  Observer,
   PhysicsAggregate,
-  PhysicsShapeType,
-  IBasePhysicsCollisionEvent,
   PhysicsEventType,
+  PhysicsShapeType,
   TransformNode,
+  Vector3,
 } from '@babylonjs/core';
 import { Enemy } from '../enemies/enemy';
 import { GameScene } from './gameScene';
-import { Game } from '../game';
-import { FixedStageLayout } from './fixedStageLayout';
-import { UIType } from '../ui/uiType';
-import { NavigationManager } from '../navigationManager';
-import { GameEntityType } from '../gameEntityType';
+import { StageLayout } from './stageLayout';
 import { UnityScene } from '../assets/unityScene';
+import { Game } from '../game';
+import { NavigationManager } from '../navigationManager';
+import { UIType } from '../ui/uiType';
+import { GameEntityType } from '../gameEntityType';
 import { SpawnTrigger } from '../stages/spawnTrigger';
 import { IMetadataObject } from '../metadata/metadataObject';
+import { StageDataManager } from './stageDataManager';
 
-export class FixedStageScene extends GameScene {
+export class StageScene extends GameScene {
   private enemies: Enemy[] = [];
 
   private arrivalPoint: Vector3 = Vector3.Zero();
 
-  // The stage name, used to import the correct scene
-  public fixedStageName!: FixedStageLayout;
-
   private onPlayerDamageTakenObserver!: Observer<number>;
   private onCollisionObserver!: Observer<IBasePhysicsCollisionEvent>;
 
-  private unityScene!: UnityScene;
-
-  constructor(game: Game, fixedStageName: FixedStageLayout) {
-    super(game);
-    this.fixedStageName = fixedStageName;
+  constructor(game: Game, stageLayout: StageLayout) {
+    super(game, stageLayout);
   }
 
   public async load(): Promise<void> {
-    // We import the stage scene based on the name
+    const stageData = StageDataManager.getInstance().getStageData(this.stageLayout);
+
+    if (stageData.proceduralOptions !== undefined) {
+      this.gameAssetContainer = await this.loadProceduralStageContainer(
+        stageData.proceduralOptions,
+      );
+    } else {
+      this.gameAssetContainer = await this.loadFixedStageContainer();
+    }
+
     this.unityScene = await this.game.assetManager.instantiateUnityScene(
-      this.fixedStageName,
+      this.gameAssetContainer,
     );
-    this.gameAssetContainer = this.unityScene.container;
 
     this.unityScene.rootMesh.position = new Vector3(0, 0, 0);
 
@@ -90,13 +93,6 @@ export class FixedStageScene extends GameScene {
 
   public dispose(): void {
     super.dispose();
-
-    this.unityScene.rootMesh.dispose();
-    this.unityScene.arrivalPoint?.dispose();
-    this.unityScene.spawnTriggers.forEach((spawnTrigger) => {
-      spawnTrigger.dispose();
-    });
-    this.unityScene.container.dispose();
 
     this.enemies.forEach((enemy) => {
       enemy.dispose();
@@ -205,7 +201,7 @@ export class FixedStageScene extends GameScene {
   }
 
   public changeSceneToHub(): void {
-    this.game.sceneManager.changeSceneToFixedStage(FixedStageLayout.HUB);
+    this.game.sceneManager.changeScene(StageLayout.HUB);
   }
 
   /** Gives the rewards to the player */

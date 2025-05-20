@@ -1,7 +1,6 @@
 import { Mesh, PhysicsAggregate, PhysicsShapeType, Vector3 } from '@babylonjs/core';
 import { InteractiveElement } from './interactiveElement';
 import { EnemyType } from '../enemies/enemyType';
-import { FixedStageLayout } from '../scenes/fixedStageLayout';
 import { AssetType } from '../assets/assetType';
 import { GameEntityType } from '../gameEntityType';
 import { StageReward } from '../stages/stageReward';
@@ -9,6 +8,7 @@ import { MetadataFactory } from '../metadata/metadataFactory';
 import { UIType } from '../ui/uiType';
 import { StagesManager } from '../stages/stagesManager';
 import { StageInformation } from '../stages/stageInformation';
+import { StageLayout } from '../scenes/stageLayout';
 
 // STAGE SELECTION BED
 export class Bed extends InteractiveElement {
@@ -46,14 +46,12 @@ export class Bed extends InteractiveElement {
   }
 
   public setStageInfo(properties: {
-    isProcedural: boolean;
-    layout: FixedStageLayout;
+    layout: StageLayout;
     difficulty: number;
     enemies: EnemyType[];
     reward: StageReward;
   }): void {
     this.stageInfo = new StageInformation(
-      properties.isProcedural,
       properties.layout,
       properties.difficulty,
       properties.enemies,
@@ -61,17 +59,9 @@ export class Bed extends InteractiveElement {
     );
   }
 
-  // public setProceduralStageProperties(properties: {
-  //   difficulty: number;
-  //   enemies: EnemyType[];
-  //   reward: StageReward;
-  // }): void {
-  //   // Not implemented yet
-  // }
-
   public enterStage(): void {
-    this.gameScene.game.sceneManager.changeSceneToFixedStage(
-      this.stageInfo.proposedFixedStageLayout as FixedStageLayout,
+    this.gameScene.game.sceneManager.changeScene(
+      this.stageInfo.stageLayout,
       this.stageInfo.difficulty,
       this.stageInfo.enemyTypes,
       this.stageInfo.stageReward,
