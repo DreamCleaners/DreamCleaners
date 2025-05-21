@@ -16,6 +16,8 @@ import { SettingType } from '../settingType';
 export enum SoundCategory {
   MUSIC = 'musics',
   EFFECT = 'effects',
+  WEAPON_EFFECT = 'effects/weapons',
+  ENEMY_EFFECT = 'effects/enemies',
   UI = 'ui',
   AMBIENT = 'ambients',
   RADIO_MUSIC = 'radio_musics',
@@ -150,6 +152,8 @@ export class SoundSystem {
         this.loadedMusics.set(name, sound as StreamingSound);
         break;
       case SoundCategory.EFFECT:
+      case SoundCategory.WEAPON_EFFECT:
+      case SoundCategory.ENEMY_EFFECT:
         this.loadedSounds.set(name, sound as StaticSound);
         break;
       case SoundCategory.UI:
@@ -188,6 +192,8 @@ export class SoundSystem {
       case SoundCategory.AMBIENT:
         return this.loadedMusics.get(name);
       case SoundCategory.EFFECT:
+      case SoundCategory.WEAPON_EFFECT:
+      case SoundCategory.ENEMY_EFFECT:
         return this.loadedSounds.get(name);
       case SoundCategory.UI:
         return this.loadedUISounds.get(name);
@@ -362,6 +368,8 @@ export class SoundSystem {
         this.loadedMusics.delete(name);
         break;
       case SoundCategory.EFFECT:
+      case SoundCategory.WEAPON_EFFECT:
+      case SoundCategory.ENEMY_EFFECT:
         this.loadedSounds.delete(name);
         break;
       case SoundCategory.UI:

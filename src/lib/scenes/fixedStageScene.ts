@@ -76,15 +76,15 @@ export class FixedStageScene extends GameScene {
       detailSampleMaxError: 1,
     };
 
-
     const allMeshes = this.unityScene.rootMesh.getChildMeshes();
     // We exclude all children of the object named #IGNORE_NAV_MESH#
-    const ignoreNode = this.unityScene.rootMesh.getChildTransformNodes().find(node => 
-      node.name === "#IGNORE_NAV_MESH#");
-    
+    const ignoreNode = this.unityScene.rootMesh
+      .getChildTransformNodes()
+      .find((node) => node.name === '#IGNORE_NAV_MESH#');
+
     // Filter out meshes that are descendants of the ignore node
-    const navigationMeshes = ignoreNode 
-      ? allMeshes.filter(mesh => !mesh.isDescendantOf(ignoreNode)) 
+    const navigationMeshes = ignoreNode
+      ? allMeshes.filter((mesh) => !mesh.isDescendantOf(ignoreNode))
       : allMeshes;
 
     this.navigationManager.createNavmesh(navigationMeshes as Mesh[], parameters);

@@ -281,7 +281,7 @@ export class SoundManager {
 
     await this.soundSystem.createSoundPool(
       soundName,
-      SoundCategory.EFFECT,
+      SoundCategory.WEAPON_EFFECT,
       poolSize,
       finalOptions,
     );
@@ -404,21 +404,21 @@ export class SoundManager {
     soundName.replace('_', '-');
 
     // Check if sound is already loaded
-    let sound = this.soundSystem.getSound(soundName, SoundCategory.EFFECT) as StaticSound;
+    let sound = this.soundSystem.getSound(soundName, SoundCategory.WEAPON_EFFECT) as StaticSound;
 
     // If not loaded, load it first
     if (!sound) {
-      await this.loadStaticSound(soundName, SoundCategory.EFFECT, {
+      await this.loadStaticSound(soundName, SoundCategory.WEAPON_EFFECT, {
         loop: false,
         autoplay: false,
         volume: volume,
         spatialEnabled: false,
       });
 
-      sound = this.soundSystem.getSound(soundName, SoundCategory.EFFECT) as StaticSound;
+      sound = this.soundSystem.getSound(soundName, SoundCategory.WEAPON_EFFECT) as StaticSound;
     }
 
-    const originalDuration = this.getSoundDuration(soundName, SoundCategory.EFFECT);
+    const originalDuration = this.getSoundDuration(soundName, SoundCategory.WEAPON_EFFECT);
 
     // We modify the playback rate of the sound to match the reload time
     // Basically we accelerate the sound to match the reload time
@@ -439,7 +439,7 @@ export class SoundManager {
 
     await this.soundSystem.unlockAudio();
 
-    this.soundSystem.play(soundName, SoundCategory.EFFECT);
+    this.soundSystem.play(soundName, SoundCategory.WEAPON_EFFECT);
   }
 
   public playHubMusic(): void {
@@ -497,7 +497,7 @@ export class SoundManager {
   }
 
   public playEnemyDeath(position: Vector3, enemyType: EnemyType) {
-    let path = enemyType + 'Death';
+    let path = 'enemies/' + enemyType + 'Death';
     const n = Math.floor(Math.random() * 3) + 1;
     // 3 possible sounds for the enemy's death
     path += n;
@@ -528,7 +528,7 @@ export class SoundManager {
   public playEnemyAttackSound(position: Vector3, enemyType: EnemyType): void {
     const path = enemyType + 'Attack';
 
-    this.playSpatialSoundAt(path, position, SoundCategory.EFFECT, {
+    this.playSpatialSoundAt(path, position, SoundCategory.ENEMY_EFFECT, {
       loop: false,
       volume: 0.5,
       spatialMaxDistance: 60,

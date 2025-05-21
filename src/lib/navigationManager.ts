@@ -35,7 +35,7 @@ export class NavigationManager {
     parameters: INavMeshParameters,
     displayDebugMesh: boolean = false,
   ): void {
-    console.log("Creating navmesh for ", meshes.length, " meshes");
+    console.log('Creating navmesh for ', meshes.length, ' meshes');
     this.navigationPlugin.createNavMesh(meshes, parameters);
 
     this.crowd = this.navigationPlugin.createCrowd(
