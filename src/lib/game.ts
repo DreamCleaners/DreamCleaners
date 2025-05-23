@@ -76,6 +76,8 @@ export class Game {
   private showFPS: boolean = false;
   public onFPSChange = new Observable<number>();
 
+  public isNewGame = false;
+
   /**
    * Called one time when the canvas is initialized
    */
@@ -133,6 +135,7 @@ export class Game {
    * Called each time we start a new game or resume a game
    */
   public start(isNewGame: boolean): void {
+    this.isNewGame = isNewGame;
     if (isNewGame) {
       this.saveManager.reset();
       this.moneyManager.addPlayerMoney(7062);
@@ -148,13 +151,13 @@ export class Game {
   }
 
   public stop(): void {
-    console.log('Stopping the game');
     this.sceneManager.stop();
     this.uiManager.hidePauseMenu();
     this.uiManager.displayUI(UIType.MAIN_MENU);
   }
 
   public pause(): void {
+    this.uiManager.dismissNotification();
     this.soundManager.pauseAllSounds();
     this.engine.stopRenderLoop();
     this.startPauseTime = performance.now();

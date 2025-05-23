@@ -21,6 +21,15 @@ const PlayerHUD = () => {
   const [timer, setTimer] = useState<string>('0:00:00');
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
+  // Notification system (message on the UI)
+  const [notification, setNotification] = useState<string>('');
+  const [showNotification, setShowNotification] = useState<boolean>(false);
+  const [notificationExiting, setNotificationExiting] = useState<boolean>(false);
+  
+  // Refs for tracking notification timeouts
+  const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const notificationExitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const [fps, setFPS] = useState<number>(60);
 
   const onWeaponChange = (weapon: Weapon) => {
@@ -66,6 +75,52 @@ const PlayerHUD = () => {
 
     const onFPSChangeObserver = game.onFPSChange.add(setFPS);
 
+    const onNotificationObserver = game.uiManager.onNotification.add(
+      (message: string) => {
+        // Clear any existing timeouts
+        if (notificationTimeoutRef.current) {
+          clearTimeout(notificationTimeoutRef.current);
+          notificationTimeoutRef.current = null;
+        }
+        if (notificationExitTimeoutRef.current) {
+          clearTimeout(notificationExitTimeoutRef.current);
+          notificationExitTimeoutRef.current = null;
+        }
+        
+        setNotification(message);
+        setShowNotification(true);
+        setNotificationExiting(false);
+
+        notificationTimeoutRef.current = setTimeout(() => {
+          setNotificationExiting(true);
+
+          notificationExitTimeoutRef.current = setTimeout(() => {
+            setShowNotification(false);
+            setNotificationExiting(false);
+          }, 600);
+        }, 12000);
+      },
+    );
+
+    const onDismissNotificationObserver = game.uiManager.onDismissNotification.add(() => {
+      // Clear any existing timeouts
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+        notificationTimeoutRef.current = null;
+      }
+      if (notificationExitTimeoutRef.current) {
+        clearTimeout(notificationExitTimeoutRef.current);
+        notificationExitTimeoutRef.current = null;
+      }
+      
+      setNotificationExiting(true);
+      
+      notificationExitTimeoutRef.current = setTimeout(() => {
+        setShowNotification(false);
+        setNotificationExiting(false);
+      }, 600);
+    });
+
     return () => {
       // remove observers when component unmounts
       onHealthChangeObserver.remove();
@@ -75,11 +130,26 @@ const PlayerHUD = () => {
       onStageStateChangeObserver.remove();
       onTimerChangeObserver.remove();
       onFPSChangeObserver.remove();
+      onNotificationObserver.remove();
+      onDismissNotificationObserver.remove();
+      
+      // Clear any active timeouts
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+      if (notificationExitTimeoutRef.current) {
+        clearTimeout(notificationExitTimeoutRef.current);
+      }
     };
-  }, [game]);
+  }, [game]); // No need to add showNotification as a dependency
 
   return (
     <div className="hud-container">
+      {showNotification && (
+        <div className={`hud-notification ${notificationExiting ? 'exit' : ''}`}>
+          <h3>{notification}</h3>
+        </div>
+      )}
       {isTimerRunning && (
         <div className="hud-timer-container">
           <h2 className="hud-timer">{timer}</h2>

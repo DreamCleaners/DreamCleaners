@@ -404,7 +404,10 @@ export class SoundManager {
     soundName.replace('_', '-');
 
     // Check if sound is already loaded
-    let sound = this.soundSystem.getSound(soundName, SoundCategory.WEAPON_EFFECT) as StaticSound;
+    let sound = this.soundSystem.getSound(
+      soundName,
+      SoundCategory.WEAPON_EFFECT,
+    ) as StaticSound;
 
     // If not loaded, load it first
     if (!sound) {
@@ -415,10 +418,16 @@ export class SoundManager {
         spatialEnabled: false,
       });
 
-      sound = this.soundSystem.getSound(soundName, SoundCategory.WEAPON_EFFECT) as StaticSound;
+      sound = this.soundSystem.getSound(
+        soundName,
+        SoundCategory.WEAPON_EFFECT,
+      ) as StaticSound;
     }
 
-    const originalDuration = this.getSoundDuration(soundName, SoundCategory.WEAPON_EFFECT);
+    const originalDuration = this.getSoundDuration(
+      soundName,
+      SoundCategory.WEAPON_EFFECT,
+    );
 
     // We modify the playback rate of the sound to match the reload time
     // Basically we accelerate the sound to match the reload time
