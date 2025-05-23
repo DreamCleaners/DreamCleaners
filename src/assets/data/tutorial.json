@@ -1,0 +1,93 @@
+{
+  "sections": [
+    {
+      "id": 1,
+      "title": "Welcome!",
+      "description": "Welcome to Dream Cleaners! As an employee of this company, you are tasked with cleaning our customers dreams. However, this job is possibly, probably (definitely) a little dangerous, and thus will require you to prepare yourself ! Let's see together the basics !",
+      "images": [],
+      "hasImages": false
+    },
+    {
+      "id": 2,
+      "title": "Controls",
+      "description": "WASD / ZQSD to move around\nSpace to jump\nLeft click to shoot with the equipped weapon\nE to interact with objects when close enough\nF to toggle the flashlight\n The usage of a mouse is highly recommended!",
+      "hasImages": false
+    },
+    {
+      "id": 3,
+      "title": "The Hub",
+      "description": "The hub is a place where you can rest and prepare yourself for your next dream cleaning. The Hub is divided into two rooms, your office, and the bedroom where customers sleep. Their dreams are filled with various monsters born from their imagination, and it is up to you to equip yourself sufficiently to face them.\n\n In the Hub, you will be able to interact with a few objects. Looking at them closely will highlight an interaction button. ",
+      "images": [
+        {
+          "path": "src/assets/img/tutorial/office.png",
+          "caption": "Your office"
+        },
+        {
+          "path": "src/assets/img/tutorial/interactiveElement.png",
+          "caption": "Example of interactive object"
+        }
+      ],
+      "hasImages": true
+    },
+    {
+      "id": 4,
+      "title": "The shop",
+      "description": "As a company committed to the health of our employees, we've set up a computer from which you can purchase certain \"assets\" to better defend yourself in the dreams. For that you will need money, which you can earn by doing good job in cleaning dreams. Work, spend money to work more, work. A perfect spiral.",
+      "images": [
+        {
+          "path": "src/assets/img/tutorial/computer.png",
+          "caption": "The computer"
+        },
+        {
+          "path": "src/assets/img/tutorial/shopInterface.png",
+          "caption": "Shop interface"
+        }
+      ],
+      "hasImages": true
+    },
+    {
+      "id": 5,
+      "title": "The workbench",
+      "description": "Every employee's office is equipped with a workbench. Use it to view your weapons, their passives, and also spend money to upgrade them.",
+      "images": [
+        {
+          "path": "src/assets/img/tutorial/workbench.png",
+          "caption": "The workbench"
+        }
+      ],
+      "hasImages": true
+    },
+    {
+      "id": 6,
+      "title": "Customers' \"bedroom\"",
+      "description": "Here, our dear customers are sleeping, hoping that you will clean their dreams and make their sleep better. Interact with one of the customers to view information on their dreams... Do not ask how it works. You will then be able to enter the dream, and actually do your job instead of counting ceiling tiles. ",
+      "images": [
+        {
+          "path": "src/assets/img/tutorial/bedroom.png",
+          "caption": ""
+        },
+        {
+          "path": "src/assets/img/tutorial/dreamSelection.png",
+          "caption": "Dream information display"
+        }
+      ],
+      "hasImages": true
+    },
+    {
+      "id": 7,
+      "title": "Inside the dream",
+      "description": "Inside the dream, you will need to find the end of it, marked by a little flag. But don't forget to clean up the monsters attacking you. The greater the clean-up, the greater the reward. \nBy the way, your death is definitive, dream or not dream ...\n Good luck :)",
+      "images": [
+        {
+          "path": "src/assets/img/tutorial/flag.png",
+          "caption": "End of dream"
+        },
+        {
+          "path": "src/assets/img/tutorial/enemies.png",
+          "caption": "Unwanted guests"
+        }
+      ],
+      "hasImages": true
+    }
+  ]
+}

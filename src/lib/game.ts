@@ -135,7 +135,7 @@ export class Game {
   public start(isNewGame: boolean): void {
     if (isNewGame) {
       this.saveManager.reset();
-      this.moneyManager.addPlayerMoney(1000000);
+      this.moneyManager.addPlayerMoney(7062);
     } else {
       this.saveManager.restore();
     }

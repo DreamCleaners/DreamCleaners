@@ -11,6 +11,7 @@ import StageEndUI from './StageEndUI';
 import ComputerUI from './ComputerUI';
 import WorkbenchUI from './WorkbenchUI';
 import SettingsUI from './SettingsUI';
+import TutorialUI from './TutorialUI';
 
 const UserInterface = () => {
   const game = useContext(GameContext);
@@ -42,6 +43,7 @@ const UserInterface = () => {
       {uiType === UIType.STAGE_SELECTION && <StageSelectionUI />}
       {uiType === UIType.GAME_OVER && <GameOverUI />}
       {uiType === UIType.WORKBENCH && <WorkbenchUI />}
+      {uiType === UIType.TUTORIAL_MENU && <TutorialUI />}
     </div>
   );
 };
