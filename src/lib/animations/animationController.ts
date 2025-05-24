@@ -67,6 +67,26 @@ export class AnimationController {
     return animation.start(animationLoop, speedRatio, animationFrom, animationTo);
   }
 
+  public stopAnimation(animationName: string): void {
+    const animationData = this.animations.get(animationName);
+    if (!animationData) {
+      throw new Error(`Animation ${animationName} not found`);
+    }
+    const animation = animationData.group;
+    if (this.transitionAnimation === animation) {
+      this.transitionAnimation = null;
+    }
+    animation.stop();
+    animation.weight = 0;
+    this.animations.forEach((animationData) => {
+      const anim = animationData.group;
+      if (anim.name !== animation.name && anim.isPlaying) {
+        anim.weight = Scalar.Clamp(anim.weight - this.transitionSpeed, 0, 1);
+        if (anim.weight === 0) anim.stop();
+      }
+    });
+  }
+
   public update(): void {
     this.smoothTransition();
   }

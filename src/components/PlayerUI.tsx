@@ -25,7 +25,7 @@ const PlayerHUD = () => {
   const [notification, setNotification] = useState<string>('');
   const [showNotification, setShowNotification] = useState<boolean>(false);
   const [notificationExiting, setNotificationExiting] = useState<boolean>(false);
-  
+
   // Refs for tracking notification timeouts
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const notificationExitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -86,7 +86,7 @@ const PlayerHUD = () => {
           clearTimeout(notificationExitTimeoutRef.current);
           notificationExitTimeoutRef.current = null;
         }
-        
+
         setNotification(message);
         setShowNotification(true);
         setNotificationExiting(false);
@@ -112,9 +112,9 @@ const PlayerHUD = () => {
         clearTimeout(notificationExitTimeoutRef.current);
         notificationExitTimeoutRef.current = null;
       }
-      
+
       setNotificationExiting(true);
-      
+
       notificationExitTimeoutRef.current = setTimeout(() => {
         setShowNotification(false);
         setNotificationExiting(false);
@@ -132,7 +132,7 @@ const PlayerHUD = () => {
       onFPSChangeObserver.remove();
       onNotificationObserver.remove();
       onDismissNotificationObserver.remove();
-      
+
       // Clear any active timeouts
       if (notificationTimeoutRef.current) {
         clearTimeout(notificationTimeoutRef.current);

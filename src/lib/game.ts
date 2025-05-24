@@ -138,7 +138,7 @@ export class Game {
     this.isNewGame = isNewGame;
     if (isNewGame) {
       this.saveManager.reset();
-      this.moneyManager.addPlayerMoney(7062);
+      this.moneyManager.addPlayerMoney(10000000);
     } else {
       this.saveManager.restore();
     }
