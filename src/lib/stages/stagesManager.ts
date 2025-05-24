@@ -2,6 +2,7 @@ import { EnemyType } from '../enemies/enemyType';
 import { Bed } from '../interactiveElements/bed';
 import { ISaveable } from '../saveable';
 import { StageLayout } from '../scenes/stageLayout';
+import { randomInt } from '../utils/random';
 import { SerializedStageInformation } from './serializedStageInformation';
 import { StageInformation } from './stageInformation';
 import { StageReward } from './stageReward';
@@ -13,6 +14,8 @@ export class StagesManager implements ISaveable {
 
   private previouslyProposedStages: StageInformation[] = [];
   private mustLoadPreviousStages: boolean = false;
+
+  private readonly MAX_ENEMY_TYPES: number = 3;
 
   private constructor() {}
 
@@ -41,6 +44,7 @@ export class StagesManager implements ISaveable {
           difficulty: stageInfo.difficulty,
           enemies: stageInfo.enemyTypes,
           reward: stageInfo.stageReward,
+          description: stageInfo.description,
         });
       }
 
@@ -78,6 +82,10 @@ export class StagesManager implements ISaveable {
         difficulty: difficultyFactor,
         enemies: enemyTypes,
         reward: reward,
+        description:
+          beds[i].gameScene.game.stageInformationManager.buildStageDescription(
+            enemyTypes,
+          ),
       });
 
       // We also store the stage information for saving purposes
@@ -129,18 +137,17 @@ export class StagesManager implements ISaveable {
   /** Picks enemyTypes to spawn in the stage, completely random ! */
   private pickRandomEnemyTypes(): EnemyType[] {
     const enemyTypesKeys = Object.keys(EnemyType).filter((key) => isNaN(Number(key))); // Get only the string keys of the enum
-    const enemyTypesLength = enemyTypesKeys.length;
-    const amountOfTypesToSpawn = Math.floor(Math.random() * enemyTypesLength) + 1;
+    const amountOfTypesToSpawn = randomInt(1, this.MAX_ENEMY_TYPES);
 
     const enemyTypes: EnemyType[] = [];
 
     for (let i = 0; i < amountOfTypesToSpawn; i++) {
-      let randomTypeIndex = Math.floor(Math.random() * enemyTypesLength);
+      let randomTypeIndex = randomInt(0, enemyTypesKeys.length - 1);
       let randomType =
         EnemyType[enemyTypesKeys[randomTypeIndex] as keyof typeof EnemyType];
 
       while (enemyTypes.includes(randomType)) {
-        randomTypeIndex = Math.floor(Math.random() * enemyTypesLength);
+        randomTypeIndex = randomInt(0, enemyTypesKeys.length - 1);
         randomType = EnemyType[enemyTypesKeys[randomTypeIndex] as keyof typeof EnemyType];
       }
 
@@ -195,6 +202,7 @@ export class StagesManager implements ISaveable {
           moneyReward: stage.stageReward.getMoneyReward(),
           weaponReward: stage.stageReward.getWeaponReward() || null, // Explicitly store null if undefined
         },
+        description: stage.description,
       }));
 
     return JSON.stringify(serializedStages);
@@ -213,6 +221,7 @@ export class StagesManager implements ISaveable {
         stage.difficulty,
         stage.enemyTypes,
         stageReward,
+        stage.description,
       );
     });
   }

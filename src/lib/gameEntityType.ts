@@ -6,4 +6,5 @@ export enum GameEntityType {
   ARRIVAL_POINT = 'arrival_point',
   SPAWN_TRIGGER = 'spawn_trigger',
   WORKBENCH = 'workbench',
+  PROJECTILE = 'projectile',
 }

@@ -16,6 +16,8 @@ import { SettingType } from '../settingType';
 export enum SoundCategory {
   MUSIC = 'musics',
   EFFECT = 'effects',
+  WEAPON_EFFECT = 'effects/weapons',
+  ENEMY_EFFECT = 'effects/enemies',
   UI = 'ui',
   AMBIENT = 'ambients',
   RADIO_MUSIC = 'radio_musics',
@@ -150,6 +152,8 @@ export class SoundSystem {
         this.loadedMusics.set(name, sound as StreamingSound);
         break;
       case SoundCategory.EFFECT:
+      case SoundCategory.WEAPON_EFFECT:
+      case SoundCategory.ENEMY_EFFECT:
         this.loadedSounds.set(name, sound as StaticSound);
         break;
       case SoundCategory.UI:
@@ -188,6 +192,8 @@ export class SoundSystem {
       case SoundCategory.AMBIENT:
         return this.loadedMusics.get(name);
       case SoundCategory.EFFECT:
+      case SoundCategory.WEAPON_EFFECT:
+      case SoundCategory.ENEMY_EFFECT:
         return this.loadedSounds.get(name);
       case SoundCategory.UI:
         return this.loadedUISounds.get(name);
@@ -347,6 +353,35 @@ export class SoundSystem {
     this.audioEngine.dispose();
     this.loadedMusics.clear();
     this.loadedSounds.clear();
+  }
+
+  public disposeSound(name: string, type: SoundCategory): void {
+    const sound = this.getSound(name, type);
+    if (!sound) {
+      return;
+    }
+
+    sound.dispose();
+    switch (type) {
+      case SoundCategory.MUSIC:
+      case SoundCategory.AMBIENT:
+        this.loadedMusics.delete(name);
+        break;
+      case SoundCategory.EFFECT:
+      case SoundCategory.WEAPON_EFFECT:
+      case SoundCategory.ENEMY_EFFECT:
+        this.loadedSounds.delete(name);
+        break;
+      case SoundCategory.UI:
+        this.loadedUISounds.delete(name);
+        break;
+      case SoundCategory.RADIO_MUSIC:
+        this.loadedRadioMusics.delete(name);
+        break;
+      default:
+        console.error('Unknown sound type: ' + type);
+        break;
+    }
   }
 
   // ---------------------------------------------

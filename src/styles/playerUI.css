@@ -108,3 +108,49 @@
   right: 6%;
   color: var(--font-color-secondary);
 }
+
+.hud-notification {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--font-color-primary);
+  text-align: center;
+  max-width: 80%;
+  animation: notification-enter 0.5s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  z-index: 10;
+}
+
+.hud-notification.exit {
+  animation: notification-exit 0.4s cubic-bezier(0.550, 0.085, 0.680, 0.530) forwards;
+}
+
+@keyframes notification-enter {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-50%) translateY(-30px); 
+  }
+  40% { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(5px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0); 
+  }
+}
+
+@keyframes notification-exit {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}

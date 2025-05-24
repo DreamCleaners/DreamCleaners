@@ -157,7 +157,11 @@ const StageSelectionUI = () => {
             <div className="stage-selection-item">
               <div className="stage-selection-item-description">
                 {stageInfo && game?.stageInformationManager ? (
-                  game.stageInformationManager.buildStageDescription(stageInfo.enemyTypes)
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: stageInfo.description,
+                    }}
+                  />
                 ) : (
                   <></>
                 )}

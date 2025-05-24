@@ -16,6 +16,14 @@ const PauseMenu = () => {
     game?.stop();
   };
 
+  const handleSettings = () => {
+    game?.uiManager.displaySettingsMenu();
+  };
+
+  const handleTutorial = () => {
+    game?.uiManager.displayTutorialMenu();
+  };
+
   return (
     <BaseContainer title="PAUSE">
       <div className="pause-menu-buttons-container">
@@ -25,6 +33,18 @@ const PauseMenu = () => {
             onClick={withClickSound(game, handleResume)}
           >
             <h2>RESUME</h2>
+          </button>
+          <button
+            className="pause-menu-button button"
+            onClick={withClickSound(game, handleSettings)}
+          >
+            <h2>SETTINGS</h2>
+          </button>
+          <button
+            className="pause-menu-button button"
+            onClick={withClickSound(game, handleTutorial)}
+          >
+            <h2>TUTORIAL</h2>
           </button>
           <button
             className="pause-menu-button button"

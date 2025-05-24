@@ -12,15 +12,19 @@ export class StageInformation {
 
   public stageReward!: StageReward;
 
+  public description: string = '';
+
   constructor(
     stageLayout: StageLayout,
     difficulty: number,
     enemyTypes: EnemyType[],
     stageReward: StageReward,
+    description: string,
   ) {
     this.stageLayout = stageLayout;
     this.difficulty = difficulty;
     this.enemyTypes = enemyTypes;
     this.stageReward = stageReward;
+    this.description = description;
   }
 }

@@ -41,12 +41,29 @@ export class weaponDataManager {
     return this.weaponsData;
   }
 
-  public getWeaponData(weaponType: WeaponType): WeaponData {
+  public getWeaponData(weaponType: WeaponType, isAkimboWeapon = false): WeaponData {
     const weaponData = this.weaponsData.get(weaponType);
     if (!weaponData) {
       throw new Error(`Weapon type ${weaponType} not found`);
     }
 
-    return structuredClone(weaponData); // Return a deep copy of the weapon data
+    // Create a deep copy of the weapon data
+    const weaponDataCopy = structuredClone(weaponData);
+
+    if (isAkimboWeapon) {
+      const originalWeaponJson = data[weaponType as keyof typeof data] as WeaponJson;
+
+      if (originalWeaponJson.akimboTransform) {
+        // We somehow need a structureClone otherwise we keep a reference,
+        // messing with the data
+        weaponDataCopy.transform = structuredClone(originalWeaponJson.akimboTransform);
+      }
+
+      if (originalWeaponJson.akimboFirePoint) {
+        weaponDataCopy.firePoint = structuredClone(originalWeaponJson.akimboFirePoint);
+      }
+    }
+
+    return weaponDataCopy;
   }
 }

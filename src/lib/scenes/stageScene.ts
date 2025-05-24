@@ -80,8 +80,18 @@ export class StageScene extends GameScene {
       detailSampleMaxError: 1,
     };
 
-    const meshes = this.unityScene.rootMesh.getChildMeshes();
-    this.navigationManager.createNavmesh(meshes as Mesh[], parameters);
+    const allMeshes = this.unityScene.rootMesh.getChildMeshes();
+    // We exclude all children of the object named #IGNORE_NAV_MESH#
+    const ignoreNode = this.unityScene.rootMesh
+      .getChildTransformNodes()
+      .find((node) => node.name === '#IGNORE_NAV_MESH#');
+
+    // Filter out meshes that are descendants of the ignore node
+    const navigationMeshes = ignoreNode
+      ? allMeshes.filter((mesh) => !mesh.isDescendantOf(ignoreNode))
+      : allMeshes;
+
+    this.navigationManager.createNavmesh(navigationMeshes as Mesh[], parameters);
 
     this.game.player.setPosition(new Vector3(0, 1, 0));
 

@@ -8,7 +8,7 @@ export abstract class InteractiveElement {
   public mesh!: Mesh;
   protected gameAssetContainer!: GameAssetContainer;
 
-  constructor(protected gameScene: GameScene) {}
+  constructor(public gameScene: GameScene) {}
 
   // The called function whenever the player tries to interact with the element
   public abstract interact(): void;

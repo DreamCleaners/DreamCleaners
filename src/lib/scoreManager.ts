@@ -83,6 +83,8 @@ export class ScoreManager {
     this.totalDamageTakenMalus =
       this.totalDamageTaken * this.DAMAGE_TAKEN_MALUS_MULTIPLIER;
     this.score = Math.max(this.score - this.totalDamageTakenMalus, 0);
+
+    this.score = Math.floor(this.score);
   }
 
   public getScore(): number {

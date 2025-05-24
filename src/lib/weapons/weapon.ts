@@ -28,6 +28,7 @@ import { BulletEffect } from './passives/bulletEffect.ts';
 import { Enemy } from '../enemies/enemy.ts';
 import { AnimationController } from '../animations/animationController.ts';
 import { SoundManager } from '../sound/soundManager.ts';
+import { ColliderMask } from '../colliderMask.ts';
 
 export class Weapon {
   private rootMesh!: TransformNode;
@@ -97,12 +98,16 @@ export class Weapon {
     public player: Player,
     public weaponType: WeaponType,
     rarity: Rarity,
+    isAkimboWeapon: boolean = false,
   ) {
     this.player = player;
     this.currentRarity = rarity;
     this.physicsEngine = player.physicsEngine;
     this.soundManager = player.game.soundManager;
-    this.weaponData = this.player.game.weaponDataManager.getWeaponData(this.weaponType);
+    this.weaponData = this.player.game.weaponDataManager.getWeaponData(
+      this.weaponType,
+      isAkimboWeapon,
+    );
     this.applyCurrentStats();
   }
 
@@ -316,7 +321,11 @@ export class Weapon {
       return;
     }
 
-    if (this.currentAmmoRemaining <= 0) {
+    if (
+      this.currentAmmoRemaining <= 0 &&
+      this.akimboWeapon &&
+      this.akimboWeapon.currentAmmoRemaining! <= 0
+    ) {
       return;
     }
 
@@ -388,14 +397,14 @@ export class Weapon {
   }
 
   /** Calls performRaycast 'bulletsPerShot' times. Calculates a direction for each bullet
-   * depending on the projection cone of the weapon (The most obvious example is the shotgun)
+   * depending on the projection cone of the weapon (The most obvious example is the winchester)
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
     this.showMuzzleFlashEffects();
-    this.animationController.startAnimation('Shoot', {
-      speedRatio: this.weaponData.animationsSpeed.shoot,
-      maxDuration: this.currentStats.cadency,
-    });
+    // this.animationController.startAnimation('Shoot', {
+    //   speedRatio: this.weaponData.animationsSpeed.shoot,
+    //   maxDuration: this.currentStats.cadency,
+    // });
 
     let shotLandedOnEnemy = false;
 
@@ -469,13 +478,14 @@ export class Weapon {
 
     this.physicsEngine.raycastToRef(start, end, this.raycastResult, {
       shouldHitTriggers: true,
+      collideWith: ColliderMask.ENEMY,
     });
 
     if (this.raycastResult.hasHit) {
       // We ask to play the impact sound at the provided location
-      this.player.game.soundManager.playBulletImpactSound(
-        this.raycastResult.hitPointWorld.clone(),
-      );
+      // this.player.game.soundManager.playBulletImpactSound(
+      //   this.raycastResult.hitPointWorld.clone(),
+      // );
 
       const metadata = this.raycastResult.body?.transformNode
         .metadata as IMetadataObject<IDamageable>;
@@ -534,8 +544,6 @@ export class Weapon {
 
     // Apply health gain per hit
     this.player.healthController.addHealth(this.hpPerHitModifier);
-
-    console.log('Hit entity, dealt ' + damagePerBullet + ' damage');
   }
 
   private isEnemy(entity: IDamageable): entity is Enemy {
@@ -559,10 +567,10 @@ export class Weapon {
       return;
     }
 
-    this.animationController.startAnimation('Reload', {
-      speedRatio: this.weaponData.animationsSpeed.reload,
-      maxDuration: this.currentStats.reloadTime,
-    });
+    // this.animationController.startAnimation('Reload', {
+    //   speedRatio: this.weaponData.animationsSpeed.reload,
+    //   maxDuration: this.currentStats.reloadTime,
+    // });
 
     this.soundManager.playWeaponReload(this.weaponType, this.currentStats.reloadTime);
     this.isReloading = true;
@@ -626,8 +634,12 @@ export class Weapon {
       this.MOVING_ANIMATION_SPEED *
       (this.VELOCITY_IMPACT_ON_ANIMATION_SPEED * velocity.length());
     this.isPlayingMovingAnimating = true;
-    const initialYPosition = this.rootMesh.position.y;
+    const initialYPosition = this.initialYPosition;
     const startTime = performance.now();
+
+    // Define min/max bounds for weapon position
+    const minY = initialYPosition - amplitude;
+    const maxY = initialYPosition + amplitude;
 
     const animate = () => {
       if (!this.isPlayingMovingAnimating) {
@@ -637,7 +649,11 @@ export class Weapon {
       const elapsedTime = performance.now() - startTime;
       const time = (elapsedTime / 1000) * frequency;
       const offsetY = Math.sin(time) * amplitude;
-      this.rootMesh.position.y = initialYPosition + offsetY;
+
+      // Clamp the position within allowed range
+      const newY = initialYPosition + offsetY;
+      this.rootMesh.position.y = Math.max(minY, Math.min(maxY, newY));
+
       requestAnimationFrame(animate);
     };
 
@@ -653,11 +669,18 @@ export class Weapon {
       const duration = 300;
       const startTime = performance.now();
 
+      // Define min/max bounds for weapon position
+      const amplitude = this.MOVING_ANIMATION_AMPLITUDE;
+      const minY = targetYPosition - amplitude;
+      const maxY = targetYPosition + amplitude;
+
       const smoothReset = (time: number) => {
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1);
-        this.rootMesh.position.y =
-          currentYPosition + t * (targetYPosition - currentYPosition);
+        const newY = currentYPosition + t * (targetYPosition - currentYPosition);
+
+        // Ensure the position stays within allowed range even during reset
+        this.rootMesh.position.y = Math.max(minY, Math.min(maxY, newY));
 
         if (t < 1) {
           requestAnimationFrame(smoothReset);
@@ -721,7 +744,7 @@ export class Weapon {
 
     // bullet impact
     const impactParticleSystem = new ParticleSystem(
-      'impact particles',
+      'impactParticles',
       2,
       this.player.game.scene,
     );

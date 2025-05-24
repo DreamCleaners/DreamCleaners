@@ -1,4 +1,11 @@
-import { Engine, HavokPlugin, Observable, Scene, Vector3 } from '@babylonjs/core';
+import {
+  Engine,
+  GlowLayer,
+  HavokPlugin,
+  Observable,
+  Scene,
+  Vector3,
+} from '@babylonjs/core';
 import HavokPhysics from '@babylonjs/havok';
 import { Inspector } from '@babylonjs/inspector';
 import { SceneManager } from './scenes/sceneManager';
@@ -55,6 +62,7 @@ export class Game {
   public workbenchManager!: WorkbenchManager;
   public playerPassiveFactory!: PlayerPassiveFactory;
   public soundManager!: SoundManager;
+  public glowLayer!: GlowLayer;
 
   private fixedUpdateTimer = 0;
   private fixedUpdateInterval = 1000 / 60;
@@ -67,6 +75,8 @@ export class Game {
 
   private showFPS: boolean = false;
   public onFPSChange = new Observable<number>();
+
+  public isNewGame = false;
 
   /**
    * Called one time when the canvas is initialized
@@ -91,6 +101,10 @@ export class Game {
     this.physicsPlugin = await this.getPhysicsPlugin();
     const gravity = Vector3.Zero();
     this.scene.enablePhysics(gravity, this.physicsPlugin);
+
+    this.glowLayer = new GlowLayer('glow', this.scene);
+    this.glowLayer.intensity = 0.5;
+    this.glowLayer.renderingGroupId = 0;
 
     this.playerPassiveFactory = new PlayerPassiveFactory(this);
 
@@ -121,9 +135,10 @@ export class Game {
    * Called each time we start a new game or resume a game
    */
   public start(isNewGame: boolean): void {
+    this.isNewGame = isNewGame;
     if (isNewGame) {
       this.saveManager.reset();
-      this.moneyManager.addPlayerMoney(1000000);
+      this.moneyManager.addPlayerMoney(7062);
     } else {
       this.saveManager.restore();
     }
@@ -136,13 +151,13 @@ export class Game {
   }
 
   public stop(): void {
-    console.log('Stopping the game');
     this.sceneManager.stop();
     this.uiManager.hidePauseMenu();
     this.uiManager.displayUI(UIType.MAIN_MENU);
   }
 
   public pause(): void {
+    this.uiManager.dismissNotification();
     this.soundManager.pauseAllSounds();
     this.engine.stopRenderLoop();
     this.startPauseTime = performance.now();

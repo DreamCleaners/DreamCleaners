@@ -19,6 +19,8 @@ export class NavigationManager {
   private readonly MAX_AGENT_RADIUS = 0.5;
   private agentCount = 0;
 
+  private lastValidDestinationPoint: Vector3 = Vector3.Zero();
+
   constructor(
     recastInjection: RecastInjection,
     private scene: Scene,
@@ -55,6 +57,12 @@ export class NavigationManager {
   }
 
   public moveAgentTo(agentIndex: number, destination: Vector3): void {
-    this.crowd.agentGoto(agentIndex, this.navigationPlugin.getClosestPoint(destination));
+    const point = this.navigationPlugin.getClosestPoint(destination);
+
+    if (!point.equals(Vector3.Zero())) {
+      this.lastValidDestinationPoint = point;
+    }
+
+    this.crowd.agentGoto(agentIndex, this.lastValidDestinationPoint);
   }
 }

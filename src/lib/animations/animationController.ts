@@ -94,4 +94,8 @@ export class AnimationController {
 
     if (currentAnimation.weight === 1) this.transitionAnimation = null;
   }
+
+  public hasAnimation(name: string): boolean {
+    return this.animations.has(name);
+  }
 }

@@ -26,6 +26,7 @@ export class WorkbenchManager {
 
     if (weapon.isAkimboWielding) {
       weapon.akimboWeapon?.hideInScene();
+      weapon.akimboWeapon?.dispose();
     }
 
     // We must re-get the "factory setting" weapon data as passives may have altered it

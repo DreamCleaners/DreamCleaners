@@ -4,8 +4,8 @@ import { GameAssetContainer } from '../assets/gameAssetContainer';
 import { Game } from '../game';
 import { Enemy } from './enemy';
 import { EnemyType } from './enemyType';
-import { Zombie } from './zombie';
 import { GameScene } from '../scenes/gameScene';
+import { EnemyDataManager } from './enemyDataManager';
 
 // Singleton
 export class EnemyFactory {
@@ -50,12 +50,15 @@ export class EnemyFactory {
     position: Vector3,
   ): Promise<Enemy> {
     const entries = await this.getEnemyEntries(enemyType, gameScene.game);
+    const enemyData = EnemyDataManager.getInstance().getEnemyData(enemyType);
 
-    switch (enemyType) {
-      case EnemyType.ZOMBIE:
-        return new Zombie(gameScene, difficultyFactor, position, entries);
-      default:
-        throw new Error('Unknown enemy type');
-    }
+    return new Enemy(
+      gameScene,
+      difficultyFactor,
+      entries,
+      position,
+      enemyData,
+      enemyType,
+    );
   }
 }

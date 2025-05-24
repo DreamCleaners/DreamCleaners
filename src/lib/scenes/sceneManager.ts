@@ -31,6 +31,7 @@ export class SceneManager {
     difficultyFactor: number = 1,
     enemyTypes: EnemyType[] = [],
     stageReward: StageReward | null = null,
+    description: string = '',
   ): Promise<void> {
     this.game.engine.displayLoadingUI();
     this.game.soundManager.playLoadingAmbience();
@@ -52,6 +53,7 @@ export class SceneManager {
         difficultyFactor,
         enemyTypes,
         stageReward as StageReward,
+        description,
       ),
     );
 

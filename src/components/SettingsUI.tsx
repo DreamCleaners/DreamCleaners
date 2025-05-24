@@ -2,7 +2,6 @@ import { useContext, useState } from 'react';
 import BaseContainer from './BaseContainer';
 import { GameContext } from '../contexts/GameContext';
 import { withClickSound } from '../lib/utils/withClickSound';
-import { UIType } from '../lib/ui/uiType';
 import { SoundCategory } from '../lib/sound/soundManager';
 
 import '../styles/settingsUI.css';
@@ -38,7 +37,7 @@ const SettingsUI = () => {
 
   const playUISound = () => {
     if (!game) return;
-    game.soundManager.playSound('placeholder', SoundCategory.UI);
+    game.soundManager.playSound('uiClick', SoundCategory.UI);
   };
 
   const handleGraphicsQualityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -49,7 +48,7 @@ const SettingsUI = () => {
   };
 
   const handleHideUI = () => {
-    game?.uiManager.setCurrentUI(UIType.MAIN_MENU);
+    game?.uiManager.hideSettingsMenu();
   };
 
   // Format value as percentage where 0 is 0% and 2 is 100%

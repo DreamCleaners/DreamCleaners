@@ -7,7 +7,11 @@ export class UIManager {
 
   onUIChange: Observable<UIType> = new Observable<UIType>();
   onPauseMenuChange: Observable<boolean> = new Observable<boolean>();
+  onSettingsMenuChange: Observable<boolean> = new Observable<boolean>();
   onCrosshairChange: Observable<boolean> = new Observable<boolean>();
+  onTutorialMenuChange: Observable<boolean> = new Observable<boolean>();
+  onNotification: Observable<string> = new Observable<string>();
+  onDismissNotification: Observable<void> = new Observable<void>(); // Add this new Observable
 
   // used to store last active state to restore it after a pause
   private lastActivePointerLock = false;
@@ -41,6 +45,30 @@ export class UIManager {
     this.game.lockPointer();
 
     this.saveLastActiveUIState(true);
+  }
+
+  public displaySettingsMenu(): void {
+    this.onSettingsMenuChange.notifyObservers(true);
+  }
+
+  public hideSettingsMenu(): void {
+    this.onSettingsMenuChange.notifyObservers(false);
+  }
+
+  public displayTutorialMenu(): void {
+    this.onTutorialMenuChange.notifyObservers(true);
+  }
+
+  public hideTutorialMenu(): void {
+    this.onTutorialMenuChange.notifyObservers(false);
+  }
+
+  public showNotification(message: string): void {
+    this.onNotification.notifyObservers(message);
+  }
+
+  public dismissNotification(): void {
+    this.onDismissNotification.notifyObservers();
   }
 
   public displayPauseMenu(): void {

@@ -174,3 +174,9 @@
   justify-content: center;
   animation: slide-in-top-30 0.2s ease-out;
 }
+
+.enemy-highlight {
+  color: #ff6b6b;
+  font-weight: bold;
+  text-shadow: 0 0 3px rgba(255, 107, 107, 0.3);
+}

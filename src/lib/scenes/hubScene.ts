@@ -78,6 +78,15 @@ export class HubScene extends GameScene {
     // PC Ambience
     this.game.soundManager.playHubAmbience();
     this.game.soundManager.radio = this.radio;
+
+    // Player UI Notification
+    if (this.game.isNewGame) {
+      // If it's a new game, at hub entrance we display a small notification
+      this.game.isNewGame = false;
+      this.game.uiManager.showNotification(
+        "Welcome in DreamCleaners ! If not done already, please check the tutorial by pressing 'Escape'",
+      );
+    }
   }
 
   public dispose(): void {
