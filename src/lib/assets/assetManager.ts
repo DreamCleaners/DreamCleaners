@@ -51,9 +51,10 @@ export class AssetManager {
 
   public async instantiateUnityScene(
     gameAssetContainer: GameAssetContainer,
+    sceneName: string,
   ): Promise<UnityScene> {
     // Create the skybox
-    // this.createSky(sceneName, gameAssetContainer);
+    this.createSky(sceneName, gameAssetContainer);
 
     const spawnTriggers: SpawnTrigger[] = [];
     let arrivalPoint: TransformNode | undefined = undefined;

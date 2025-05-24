@@ -46,6 +46,7 @@ export class StageScene extends GameScene {
 
     this.unityScene = await this.game.assetManager.instantiateUnityScene(
       this.gameAssetContainer,
+      this.stageLayout,
     );
 
     this.unityScene.rootMesh.position = new Vector3(0, 0, 0);

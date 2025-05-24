@@ -79,7 +79,7 @@ export abstract class GameScene {
       const room = rooms[randomIndex];
       rooms.splice(randomIndex, 1);
 
-      room.position = currentAnchor.absolutePosition.clone();
+      room.setAbsolutePosition(currentAnchor.absolutePosition.clone());
 
       const link = unityProceduralScene.link.clone('link', room.parent);
       if (!link) throw new Error('Could not clone link');
@@ -91,6 +91,10 @@ export abstract class GameScene {
 
       currentAnchor = this.game.assetManager.getAnchor(link);
     }
+
+    rooms.forEach((room) => {
+      room.setEnabled(false);
+    });
 
     unityProceduralScene.endRoom.setAbsolutePosition(
       currentAnchor.absolutePosition.clone(),
