@@ -401,10 +401,10 @@ export class Weapon {
    */
   private shootBullets(bulletsPerShot: number, projectionCone: number): void {
     this.showMuzzleFlashEffects();
-    // this.animationController.startAnimation('Shoot', {
-    //   speedRatio: this.weaponData.animationsSpeed.shoot,
-    //   maxDuration: this.currentStats.cadency,
-    // });
+    this.animationController.startAnimation('Shoot', {
+      speedRatio: this.weaponData.animationsSpeed.shoot,
+      maxDuration: this.currentStats.cadency,
+    });
 
     let shotLandedOnEnemy = false;
 
@@ -563,14 +563,15 @@ export class Weapon {
     }
 
     if (this.currentAmmoRemaining === this.currentStats.magazineSize) {
-      console.log('Magazine is full');
       return;
     }
 
-    // this.animationController.startAnimation('Reload', {
-    //   speedRatio: this.weaponData.animationsSpeed.reload,
-    //   maxDuration: this.currentStats.reloadTime,
-    // });
+    this.animationController.stopAnimation('Shoot');
+
+    this.animationController.startAnimation('Reload', {
+      speedRatio: this.weaponData.animationsSpeed.reload,
+      maxDuration: this.currentStats.reloadTime,
+    });
 
     this.soundManager.playWeaponReload(this.weaponType, this.currentStats.reloadTime);
     this.isReloading = true;
