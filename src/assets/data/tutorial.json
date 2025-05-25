@@ -10,7 +10,7 @@
     {
       "id": 2,
       "title": "Controls",
-      "description": "WASD / ZQSD to move around\nSpace to jump\nLeft click to shoot with the equipped weapon\nE to interact with objects when close enough\nF to toggle the flashlight\n The usage of a mouse is highly recommended!",
+      "description": "WASD / ZQSD to move around\nSpace to jump\nMaintain left shit to slide\nLeft click to shoot with the equipped weapon\nR to reload the weapon\nE to interact with objects when close enough\nF to toggle the flashlight\n\n The usage of a mouse is highly recommended!",
       "hasImages": false
     },
     {

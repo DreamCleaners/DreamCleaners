@@ -19,14 +19,9 @@ export class SpatialSound {
     }
   }
 
-  //   /** Returns if the sound is being played, by calculating if we reached the end of the sound duration */
-  //   public isPlaying(): boolean {
-  //     return (
-  //       this.sound.loop ||
-  //       (this.startTime > 0 &&
-  //         Date.now() / 1000 - this.startTime < this.sound.buffer?.duration)
-  //     );
-  //   }
+  public getStartTime(): number {
+    return this.startTime;
+  }
 
   public play(): void {
     this.sound.play();
