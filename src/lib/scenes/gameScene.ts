@@ -94,7 +94,6 @@ export abstract class GameScene {
 
     rooms.forEach((room) => {
       room.setAbsolutePosition(new Vector3(0, -1000, 0)); // just in case
-      room.dispose();
     });
 
     unityProceduralScene.endRoom.setAbsolutePosition(
