@@ -1,4 +1,9 @@
-import { IStaticSoundOptions, StaticSound, UniversalCamera, Vector3 } from '@babylonjs/core';
+import {
+  IStaticSoundOptions,
+  StaticSound,
+  UniversalCamera,
+  Vector3,
+} from '@babylonjs/core';
 import { SpatialSound } from './spatialSound';
 import { SoundSystem, SoundCategory } from './soundSystem';
 import { Player } from '../player/player';
@@ -6,7 +11,7 @@ import { Player } from '../player/player';
 export class SpatialSoundManager {
   private activeSpatialSounds: SpatialSound[] = [];
   private soundSystem: SoundSystem;
-  
+
   // Maximum number of concurrent spatial sounds
   private readonly MAX_CONCURRENT_SOUNDS = 32;
 
@@ -28,11 +33,11 @@ export class SpatialSoundManager {
     options?: Partial<IStaticSoundOptions>,
   ): Promise<SpatialSound | undefined> {
     this.cleanInactiveSounds();
-    
+
     if (this.activeSpatialSounds.length >= this.MAX_CONCURRENT_SOUNDS) {
       this.stopOldestSound();
     }
-    
+
     // Check if sound exists or load it
     let sound = this.soundSystem.getSound(name, soundCategory);
 
@@ -62,7 +67,7 @@ export class SpatialSoundManager {
   public update(camera: UniversalCamera, player: Player): void {
     // Clean up finished sounds first
     this.cleanInactiveSounds();
-    
+
     // Update positions of all active sounds
     for (const sound of this.activeSpatialSounds) {
       sound.updatePosition(camera, player.getPosition());
@@ -74,20 +79,20 @@ export class SpatialSoundManager {
    */
   private cleanInactiveSounds(): void {
     const now = Date.now() / 1000;
-    
-    this.activeSpatialSounds = this.activeSpatialSounds.filter(sound => {
+
+    this.activeSpatialSounds = this.activeSpatialSounds.filter((sound) => {
       const soundObj = sound.getSound();
       if (soundObj.loop) return true;
-      
+
       const startTime = sound.getStartTime();
-      const duration = soundObj instanceof StaticSound && soundObj.buffer ? 
-        soundObj.buffer.duration : 0;
-      
+      const duration =
+        soundObj instanceof StaticSound && soundObj.buffer ? soundObj.buffer.duration : 0;
+
       if (startTime > 0 && duration > 0 && now - startTime > duration) {
         sound.stop();
         return false;
       }
-      
+
       return true;
     });
   }
@@ -104,7 +109,7 @@ export class SpatialSoundManager {
           return;
         }
       }
-      
+
       this.activeSpatialSounds[0].stop();
       this.activeSpatialSounds.shift();
     }

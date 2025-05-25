@@ -172,6 +172,16 @@ export class StageScene extends GameScene {
     this.enemies.forEach((enemy) => {
       enemy.fixedUpdate();
     });
+
+    this.checkPlayerOutOfBounds();
+  }
+
+  private checkPlayerOutOfBounds(): void {
+    const playerPosition = this.game.player.getPosition();
+    if (playerPosition.y < -50) {
+      this.game.soundManager.playPlayerDeath();
+      this.game.gameOver();
+    }
   }
 
   private onEnemyDeath(enemy: Enemy): void {

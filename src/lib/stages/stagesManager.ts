@@ -76,7 +76,6 @@ export class StagesManager implements ISaveable {
       const layout = this.pickRandomLayout(alreadyPickedLayouts);
       alreadyPickedLayouts.add(layout);
 
-      // For now only fixed stages are implemented
       bed.setStageInfo({
         layout: layout,
         difficulty: difficultyFactor,

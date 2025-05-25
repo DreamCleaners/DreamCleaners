@@ -7,7 +7,7 @@
       "speed": 3,
       "attackRange": 2.5,
       "attackSpeed": 1.5,
-      "health": 200
+      "health": 100
     },
     "meshData": {
       "radius": 0.5,
@@ -42,10 +42,10 @@
     "isMelee": true,
     "baseStats": {
       "attackDamage": 100,
-      "speed": 3,
+      "speed": 5,
       "attackRange": 2.5,
-      "attackSpeed": 1.5,
-      "health": 200
+      "attackSpeed": 2,
+      "health": 50
     },
     "meshData": {
       "radius": 1,
@@ -77,11 +77,11 @@
     "name": "Ghost Skull",
     "isMelee": false,
     "baseStats": {
-      "attackDamage": 100,
-      "speed": 3,
-      "attackRange": 10,
-      "attackSpeed": 1.5,
-      "health": 200
+      "attackDamage": 130,
+      "speed": 2,
+      "attackRange": 20,
+      "attackSpeed": 1.7,
+      "health": 100
     },
     "meshData": {
       "radius": 0.5,
@@ -111,11 +111,11 @@
     "name": "Dragon",
     "isMelee": false,
     "baseStats": {
-      "attackDamage": 100,
-      "speed": 3,
-      "attackRange": 10,
-      "attackSpeed": 1.5,
-      "health": 200
+      "attackDamage": 150,
+      "speed": 2,
+      "attackRange": 20,
+      "attackSpeed": 1.3,
+      "health": 100
     },
     "meshData": {
       "radius": 0.7,
@@ -145,11 +145,11 @@
     "name": "Yeti",
     "isMelee": true,
     "baseStats": {
-      "attackDamage": 100,
-      "speed": 3,
-      "attackRange": 3,
+      "attackDamage": 300,
+      "speed": 4,
+      "attackRange": 3.5,
       "attackSpeed": 1.5,
-      "health": 200
+      "health": 150
     },
     "meshData": {
       "radius": 0.9,
@@ -180,10 +180,10 @@
     "isMelee": true,
     "baseStats": {
       "attackDamage": 100,
-      "speed": 3,
-      "attackRange": 2.5,
-      "attackSpeed": 1.5,
-      "health": 200
+      "speed": 6,
+      "attackRange": 2.7,
+      "attackSpeed": 2.5,
+      "health": 70
     },
     "meshData": {
       "radius": 0.5,
@@ -207,47 +207,15 @@
       "options": {}
     }
   },
-  "piranha": {
-    "name": "Piranha",
-    "isMelee": true,
-    "baseStats": {
-      "attackDamage": 100,
-      "speed": 3,
-      "attackRange": 2.5,
-      "attackSpeed": 1.5,
-      "health": 200
-    },
-    "meshData": {
-      "radius": 0.9,
-      "height": 1.5,
-      "scale": 0.4,
-      "hitboxOffset": {
-        "x": 0,
-        "y": 0
-      }
-    },
-    "attackAnimation": {
-      "name": "Fish_Armature|Attack",
-      "options": {}
-    },
-    "idleAnimation": {
-      "name": "Fish_Armature|Swimming_Normal",
-      "options": {}
-    },
-    "walkAnimation": {
-      "name": "Fish_Armature|Out_Of_Water",
-      "options": {}
-    }
-  },
   "alien": {
     "name": "Alien",
     "isMelee": true,
     "baseStats": {
-      "attackDamage": 100,
-      "speed": 3,
-      "attackRange": 2.5,
-      "attackSpeed": 1.5,
-      "health": 200
+      "attackDamage": 140,
+      "speed": 4,
+      "attackRange": 2.7,
+      "attackSpeed": 1.7,
+      "health": 100
     },
     "meshData": {
       "radius": 0.5,
