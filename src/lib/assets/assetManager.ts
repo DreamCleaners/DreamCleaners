@@ -24,6 +24,7 @@ import {
 import { UnityScene } from './unityScene';
 import { SpawnTrigger } from '../stages/spawnTrigger';
 import { UnityProceduralScene } from './unityProceduralScene';
+import { ColliderMask } from '../colliderMask';
 
 export class AssetManager {
   constructor(private scene: Scene) {}
@@ -78,6 +79,11 @@ export class AssetManager {
         arrivalPoint = this.handleArrivalPoint(node as Mesh);
       } else if (type === UnityTypeToken.SPAWN_TRIGGER) {
         this.handleSpawnTrigger(node as Mesh, spawnTriggers, tokens);
+      } else if (
+        type === UnityTypeToken.INVISIBLE_OBJECT &&
+        (node instanceof Mesh || node instanceof InstancedMesh)
+      ) {
+        this.handlePhysicalObject(node, tokens, gameAssetContainer, false);
       }
     });
 
@@ -180,7 +186,10 @@ export class AssetManager {
     node: Mesh | InstancedMesh,
     tokens: string[],
     gameAssetContainer: GameAssetContainer,
+    isVisible: boolean = true,
   ): void {
+    node.isVisible = isVisible;
+
     const shape = tokens[1];
 
     let physicsAggregate!: PhysicsAggregate;
@@ -198,6 +207,11 @@ export class AssetManager {
         mass: 0,
       });
     }
+
+    if (!isVisible) {
+      physicsAggregate.shape.filterMembershipMask = ColliderMask.OBJECT;
+    }
+
     gameAssetContainer.addPhysicsAggregate(physicsAggregate);
   }
 

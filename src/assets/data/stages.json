@@ -8,7 +8,7 @@
   "floating_islands": {
     "name": "Floating Islands",
     "proceduralOptions": {
-      "roomsToGenerate": 1
+      "roomsToGenerate": 3
     }
   }
 }

@@ -3,6 +3,7 @@ export enum UnityTypeToken {
   SPAWN_TRIGGER = 'T',
   ARRIVAL_POINT = 'A',
   PROCEDURAL_GENERATION = 'P',
+  INVISIBLE_OBJECT = 'I',
 }
 
 export enum UnityPhysicShapeToken {
