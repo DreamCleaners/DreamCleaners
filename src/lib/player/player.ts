@@ -35,6 +35,7 @@ export class Player implements IDamageable {
   private inputs: InputState;
   public cameraManager!: CameraManager;
   public hitbox!: Mesh;
+  private readonly BLOOD_SCREEN_DURATION = 500; // ms
 
   // firelight
   public fireLight!: Light;
@@ -325,6 +326,11 @@ export class Player implements IDamageable {
   public takeDamage(damage: number): void {
     const isDodged = randomFloat(0, 1) < this.dodgeChance;
     if (isDodged) return;
+
+    this.game.uiManager.setBloodScreenVisibility(true);
+    setTimeout(() => {
+      this.game.uiManager.setBloodScreenVisibility(false);
+    }, this.BLOOD_SCREEN_DURATION);
 
     this.timeSinceLastDamage = 0;
     this.onDamageTakenObservable.notifyObservers(damage);

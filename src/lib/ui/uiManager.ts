@@ -9,6 +9,7 @@ export class UIManager {
   onPauseMenuChange: Observable<boolean> = new Observable<boolean>();
   onSettingsMenuChange: Observable<boolean> = new Observable<boolean>();
   onCrosshairChange: Observable<boolean> = new Observable<boolean>();
+  onBloodScreenChange: Observable<boolean> = new Observable<boolean>();
   onTutorialMenuChange: Observable<boolean> = new Observable<boolean>();
   onNotification: Observable<string> = new Observable<string>();
   onDismissNotification: Observable<void> = new Observable<void>(); // Add this new Observable
@@ -83,6 +84,10 @@ export class UIManager {
 
   public setCrosshairVisibility(isVisible: boolean): void {
     this.onCrosshairChange.notifyObservers(isVisible);
+  }
+
+  public setBloodScreenVisibility(isVisible: boolean): void {
+    this.onBloodScreenChange.notifyObservers(isVisible);
   }
 
   public getCurrentUI(): UIType {

@@ -13,9 +13,11 @@ const GameCanvas = () => {
   const [game, setGame] = useState<Game | null>(null);
   const gameRef = useRef<Game | null>(null);
   const [isCrosshairVisible, setIsCrosshairVisible] = useState<boolean>(false);
+  const [isBloodScreenVisible, setIsBloodScreenVisible] = useState<boolean>(false);
   const [currentWeapon, setCurrentWeapon] = useState<Weapon | null>(null);
 
   const onCrosshairChangeObserverRef = useRef<Observer<boolean> | null>(null);
+  const onBloodScreenChangeObserverRef = useRef<Observer<boolean> | null>(null);
   const onWeaponChangeObserverRef = useRef<Observer<Weapon> | null>(null);
 
   const initGame = async () => {
@@ -25,6 +27,9 @@ const GameCanvas = () => {
 
     onCrosshairChangeObserverRef.current =
       gameRef.current.uiManager.onCrosshairChange.add(setIsCrosshairVisible);
+
+    onBloodScreenChangeObserverRef.current =
+      gameRef.current.uiManager.onBloodScreenChange.add(setIsBloodScreenVisible);
 
     onWeaponChangeObserverRef.current = gameRef.current.player.onWeaponChange.add(
       (weapon: Weapon) => {
@@ -41,6 +46,7 @@ const GameCanvas = () => {
     return () => {
       if (gameRef.current) {
         onCrosshairChangeObserverRef.current?.remove();
+        onBloodScreenChangeObserverRef.current?.remove();
         onWeaponChangeObserverRef.current?.remove();
       }
     };
@@ -58,6 +64,8 @@ const GameCanvas = () => {
           }}
         />
       )}
+      {/* <div className={`blood-screen show`}></div> */}
+      <div className={`blood-screen ${isBloodScreenVisible ? 'show' : ''}`}></div>
       <UserInterface />
       <canvas
         ref={canvasRef}

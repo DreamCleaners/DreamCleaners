@@ -389,7 +389,7 @@ export class Enemy implements IDamageable {
     bloodExplosionParticleSystem.addSizeGradient(0, 0.5);
     bloodExplosionParticleSystem.addSizeGradient(1, 0);
 
-    bloodExplosionParticleSystem.addVelocityGradient(0, 8);
+    bloodExplosionParticleSystem.addVelocityGradient(0, 12);
     bloodExplosionParticleSystem.addVelocityGradient(1, 0);
 
     bloodExplosionParticleSystem.disposeOnStop = true;

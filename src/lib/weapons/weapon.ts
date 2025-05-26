@@ -851,7 +851,7 @@ export class Weapon {
     bloodImpactParticleSystem.updateSpeed = 0.01;
 
     bloodImpactParticleSystem.minLifeTime = 0.1;
-    bloodImpactParticleSystem.maxLifeTime = 0.27;
+    bloodImpactParticleSystem.maxLifeTime = 0.4;
 
     bloodImpactParticleSystem.blendMode = ParticleSystem.BLENDMODE_MULTIPLY;
 
@@ -861,10 +861,10 @@ export class Weapon {
 
     bloodImpactParticleSystem.gravity = new Vector3(0, -10, 0);
 
-    bloodImpactParticleSystem.addSizeGradient(0, 0.25);
+    bloodImpactParticleSystem.addSizeGradient(0, 0.6);
     bloodImpactParticleSystem.addSizeGradient(1, 0);
 
-    bloodImpactParticleSystem.addVelocityGradient(0, 5);
+    bloodImpactParticleSystem.addVelocityGradient(0, 8);
     bloodImpactParticleSystem.addVelocityGradient(1, 0);
 
     bloodImpactParticleSystem.disposeOnStop = true;
