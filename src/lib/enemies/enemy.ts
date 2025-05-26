@@ -39,7 +39,6 @@ export class Enemy implements IDamageable {
   private readonly DAMAGE_BONUS_PER_DIFFICULTY: number = 25;
   private readonly SPEED_BONUS_PER_DIFFICULTY: number = 0.5;
 
-
   // crowd navigation
   private agentIndex: number = -1;
   private get agentParameters(): IAgentParameters {
@@ -82,11 +81,16 @@ export class Enemy implements IDamageable {
 
   private initStats(difficultyFactor: number): void {
     difficultyFactor--; // Factor of 0 if difficultyFactor is 1
-    this.healthController.init(this.enemyData.baseStats.health + (difficultyFactor * this.HP_BONUS_PER_DIFFICULTY));
+    this.healthController.init(
+      this.enemyData.baseStats.health + difficultyFactor * this.HP_BONUS_PER_DIFFICULTY,
+    );
     this.attackRange = this.enemyData.baseStats.attackRange;
     this.attackSpeed = this.enemyData.baseStats.attackSpeed;
-    this.attackDamage = this.enemyData.baseStats.attackDamage + (difficultyFactor * this.DAMAGE_BONUS_PER_DIFFICULTY);
-    this.speed = this.enemyData.baseStats.speed + (difficultyFactor * this.SPEED_BONUS_PER_DIFFICULTY);
+    this.attackDamage =
+      this.enemyData.baseStats.attackDamage +
+      difficultyFactor * this.DAMAGE_BONUS_PER_DIFFICULTY;
+    this.speed =
+      this.enemyData.baseStats.speed + difficultyFactor * this.SPEED_BONUS_PER_DIFFICULTY;
   }
 
   private async init(position: Vector3): Promise<void> {

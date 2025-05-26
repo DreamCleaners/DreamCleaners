@@ -4,10 +4,10 @@ import { Rarity } from '../rarity';
 import { ShopItemType } from '../shopItemType';
 import { PlayerPassiveType } from '../playerPassiveType';
 
-export class TeddyBear extends PlayerPassiveItem {
+export class PlasticDuck extends PlayerPassiveItem {
   constructor(game: Game, playerPassiveType: PlayerPassiveType) {
     super(
-      'Teddy Bear',
+      'Plastic Duck',
       'Increases your max health by 200 and your regeneration speed by 3%',
       500,
       ShopItemType.PLAYER_PASSIVE,

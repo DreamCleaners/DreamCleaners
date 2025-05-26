@@ -7,12 +7,12 @@ import { Mask } from './passives/mask';
 import { PocketWatch } from './passives/pocketWatch';
 import { ClownNose } from './passives/clownNose';
 import { SuspiciousMixture } from './passives/suspiciousMixture';
-import { TeddyBear } from './passives/teddyBear';
+import { PlasticDuck } from './passives/plasticDuck';
 import { Feather } from './passives/feather';
 import { UnicornHorn } from './passives/unicornHorn';
 import { Clover } from './passives/clover';
 import { CandyCane } from './passives/candyCane';
-import { EnergizedDrink } from './passives/energizedDrink';
+import { Coffee } from './passives/coffee';
 
 export class PlayerPassiveFactory {
   constructor(private game: Game) {}
@@ -31,8 +31,8 @@ export class PlayerPassiveFactory {
         return new ClownNose(this.game, type);
       case PlayerPassiveType.SUSPICIOUS_MIXTURE:
         return new SuspiciousMixture(this.game, type);
-      case PlayerPassiveType.TEDDY_BEAR:
-        return new TeddyBear(this.game, type);
+      case PlayerPassiveType.PLASTIC_DUCK:
+        return new PlasticDuck(this.game, type);
       case PlayerPassiveType.FEATHER:
         return new Feather(this.game, type);
       case PlayerPassiveType.UNICORN_HORN:
@@ -41,8 +41,8 @@ export class PlayerPassiveFactory {
         return new Clover(this.game, type);
       case PlayerPassiveType.CANDY_CANE:
         return new CandyCane(this.game, type);
-      case PlayerPassiveType.ENERGIZED_DRINK:
-        return new EnergizedDrink(this.game, type);
+      case PlayerPassiveType.COFFEE:
+        return new Coffee(this.game, type);
       default:
         throw new Error(`Unknown passive type: ${type}`);
     }

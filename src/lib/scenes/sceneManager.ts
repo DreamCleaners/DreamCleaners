@@ -34,6 +34,7 @@ export class SceneManager {
     description: string = '',
   ): Promise<void> {
     this.game.engine.displayLoadingUI();
+    this.game.uiManager.setCrosshairVisibility(false);
     this.game.soundManager.playLoadingAmbience();
 
     if (this.currentScene !== null) {
@@ -59,6 +60,7 @@ export class SceneManager {
 
     await scene.load();
     this.game.engine.hideLoadingUI();
+    this.game.uiManager.setCrosshairVisibility(true);
     this.currentScene = scene;
 
     this.game.soundManager.stopLoadingAmbience();

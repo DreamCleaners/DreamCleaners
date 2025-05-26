@@ -18,8 +18,7 @@ const ItemIcon = ({
     path = `weapons/${name}`;
   }
   if (shopItemType === ShopItemType.PLAYER_PASSIVE) {
-    // path = `player-passives/${name}`;
-    path = `player-passives/potion-ball`; // debug
+    path = `player-passives/${name}`;
   }
   if (shopItemType === ShopItemType.WEAPON_PASSIVE) {
     path = `weapon-passives/${name}`;
