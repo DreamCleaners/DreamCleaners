@@ -9,7 +9,6 @@ export class UnicornHorn extends PlayerPassiveItem {
     super(
       'Unicorn Horn',
       'Increases your speed by 2% and your slide speed by 2%',
-      500,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.RARE,
       game,

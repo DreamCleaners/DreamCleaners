@@ -9,7 +9,6 @@ export class PlasticDuck extends PlayerPassiveItem {
     super(
       'Plastic Duck',
       'Increases your max health by 200 and your regeneration speed by 3%',
-      500,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.RARE,
       game,

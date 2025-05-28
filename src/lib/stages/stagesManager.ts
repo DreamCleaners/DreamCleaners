@@ -118,18 +118,27 @@ export class StagesManager implements ISaveable {
   }
 
   private pickDifficulty(stageReward: StageReward, runProgress: number): number {
-    // Base difficulty is random between 1 and 2
-    let difficulty = Math.floor(Math.random() * 2) + 1;
+    // Base difficulty is equal to the run progress
+    let difficulty = runProgress + 1;
 
     // Adjust difficulty based on the rarity of the weapon reward
     const weaponReward = stageReward.getWeaponReward();
 
     if (weaponReward) {
-      difficulty += 1 + weaponReward.rarity;
+      difficulty += 1;
+
+      if(weaponReward.rarity >= 2) {
+        difficulty += 1;
+      }
+
+      if(weaponReward.embeddedPassives.length > 0) {
+        // +1 if weapon has passives
+        difficulty += 1;
+      }
     }
 
-    // Add 1 to the difficulty every 2 stages completed
-    difficulty += Math.floor(runProgress / 2);
+    // So difficulty, for first stage is from 1 to 5 (with legendary weapon + passives in reward)
+
     return difficulty;
   }
 

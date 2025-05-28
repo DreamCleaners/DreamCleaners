@@ -9,7 +9,6 @@ export class SuspiciousMixture extends PlayerPassiveItem {
     super(
       'Suspicious Mixture',
       'Increases your slide speed by 2% and decreases your dodge chance by 1%',
-      250,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.COMMON,
       game,

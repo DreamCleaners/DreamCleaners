@@ -9,7 +9,6 @@ export class PocketWatch extends PlayerPassiveItem {
     super(
       'Pocket Watch',
       'Increases your dodge chance by 3% and decreases your regen speed by 1%',
-      250,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.COMMON,
       game,

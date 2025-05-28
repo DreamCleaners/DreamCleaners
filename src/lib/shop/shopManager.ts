@@ -26,16 +26,16 @@ export class ShopManager {
   public readonly onChancePercentageChange = new Observable<number>();
 
   // reroll
-  private readonly REROLL_MULTIPLIER = 1.5;
+  private readonly BONUS_COST_PER_REROLL = 50;
   private currentRerollCost = 100;
   private rerollCount = 0;
 
   // player passives
-  private readonly PLAYER_PASSIVE_DROP_RATE = 0.7;
+  private readonly PLAYER_PASSIVE_DROP_RATE = 0.55;
   private readonly playerPassiveItems = new Map<Rarity, PlayerPassiveItem[]>();
 
   // Weapon passives
-  private readonly WEAPON_PASSIVE_DROP_RATE = 0.1;
+  private readonly WEAPON_PASSIVE_DROP_RATE = 0.25;
 
   public chancePercentageIncrease = 0;
 
@@ -67,9 +67,7 @@ export class ShopManager {
   }
 
   public resetShop(): void {
-    // reroll cost increases linearly with the run progression for now
-    const runProgression = this.game.runManager.getStageCompletedCount();
-    this.currentRerollCost = 100 + runProgression * 100;
+    this.currentRerollCost = 100;
     this.rerollCount = 0;
 
     this.generateShopItems();
@@ -130,9 +128,9 @@ export class ShopManager {
     // fixed rarities drop rates for now
     if (rarityChance < 0.6) {
       return Rarity.COMMON;
-    } else if (rarityChance < 0.91) {
+    } else if (rarityChance < 0.87) {
       return Rarity.RARE;
-    } else if (rarityChance < 0.97) {
+    } else if (rarityChance < 0.95) {
       return Rarity.EPIC;
     } else {
       return Rarity.LEGENDARY;
@@ -141,7 +139,7 @@ export class ShopManager {
 
   public getRerollCost(): number {
     return Math.floor(
-      this.currentRerollCost * this.REROLL_MULTIPLIER ** this.rerollCount,
+      this.currentRerollCost + this.BONUS_COST_PER_REROLL * this.rerollCount,
     );
   }
 
@@ -212,7 +210,7 @@ export class ShopManager {
     return new WeaponItem(
       weaponData.weaponName,
       weaponData.shopDescription,
-      100,
+      this.getPriceForItem(rarity, ShopItemType.WEAPON),
       ShopItemType.WEAPON,
       rarity,
       weaponType,
@@ -286,7 +284,7 @@ export class ShopManager {
     return new WeaponPassiveItem(
       prettyName,
       description,
-      100,
+      this.getPriceForItem(rarity, ShopItemType.WEAPON_PASSIVE),
       ShopItemType.WEAPON_PASSIVE,
       rarity,
       passiveType,
@@ -306,5 +304,21 @@ export class ShopManager {
 
     // Remove the item from the shop
     this.removeItemFromShop(weaponPassive);
+  }
+
+  private getPriceForItem(rarity: Rarity, itemType: ShopItemType): number {
+    const pricesForWeapons = [150, 350, 550, 750];
+    const pricesForWeaponPassives = [100, 400, 400, 1000];
+
+    switch (itemType) {
+      case ShopItemType.WEAPON:
+        return pricesForWeapons[rarity];
+      case ShopItemType.WEAPON_PASSIVE:
+        return pricesForWeaponPassives[rarity];
+      case ShopItemType.PLAYER_PASSIVE:
+        return -1; // Player passives prices are handled separately, see PlayerPassiveItem class
+      default:
+        throw new Error('Invalid item type for price calculation');
+    }
   }
 }

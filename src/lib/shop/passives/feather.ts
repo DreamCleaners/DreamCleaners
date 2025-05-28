@@ -9,7 +9,6 @@ export class Feather extends PlayerPassiveItem {
     super(
       'Feather',
       'Increases your dodge chance by 5% and decrease your max health by 100',
-      500,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.RARE,
       game,

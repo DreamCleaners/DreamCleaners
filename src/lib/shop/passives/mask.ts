@@ -9,7 +9,6 @@ export class Mask extends PlayerPassiveItem {
     super(
       'Mask',
       'Increases your max health by 200 and decreases your speed by 1%',
-      250,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.COMMON,
       game,

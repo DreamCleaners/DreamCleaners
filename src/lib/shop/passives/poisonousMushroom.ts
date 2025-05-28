@@ -9,7 +9,6 @@ export class PoisonousMushroom extends PlayerPassiveItem {
     super(
       'Poisonous Mushroom',
       'Increases your regeneration speed by 3% and decreases your chance by 1%',
-      250,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.COMMON,
       game,

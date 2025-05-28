@@ -26,8 +26,8 @@ const StageEndUI = () => {
 
   const stageReward = game.sceneManager.getCurrentScene()?.stageInfo.stageReward;
   const stageRewardGold =
-    (stageReward?.getMoneyReward() ?? 0) +
-    game.scoreManager.convertScoreToMoney(game.scoreManager.getScore());
+    (stageReward?.getMoneyReward() ?? 0) *
+    game.scoreManager.getScoreFactor();
   const weaponReward = stageReward?.getWeaponReward();
 
   const handleReplaceWeapon = async (weaponIndex: number) => {
@@ -110,14 +110,14 @@ const StageEndUI = () => {
                 <li className="score-stats-item">
                   <div className="score-stats-item-title">
                     <HolyGrailIcon className="score-stats-icon" />
-                    Score :
+                    Score multiplier :
                   </div>
-                  <p className="score-stats-item-value">{game.scoreManager.getScore()}</p>
+                  <p className="score-stats-item-value">{game.scoreManager.getScoreFactor()}</p>
                 </li>
                 <li className="score-stats-item">
                   <div className="score-stats-item-title">
                     <MoneyStackIcon className="score-stats-icon" />
-                    Gold reward :
+                    Final money reward :
                   </div>
                   <p className="score-stats-item-value">{stageRewardGold}</p>
                 </li>

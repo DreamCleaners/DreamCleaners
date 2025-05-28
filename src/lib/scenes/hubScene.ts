@@ -61,9 +61,6 @@ export class HubScene extends GameScene {
     this.workbench = new Workbench(this);
     await this.workbench.create(new Vector3(0, 0, 0));
 
-    this.game.moneyManager.addPlayerMoney(
-      this.game.scoreManager.convertScoreToMoney(this.game.scoreManager.getScore()),
-    );
     this.game.scoreManager.reset();
 
     this.game.shopManager.resetShop();

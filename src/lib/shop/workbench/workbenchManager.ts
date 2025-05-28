@@ -47,20 +47,10 @@ export class WorkbenchManager {
    * and the passives embedded
    */
   public getCostForQualityUpgrade(weapon: Weapon): number {
-    // For now baic cost logic
-    // The cost will be 100 * current quality index
-    // And we add 50 per T1 passive embedded, 150 T2 and 400 T3
-    let cost = 300 * weapon.currentRarity + 500;
-    const pm = WeaponPassivesManager.getInstance();
-    const passives = weapon.embeddedPassives;
-
-    for (const passive of passives) {
-      const passiveIndex = pm.getQualityIndexForPassive(passive);
-      if (passiveIndex === 0) cost += 50;
-      else if (passiveIndex === 1) cost += 150;
-      else if (passiveIndex === 2) cost += 400;
-    }
-
-    return cost;
+    // Cost logic: 400 * (current rarity + 1) + 50 * number of passives
+    const baseCost = 400 * (weapon.currentRarity + 1);
+    const passivesCost = 50 * weapon.embeddedPassives.length;
+    
+    return baseCost + passivesCost;
   }
 }

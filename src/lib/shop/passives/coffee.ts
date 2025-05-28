@@ -9,7 +9,6 @@ export class Coffee extends PlayerPassiveItem {
     super(
       'Coffee',
       'Increases your speed by 5% and decreases your slide speed by 1%',
-      1000,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.EPIC,
       game,

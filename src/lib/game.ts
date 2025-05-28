@@ -78,6 +78,8 @@ export class Game {
 
   public isNewGame = false;
 
+  private readonly BASE_PLAYER_MONEY = 500;
+
   /**
    * Called one time when the canvas is initialized
    */
@@ -138,7 +140,7 @@ export class Game {
     this.isNewGame = isNewGame;
     if (isNewGame) {
       this.saveManager.reset();
-      this.moneyManager.addPlayerMoney(10000000);
+      this.moneyManager.addPlayerMoney(this.BASE_PLAYER_MONEY);
     } else {
       this.saveManager.restore();
     }
@@ -307,7 +309,7 @@ export class Game {
 
   // Game over ----------------
   public gameOver(): void {
-    console.log('Game over');
+
     this.soundManager.stopStageBackgroundMusic();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();

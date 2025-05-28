@@ -213,10 +213,21 @@ export class StageScene extends GameScene {
   }
 
   private onEndStage(): void {
+
     this.game.scoreManager.endStage();
     this.game.runManager.incrementStageCompleted();
     this.attributeRewards();
     this.game.soundManager.stopStageBackgroundMusic();
+
+    // Security net to make the player "invincible" when the stage ends, we don't want a stray
+    // enemy / projectile to kill the player after the stage ends
+    this.game.player.healthController.addHealth(100000);
+
+    // We also kill all enemies
+    this.enemies.forEach((enemy) => {
+      enemy.dispose();
+    });
+    this.enemies = [];
 
     this.game.uiManager.displayUI(UIType.SCORE);
   }
@@ -231,6 +242,6 @@ export class StageScene extends GameScene {
       throw new Error('Stage reward is not defined');
     }
 
-    this.game.moneyManager.addPlayerMoney(this.stageInfo.stageReward.getMoneyReward());
+    this.game.moneyManager.addPlayerMoney(this.stageInfo.stageReward.getMoneyReward() * this.game.scoreManager.getScoreFactor());
   }
 }

@@ -299,7 +299,6 @@ export class Weapon {
     }
 
     if (!this.weaponData.staticStats.isAutomatic && this.justShot) {
-      console.log('Non automatic weapon, cannot hold the trigger');
       return;
     }
 

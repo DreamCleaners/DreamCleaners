@@ -9,7 +9,6 @@ export class ClownNose extends PlayerPassiveItem {
     super(
       'Clown Nose',
       'Increases your speed by 2% and decreases your regeneration speed by 1%',
-      250,
       ShopItemType.PLAYER_PASSIVE,
       Rarity.COMMON,
       game,

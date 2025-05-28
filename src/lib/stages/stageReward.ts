@@ -37,18 +37,20 @@ export class StageReward {
   }
 
   private determineMoneyReward(runProgression: number): number {
-    if (this.weaponReward === undefined) {
-      // No weapon reward, slightly more money
-      // Between 600 and 800 base + the modifier.s
-      return (Math.floor(Math.random() * 20) + 60) * 10 + runProgression * 150;
-    }
-    // Money between 400 and 600 + the modifier.s
-    return (Math.floor(Math.random() * 20) + 40) * 10 + runProgression * 150;
+    // Base reward between 400 and 700
+    const baseRewardMin = 400;
+    const baseRewardMax = 700;
+    const steps = (baseRewardMax - baseRewardMin) / 10 + 1;
+    const baseReward = baseRewardMin + (Math.floor(Math.random() * steps) * 10);
+    
+    const progressionBonus = runProgression > 1 ? 200 * (runProgression - 1) : 0;
+    
+    return baseReward + progressionBonus;
   }
 
   private rewardContainsWeapon(): boolean {
-    // One chance on three to have a weapon
-    return Math.random() < 0.34;
+    // 40% chance to have a weapon as reward
+    return Math.random() < 0.4;
   }
 
   private determineWeaponReward(runProgession: number): RewardWeaponDescription {
@@ -177,40 +179,4 @@ export class StageReward {
     return weapon;
   }
 
-  /*
-  public debugRarityWeights(): void {
-    for (let runProgression = 0; runProgression <= 10; runProgression++) {
-      console.log(`Run Progression: ${runProgression}`);
-      
-      const rarities = Object.values(WeaponRarity).filter(
-        (value) => typeof value === 'number',
-      ) as number[];
-  
-      // Create weighted probabilities based on runProgression using a sigmoid function
-      const weights = rarities.map((rarity) => {
-        // Various factors for the sigmoid function
-        const scalingFactor = 5 * rarity; // Adjust this value to control the transition
-        const x = runProgression - scalingFactor;
-        const baseWeight = 1 / (1 + Math.exp(-x / 2)); // Sigmoid function
-        const biasMultiplier = Math.pow(5, rarity); // Bias multiplier for higher rarities
-        return baseWeight * biasMultiplier;
-      });
-  
-      const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-  
-      // Normalize weights to ensure they sum to 100
-      const normalizedWeights = weights.map((weight) => (weight / totalWeight) * 100);
-  
-      // Log the weights and their corresponding probabilities
-      console.log(
-        'Rarity Weights:',
-        rarities.map((rarity, index) => ({
-          rarity,
-          weight: normalizedWeights[index],
-          chance: normalizedWeights[index].toFixed(2) + '%',
-        }))
-      );
-    }
-  }
-    */
 }
