@@ -179,3 +179,11 @@
   align-items: center;
   gap: 5px;
 }
+
+.stat-better {
+  color: #4caf50;
+}
+
+.stat-worse {
+  color: #f44336;
+}

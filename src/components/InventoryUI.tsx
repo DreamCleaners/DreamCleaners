@@ -26,9 +26,9 @@ const InventoryUI = ({
   const game = useContext(GameContext);
 
   const getWeaponStats = (statDiff: number) => {
-    if (statDiff < 0) return ` (${statDiff})`;
-
-    return ` (+${statDiff})`;
+    if (statDiff < 0) return <span className="stat-worse">({statDiff})</span>;
+    if (statDiff > 0) return <span className="stat-better">(+{statDiff})</span>;
+    return <span>(0)</span>;
   };
 
   if (!game) return null;

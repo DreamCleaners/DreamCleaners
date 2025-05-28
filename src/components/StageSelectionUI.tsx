@@ -27,6 +27,12 @@ const StageSelectionUI = () => {
   useEffect(() => {
     const stagesManager = StagesManager.getInstance();
     const selectedBedInfo = stagesManager.getSelectedBedInformation();
+
+    if (!selectedBedInfo) {
+      handleHideUI();
+      return;
+    }
+
     setStageInfo(selectedBedInfo);
 
     setWeaponReward(selectedBedInfo?.stageReward.getWeaponReward());

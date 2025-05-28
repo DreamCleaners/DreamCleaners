@@ -62,7 +62,7 @@ export class Player implements IDamageable {
 
   // movement
   public moveSpeedPercentageIncrease = 0;
-  private readonly BASE_MOVE_SPEED = 30;
+  private readonly BASE_MOVE_SPEED = 9;
   public movementSpeed = this.BASE_MOVE_SPEED;
   private moveDirection: Vector2 = Vector2.Zero();
 
@@ -304,8 +304,11 @@ export class Player implements IDamageable {
   }
 
   public fixedUpdate(): void {
-    if (!this.game.isPointerLocked) return;
-
+    if (!this.game.isPointerLocked){ 
+      // Additionnal velocity setting to ensure player does not move when in UI
+      this.physicsAggregate.body.setLinearVelocity(Vector3.Zero());
+      return;
+    }
     this.checkForInteractables();
 
     this.handleRegen();
@@ -516,7 +519,11 @@ export class Player implements IDamageable {
   }
 
   public freezePlayer(): void {
+    this.velocity = Vector3.Zero();
     this.physicsAggregate.body.setLinearVelocity(Vector3.Zero());
+    this.inventory.getWeapons().forEach((weapon) => {
+      weapon.freezeWeapon();
+    });
   }
 
   private checkIsGrounded(): boolean {

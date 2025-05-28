@@ -883,4 +883,8 @@ export class Weapon {
       this.player.fireLight.intensity = 0;
     }, 50);
   }
+
+  public freezeWeapon(): void {
+    this.stopAnimation();
+  }
 }

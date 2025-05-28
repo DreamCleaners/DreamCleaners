@@ -156,22 +156,36 @@ const PlayerHUD = () => {
         </div>
       )}
       <div className="hud-bottom-container">
-        <div className="hud-health-container">
-          <div className="hud-health">
-            <HealthIcon className="hud-health-icon" />
-            <div
-              className="hud-health-bar"
-              style={{ width: `${(playerHealth / playerMaxHealth) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-        <div className="hud-weapon">
-          <div className="hud-ammo">
-            <h2>{ammo}</h2>
-            <HeavyBulletsIcon className="hud-ammo-icon" />
-          </div>
-        </div>
+  <div className="hud-health-container">
+    <div className="hud-health">
+      <HealthIcon className="hud-health-icon" />
+      <div 
+        className="hud-health-bar-container" 
+        style={{ 
+          width: "100%",
+          height: "45%",
+          borderRadius: "5px",
+          position: "relative"
+        }}
+      >
+        <div
+          className="hud-health-bar"
+          style={{ 
+            width: `${(playerHealth / playerMaxHealth) * 100}%`,
+            position: "absolute",
+            height: "100%"
+          }}
+        ></div>
       </div>
+    </div>
+  </div>
+  <div className="hud-weapon">
+    <div className="hud-ammo">
+      <h2>{ammo}</h2>
+      <HeavyBulletsIcon className="hud-ammo-icon" />
+    </div>
+  </div>
+</div>
       {game?.isFPSVisible() && (
         <div className="hud-fps">
           <h3>FPS : {fps.toFixed(0)}</h3>
