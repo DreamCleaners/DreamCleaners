@@ -336,6 +336,7 @@ export class Player implements IDamageable {
     this.onDamageTakenObservable.notifyObservers(damage);
     this.healthController.removeHealth(damage);
     this.game.soundManager.playPlayerTakesDamage();
+    this.game.runManager.addDamageTaken(damage);
   }
 
   public addSpeedPercentage(percentage: number): void {

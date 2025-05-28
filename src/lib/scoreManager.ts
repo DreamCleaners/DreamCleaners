@@ -21,18 +21,14 @@ export class ScoreManager {
   private readonly MAX_DAMAGE_MALUS = 0.6;
   private readonly MAX_TIME_MALUS = 0.4;
   private readonly MAX_KILL_BONUS = 0.6;
-  private readonly TIME_THRESHOLD = 120; // 2 minutes in seconds
-  private readonly TIME_PENALTY_INTERVAL = 10; // 10 seconds
-  private readonly TIME_PENALTY_AMOUNT = 0.01;
-  private readonly KILL_THRESHOLD = 40; // 40 kills for max bonus
-
+  private readonly TIME_PENALTY_INTERVAL = 10;
   public onTimerChange: Observable<number> = new Observable();
   public onScoreFactorChange: Observable<number> = new Observable();
 
   private isStageStarted: boolean = false;
   public onStateChange: Observable<boolean> = new Observable();
 
-  constructor(game: Game) {
+  constructor(private game: Game) {
     game.uiManager.onPauseMenuChange.add(this.onPause.bind(this));
   }
 
@@ -80,6 +76,8 @@ export class ScoreManager {
     this.isStageStarted = false;
     this.onStateChange.notifyObservers(this.isStageStarted);
     this.stopTimer();
+
+    this.game.runManager.addTimeSpent(this.timer);
 
     // Reset to maximum factor
     this.scoreFactor = this.MAX_FACTOR;

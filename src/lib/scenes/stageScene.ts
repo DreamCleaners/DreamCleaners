@@ -218,15 +218,7 @@ export class StageScene extends GameScene {
     this.attributeRewards();
     this.game.soundManager.stopStageBackgroundMusic();
 
-    // Security net to make the player "invincible" when the stage ends, we don't want a stray
-    // enemy / projectile to kill the player after the stage ends
-    this.game.player.healthController.addHealth(100000);
-
-    // We also kill all enemies
-    this.enemies.forEach((enemy) => {
-      enemy.dispose();
-    });
-    this.enemies = [];
+    this.clearEnemiesAndSafePlayer();
 
     this.game.uiManager.displayUI(UIType.SCORE);
   }
@@ -245,5 +237,16 @@ export class StageScene extends GameScene {
       this.stageInfo.stageReward.getMoneyReward() *
         this.game.scoreManager.getScoreFactor(),
     );
+  }
+
+  /** Clears enemies in the scene and makes the player "invicible" to avoid triggering multiple game overs */
+  public clearEnemiesAndSafePlayer(): void {
+    this.game.player.healthController.addHealth(100000);
+
+    // We also kill all enemies
+    this.enemies.forEach((enemy) => {
+      enemy.dispose();
+    });
+    this.enemies = [];
   }
 }

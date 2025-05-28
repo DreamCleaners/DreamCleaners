@@ -29,6 +29,7 @@ import { WorkbenchManager } from './shop/workbench/workbenchManager';
 import { StageInformationManager } from './ui/stageInfoManager';
 import { SoundManager } from './sound/soundManager';
 import { SettingType } from './settingType';
+import { StageScene } from './scenes/stageScene';
 
 export class Game {
   public scene!: Scene;
@@ -309,9 +310,18 @@ export class Game {
 
   // Game over ----------------
   public gameOver(): void {
+    const stageScene = this.sceneManager.getCurrentScene() as StageScene;
+    stageScene.clearEnemiesAndSafePlayer();
     this.soundManager.stopStageBackgroundMusic();
+    this.scoreManager.endStage();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();
+    console.log("Game over ! Stats:");
+    console.log(`Total kills: ${this.runManager.totalKill}`);
+    console.log(`Total damage taken: ${this.runManager.totalDamageTaken}`);
+    console.log(`Time spent in stage: ${this.runManager.timeSpentInStage} seconds`);
+    console.log(`Total money spent on items: ${this.runManager.totalMoneySpentOnItems}`);
+    console.log(`Total money spent on rerolls: ${this.runManager.totalMoneySpentOnRerolls}`);
   }
 
   // Settings ----------------

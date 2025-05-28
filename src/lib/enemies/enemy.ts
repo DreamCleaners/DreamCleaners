@@ -325,6 +325,7 @@ export class Enemy implements IDamageable {
     this.showBloodExplosionEffects();
     this.gameScene.game.soundManager.playEnemyDeath(this.mesh.position, this.enemyType);
     this.dispose();
+    this.gameScene.game.runManager.incrementKills();
   }
 
   /** Updates the enemy's speed by updating the agent parameters */

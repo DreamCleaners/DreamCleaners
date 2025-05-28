@@ -161,6 +161,8 @@ export class ShopManager {
 
     this.generateShopItems(this.ITEM_SLOT_COUNT);
 
+    this.game.runManager.addMoneySpentOnRerolls(rerollCost);
+
     // the money changes so we need to save
     this.game.saveManager.save();
   }
@@ -198,6 +200,7 @@ export class ShopManager {
     this.game.moneyManager.removePlayerMoney(playerPassive.price);
     this.game.player.inventory.addPlayerPassiveItem(playerPassive);
     this.removeItemFromShop(playerPassive);
+    this.game.runManager.addMoneySpentOnItems(playerPassive.price);
   }
 
   // ----------------------- Weapons -------------------------
@@ -238,6 +241,7 @@ export class ShopManager {
     this.game.player.replaceWeaponAtIndex(inventoryIndex, weapon);
 
     this.removeItemFromShop(weaponItem);
+    this.game.runManager.addMoneySpentOnItems(weaponItem.price);
   }
 
   // ------------------- Weapons passives --------------------
@@ -305,10 +309,10 @@ export class ShopManager {
       weaponPassive.weaponPassiveType,
     );
 
-    // For now no handling of proposed weapon passives recurrency
-
     // Remove the item from the shop
     this.removeItemFromShop(weaponPassive);
+
+    this.game.runManager.addMoneySpentOnItems(weaponPassive.price);
   }
 
   private getPriceForItem(rarity: Rarity, itemType: ShopItemType): number {
