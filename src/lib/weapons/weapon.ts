@@ -60,6 +60,9 @@ export class Weapon {
   // Used for preventing automatic shooting
   public justShot = false;
 
+  // Tracking if we are in the middle of a burst
+  private isBurstActive = false;
+
   // Weapon's mesh moving related
   private initialYPosition: number | null = null;
   private isPlayingMovingAnimating: boolean = false;
@@ -374,6 +377,8 @@ export class Weapon {
         this.weaponData.staticStats.delayBetweenBursts ?? 0.1;
 
       const shotsFired = Math.min(bulletsPerBurst, this.currentAmmoRemaining);
+      
+      this.isBurstActive = true;
 
       for (let i = 0; i < shotsFired; i++) {
         setTimeout(
@@ -382,6 +387,10 @@ export class Weapon {
             this.shootBullets(bulletsPerShot, projectionCone);
             this.currentAmmoRemaining--;
             this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
+            
+            if (i === shotsFired - 1) {
+              this.isBurstActive = false; 
+            }
           },
           i * delayBetweenShotsInBurst * 1000,
         );
@@ -557,7 +566,7 @@ export class Weapon {
       this.akimboWeapon?.initReload();
     }
 
-    if (this.isReloading) {
+    if (this.isReloading || this.isBurstActive) {
       return;
     }
 
