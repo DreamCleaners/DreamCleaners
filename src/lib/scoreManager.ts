@@ -71,8 +71,7 @@ export class ScoreManager {
     this.startTimer();
   }
 
-
-    /**
+  /**
    * Calculate the final score factor for the stage.
    * Returns a factor between 1.0 and 2.0 that can be used to multiply rewards,
    * rounded to the first decimal place.
@@ -84,55 +83,61 @@ export class ScoreManager {
 
     // Reset to maximum factor
     this.scoreFactor = this.MAX_FACTOR;
-    
+
     // Calculate damage malus - MORE PUNITIVE
     this.damageFactorMalus = Math.min(
       (this.totalDamageTaken / 50) * 0.4, // Much more punitive damage calculation
-      this.MAX_DAMAGE_MALUS
+      this.MAX_DAMAGE_MALUS,
     );
     this.scoreFactor -= this.damageFactorMalus;
-    
+
     // Calculate time malus - MORE PUNITIVE
     this.timeElapsed = this.timer;
     const EARLIER_TIME_THRESHOLD = 80; // 1:20 minutes in seconds - even earlier penalty start
-    
+
     if (this.timeElapsed > EARLIER_TIME_THRESHOLD) {
       const overtimeSeconds = this.timeElapsed - EARLIER_TIME_THRESHOLD;
       const timeIntervals = Math.floor(overtimeSeconds / this.TIME_PENALTY_INTERVAL);
       this.timeFactorMalus = Math.min(
         timeIntervals * 0.015, // Increased from 0.01 to 0.015
-        this.MAX_TIME_MALUS
+        this.MAX_TIME_MALUS,
       );
       this.scoreFactor -= this.timeFactorMalus;
     }
-    
+
     // Calculate kill factor effect (unchanged)
     // - At 0 kills: -0.6 (penalty)
     // - At 30 kills: 0 (neutral)
     // - At 40+ kills: +0.6 (bonus)
     const NEUTRAL_KILL_THRESHOLD = 30;
     const MAX_KILL_THRESHOLD = 40;
-    
+
     if (this.totalKill <= NEUTRAL_KILL_THRESHOLD) {
       // Below or at neutral point - penalty scales linearly from -0.6 to 0
-      this.killFactorBonus = -this.MAX_KILL_BONUS * (1 - this.totalKill / NEUTRAL_KILL_THRESHOLD);
+      this.killFactorBonus =
+        -this.MAX_KILL_BONUS * (1 - this.totalKill / NEUTRAL_KILL_THRESHOLD);
     } else if (this.totalKill <= MAX_KILL_THRESHOLD) {
       // Between neutral and max - bonus scales linearly from 0 to 0.6
-      const bonusRatio = (this.totalKill - NEUTRAL_KILL_THRESHOLD) / (MAX_KILL_THRESHOLD - NEUTRAL_KILL_THRESHOLD);
+      const bonusRatio =
+        (this.totalKill - NEUTRAL_KILL_THRESHOLD) /
+        (MAX_KILL_THRESHOLD - NEUTRAL_KILL_THRESHOLD);
       this.killFactorBonus = this.MAX_KILL_BONUS * bonusRatio;
     } else {
       // Above max threshold - maximum bonus
       this.killFactorBonus = this.MAX_KILL_BONUS;
     }
-    
+
     this.scoreFactor += this.killFactorBonus;
-    
+
     // Ensure factor stays within bounds
-    this.scoreFactor = Math.max(Math.min(this.scoreFactor, this.MAX_FACTOR), this.MIN_FACTOR);
-    
+    this.scoreFactor = Math.max(
+      Math.min(this.scoreFactor, this.MAX_FACTOR),
+      this.MIN_FACTOR,
+    );
+
     // Round to first decimal
     this.scoreFactor = Math.round(this.scoreFactor * 10) / 10;
-    
+
     this.onScoreFactorChange.notifyObservers(this.scoreFactor);
     return this.scoreFactor;
   }
@@ -164,7 +169,7 @@ export class ScoreManager {
 
     this.totalDamageTaken = 0;
     this.damageFactorMalus = 0;
-    
+
     this.onScoreFactorChange.notifyObservers(this.scoreFactor);
   }
 }

@@ -70,13 +70,18 @@ export class ShopManager {
     this.currentRerollCost = 100;
     this.rerollCount = 0;
 
-    this.generateShopItems();
+    const itemsToGenerateCount = this.ITEM_SLOT_COUNT - this.currentShopItems.length;
+    this.generateShopItems(itemsToGenerateCount);
   }
 
-  private generateShopItems(): void {
-    this.currentShopItems = [];
+  private generateShopItems(itemsCount : number): void {
 
-    for (let i = 0; i < this.ITEM_SLOT_COUNT; i++) {
+    if(itemsCount === this.ITEM_SLOT_COUNT) {
+      // Asked to generate a full shop, means we must reset the shop
+      this.currentShopItems = [];
+    }
+
+    for (let i = 0; i < itemsCount; i++) {
       const itemChance = randomFloat(0, 1);
       const rarity = this.getRandomRarity();
 
@@ -154,7 +159,7 @@ export class ShopManager {
     this.game.moneyManager.removePlayerMoney(rerollCost);
     this.rerollCount++;
 
-    this.generateShopItems();
+    this.generateShopItems(this.ITEM_SLOT_COUNT);
 
     // the money changes so we need to save
     this.game.saveManager.save();

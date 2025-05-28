@@ -50,7 +50,7 @@ export class WorkbenchManager {
     // Cost logic: 400 * (current rarity + 1) + 50 * number of passives
     const baseCost = 400 * (weapon.currentRarity + 1);
     const passivesCost = 50 * weapon.embeddedPassives.length;
-    
+
     return baseCost + passivesCost;
   }
 }

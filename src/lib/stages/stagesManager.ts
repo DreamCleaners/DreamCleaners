@@ -127,11 +127,11 @@ export class StagesManager implements ISaveable {
     if (weaponReward) {
       difficulty += 1;
 
-      if(weaponReward.rarity >= 2) {
+      if (weaponReward.rarity >= 2) {
         difficulty += 1;
       }
 
-      if(weaponReward.embeddedPassives.length > 0) {
+      if (weaponReward.embeddedPassives.length > 0) {
         // +1 if weapon has passives
         difficulty += 1;
       }

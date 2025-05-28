@@ -309,7 +309,6 @@ export class Game {
 
   // Game over ----------------
   public gameOver(): void {
-
     this.soundManager.stopStageBackgroundMusic();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();

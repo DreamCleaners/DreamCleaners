@@ -213,7 +213,6 @@ export class StageScene extends GameScene {
   }
 
   private onEndStage(): void {
-
     this.game.scoreManager.endStage();
     this.game.runManager.incrementStageCompleted();
     this.attributeRewards();
@@ -242,6 +241,9 @@ export class StageScene extends GameScene {
       throw new Error('Stage reward is not defined');
     }
 
-    this.game.moneyManager.addPlayerMoney(this.stageInfo.stageReward.getMoneyReward() * this.game.scoreManager.getScoreFactor());
+    this.game.moneyManager.addPlayerMoney(
+      this.stageInfo.stageReward.getMoneyReward() *
+        this.game.scoreManager.getScoreFactor(),
+    );
   }
 }

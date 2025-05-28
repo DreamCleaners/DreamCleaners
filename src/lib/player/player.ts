@@ -62,7 +62,7 @@ export class Player implements IDamageable {
 
   // movement
   public moveSpeedPercentageIncrease = 0;
-  private readonly BASE_MOVE_SPEED = 9;
+  private readonly BASE_MOVE_SPEED = 30;
   public movementSpeed = this.BASE_MOVE_SPEED;
   private moveDirection: Vector2 = Vector2.Zero();
 
@@ -585,7 +585,6 @@ export class Player implements IDamageable {
   public replaceWeaponAtIndex(index: number, weapon: Weapon): void {
     this.inventory.replaceWeaponInInventory(weapon, index);
     if (this.currentWeaponIndex === index) {
-
       this.equipWeapon(index, true);
     }
   }
@@ -599,7 +598,6 @@ export class Player implements IDamageable {
     if (index === this.currentWeaponIndex && !forceActualisation) return;
 
     if (index >= this.inventory.getAmountOfWeapons()) {
-
       return;
     }
 

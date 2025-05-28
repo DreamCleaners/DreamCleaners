@@ -41,10 +41,10 @@ export class StageReward {
     const baseRewardMin = 400;
     const baseRewardMax = 700;
     const steps = (baseRewardMax - baseRewardMin) / 10 + 1;
-    const baseReward = baseRewardMin + (Math.floor(Math.random() * steps) * 10);
-    
+    const baseReward = baseRewardMin + Math.floor(Math.random() * steps) * 10;
+
     const progressionBonus = runProgression > 1 ? 200 * (runProgression - 1) : 0;
-    
+
     return baseReward + progressionBonus;
   }
 
@@ -178,5 +178,4 @@ export class StageReward {
     );
     return weapon;
   }
-
 }

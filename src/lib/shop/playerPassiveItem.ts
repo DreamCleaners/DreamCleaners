@@ -5,7 +5,7 @@ import { ShopItem } from './shopItem';
 import { ShopItemType } from './shopItemType';
 
 export abstract class PlayerPassiveItem implements ShopItem {
-  public price !: number;
+  public price!: number;
   constructor(
     public name: string,
     public description: string,
@@ -28,7 +28,8 @@ export abstract class PlayerPassiveItem implements ShopItem {
       case Rarity.EPIC:
         return 225;
       case Rarity.LEGENDARY:
-      default: return -1
+      default:
+        return -1;
     }
   }
 }

@@ -26,8 +26,7 @@ const StageEndUI = () => {
 
   const stageReward = game.sceneManager.getCurrentScene()?.stageInfo.stageReward;
   const stageRewardGold =
-    (stageReward?.getMoneyReward() ?? 0) *
-    game.scoreManager.getScoreFactor();
+    (stageReward?.getMoneyReward() ?? 0) * game.scoreManager.getScoreFactor();
   const weaponReward = stageReward?.getWeaponReward();
 
   const handleReplaceWeapon = async (weaponIndex: number) => {
@@ -76,7 +75,7 @@ const StageEndUI = () => {
   }
 
   return (
-    <BaseContainer title="DREAM CLEARED">
+    <BaseContainer title="DREAM CLEANED">
       <div className="score-interface-container">
         <div className="score-fixed-interface-container">
           <div className="score-stats-container">
@@ -112,7 +111,9 @@ const StageEndUI = () => {
                     <HolyGrailIcon className="score-stats-icon" />
                     Score multiplier :
                   </div>
-                  <p className="score-stats-item-value">{game.scoreManager.getScoreFactor()}</p>
+                  <p className="score-stats-item-value">
+                    {game.scoreManager.getScoreFactor()}
+                  </p>
                 </li>
                 <li className="score-stats-item">
                   <div className="score-stats-item-title">
