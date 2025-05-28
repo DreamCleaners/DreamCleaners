@@ -23,21 +23,31 @@ export class EnemyFactory {
     return EnemyFactory.instance;
   }
 
-  /**
-   * Clones the enemy assets to the scene and returns the instantiated entries
-   */
-  private async getEnemyEntries(
-    enemyType: EnemyType,
-    game: Game,
-  ): Promise<InstantiatedEntries> {
-    let gameAssetContainer = this.gameAssetContainerCache.get(enemyType);
+  public async preloadEnemyAssets(enemyTypes: EnemyType[], game: Game): Promise<void> {
+    const preloadPromises = enemyTypes.map(async (enemyType) => {
+      if (this.gameAssetContainerCache.has(enemyType)) {
+        return; // Skip if already preloaded
+      }
 
-    if (!gameAssetContainer) {
-      gameAssetContainer = await game.assetManager.loadGameAssetContainer(
+      const gameAssetContainer = await game.assetManager.loadGameAssetContainer(
         enemyType,
         AssetType.CHARACTER,
       );
+
       this.gameAssetContainerCache.set(enemyType, gameAssetContainer);
+    });
+
+    await Promise.all(preloadPromises);
+  }
+
+  /**
+   * Clones the enemy assets to the scene and returns the instantiated entries
+   */
+  private async getEnemyEntries(enemyType: EnemyType): Promise<InstantiatedEntries> {
+    const gameAssetContainer = this.gameAssetContainerCache.get(enemyType);
+
+    if (!gameAssetContainer) {
+      throw new Error(`No game asset container found for enemy type: ${enemyType}`);
     }
 
     return gameAssetContainer.cloneAssetsToScene();
@@ -49,7 +59,7 @@ export class EnemyFactory {
     gameScene: GameScene,
     position: Vector3,
   ): Promise<Enemy> {
-    const entries = await this.getEnemyEntries(enemyType, gameScene.game);
+    const entries = await this.getEnemyEntries(enemyType);
     const enemyData = EnemyDataManager.getInstance().getEnemyData(enemyType);
 
     return new Enemy(

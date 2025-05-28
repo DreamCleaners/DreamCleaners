@@ -432,26 +432,26 @@ export class ShopManager implements ISaveable {
               break;
 
             case ShopItemType.PLAYER_PASSIVE: {
-            // For players passives it is a bit different, we just get
-            // the item from the map
-            const playerPassiveType = itemData.playerPassiveType;
-            const playerPassiveItemArray = this.playerPassiveItems.get(itemData.rarity);
-            if (!playerPassiveItemArray) {
-              throw new Error(
-                `No player passive items found for rarity: ${itemData.rarity}`,
+              // For players passives it is a bit different, we just get
+              // the item from the map
+              const playerPassiveType = itemData.playerPassiveType;
+              const playerPassiveItemArray = this.playerPassiveItems.get(itemData.rarity);
+              if (!playerPassiveItemArray) {
+                throw new Error(
+                  `No player passive items found for rarity: ${itemData.rarity}`,
+                );
+              }
+              const playerPassiveItem = playerPassiveItemArray.find(
+                (item) => item.playerPassiveType === playerPassiveType,
               );
+              if (!playerPassiveItem) {
+                throw new Error(
+                  `Player passive item not found for type: ${playerPassiveType}`,
+                );
+              }
+              shopItem = playerPassiveItem;
+              break;
             }
-            const playerPassiveItem = playerPassiveItemArray.find(
-              (item) => item.playerPassiveType === playerPassiveType,
-            );
-            if (!playerPassiveItem) {
-              throw new Error(
-                `Player passive item not found for type: ${playerPassiveType}`,
-              );
-            }
-            shopItem = playerPassiveItem;
-            break;
-          }
 
             default:
               throw new Error(`Unknown shop item type: ${itemData.type}`);

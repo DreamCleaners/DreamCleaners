@@ -377,7 +377,7 @@ export class Weapon {
         this.weaponData.staticStats.delayBetweenBursts ?? 0.1;
 
       const shotsFired = Math.min(bulletsPerBurst, this.currentAmmoRemaining);
-      
+
       this.isBurstActive = true;
 
       for (let i = 0; i < shotsFired; i++) {
@@ -387,9 +387,9 @@ export class Weapon {
             this.shootBullets(bulletsPerShot, projectionCone);
             this.currentAmmoRemaining--;
             this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
-            
+
             if (i === shotsFired - 1) {
-              this.isBurstActive = false; 
+              this.isBurstActive = false;
             }
           },
           i * delayBetweenShotsInBurst * 1000,

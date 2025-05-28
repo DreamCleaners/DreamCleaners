@@ -100,6 +100,8 @@ export class StageScene extends GameScene {
     this.onPlayerDamageTakenObserver = this.game.player.onDamageTakenObservable.add(
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
+
+    this.enemyFactory.preloadEnemyAssets(this.stageInfo.enemyTypes, this.game);
   }
 
   public dispose(): void {

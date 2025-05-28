@@ -304,7 +304,7 @@ export class Player implements IDamageable {
   }
 
   public fixedUpdate(): void {
-    if (!this.game.isPointerLocked){ 
+    if (!this.game.isPointerLocked) {
       // Additionnal velocity setting to ensure player does not move when in UI
       this.physicsAggregate.body.setLinearVelocity(Vector3.Zero());
       return;
