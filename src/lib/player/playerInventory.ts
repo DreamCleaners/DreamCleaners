@@ -54,8 +54,6 @@ export class PlayerInventory implements ISaveable {
     const weapon = new Weapon(this.player, WeaponType.GLOCK, Rarity.COMMON);
     this.addWeaponToInventory(weapon);
 
-    // WeaponPassivesManager.getInstance().applyPassiveToWeapon(weapon, WeaponPassiveT3.AKIMBO);
-
     // We also reset the player passives
     this.playerPassives = [];
   }

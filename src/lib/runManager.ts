@@ -11,13 +11,13 @@ export class RunManager implements ISaveable {
   // Various stats related to the run
   public totalKill: number = 0;
   public onTotalKillChange = new Observable<number>();
-  
+
   public totalDamageTaken: number = 0;
   public onTotalDamageTakenChange = new Observable<number>();
-  
+
   public timeSpentInStage: number = 0; // in seconds
   public onTimeSpentInStageChange = new Observable<number>();
-  
+
   public totalMoneySpentOnItems: number = 0;
   public onTotalMoneySpentOnItemsChange = new Observable<number>();
 

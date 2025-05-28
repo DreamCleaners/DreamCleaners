@@ -127,6 +127,7 @@ export class Game {
     this.saveManager.addSaveable(this.runManager);
     this.saveManager.addSaveable(this.player.getInventory());
     this.saveManager.addSaveable(this.stageManager);
+    this.saveManager.addSaveable(this.shopManager);
 
     document.addEventListener('pointerlockchange', this.onPointerLockChange);
     window.addEventListener('resize', this.onResize);
@@ -316,12 +317,14 @@ export class Game {
     this.scoreManager.endStage();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();
-    console.log("Game over ! Stats:");
+    console.log('Game over ! Stats:');
     console.log(`Total kills: ${this.runManager.totalKill}`);
     console.log(`Total damage taken: ${this.runManager.totalDamageTaken}`);
     console.log(`Time spent in stage: ${this.runManager.timeSpentInStage} seconds`);
     console.log(`Total money spent on items: ${this.runManager.totalMoneySpentOnItems}`);
-    console.log(`Total money spent on rerolls: ${this.runManager.totalMoneySpentOnRerolls}`);
+    console.log(
+      `Total money spent on rerolls: ${this.runManager.totalMoneySpentOnRerolls}`,
+    );
   }
 
   // Settings ----------------

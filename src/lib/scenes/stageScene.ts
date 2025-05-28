@@ -218,7 +218,11 @@ export class StageScene extends GameScene {
     this.attributeRewards();
     this.game.soundManager.stopStageBackgroundMusic();
 
+    // Safety net to ensure the player is safe and enemies are cleared
     this.clearEnemiesAndSafePlayer();
+
+    // Player cleared a stage, we must soft-reset the shop
+    this.game.shopManager.resetShop();
 
     this.game.uiManager.displayUI(UIType.SCORE);
   }

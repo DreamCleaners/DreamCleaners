@@ -16,8 +16,10 @@ import {
   WeaponPassiveT3,
   WeaponPassiveType,
 } from '../weapons/passives/weaponPassivesManager';
+import { ISaveable } from '../saveable';
+import { WeaponType } from '../weapons/weaponType';
 
-export class ShopManager {
+export class ShopManager implements ISaveable {
   private readonly ITEM_SLOT_COUNT = 3;
   private currentShopItems: ShopItem[] = [];
 
@@ -27,7 +29,7 @@ export class ShopManager {
 
   // reroll
   private readonly BONUS_COST_PER_REROLL = 50;
-  private currentRerollCost = 100;
+  private baseRerollCost = 100;
   private rerollCount = 0;
 
   // player passives
@@ -66,17 +68,18 @@ export class ShopManager {
     });
   }
 
+  /** "Resets" the shop by resetting the reroll count, but keeping previous
+   * shop offers. Adds new items to fill the shop to its full capacity.
+   */
   public resetShop(): void {
-    this.currentRerollCost = 100;
     this.rerollCount = 0;
 
     const itemsToGenerateCount = this.ITEM_SLOT_COUNT - this.currentShopItems.length;
     this.generateShopItems(itemsToGenerateCount);
   }
 
-  private generateShopItems(itemsCount : number): void {
-
-    if(itemsCount === this.ITEM_SLOT_COUNT) {
+  private generateShopItems(itemsCount: number): void {
+    if (itemsCount === this.ITEM_SLOT_COUNT) {
       // Asked to generate a full shop, means we must reset the shop
       this.currentShopItems = [];
     }
@@ -144,7 +147,7 @@ export class ShopManager {
 
   public getRerollCost(): number {
     return Math.floor(
-      this.currentRerollCost + this.BONUS_COST_PER_REROLL * this.rerollCount,
+      this.baseRerollCost + this.BONUS_COST_PER_REROLL * this.rerollCount,
     );
   }
 
@@ -330,4 +333,161 @@ export class ShopManager {
         throw new Error('Invalid item type for price calculation');
     }
   }
+
+  // SAVE RELATED ---------
+  // -----------------------------------------------------------
+
+  /** Custom serialization of each shop item */
+  private serializeShopItems(): string {
+    // Create an array of serialized shop items
+    const serializedItems = this.currentShopItems.map((item) => {
+      const baseData = {
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        type: item.type,
+        rarity: item.rarity,
+      };
+
+      // Add specific data based on item type
+      if (item.type === ShopItemType.WEAPON) {
+        return {
+          ...baseData,
+          weaponType: (item as WeaponItem).weaponType,
+        };
+      } else if (item.type === ShopItemType.WEAPON_PASSIVE) {
+        return {
+          ...baseData,
+          weaponPassiveType: (item as WeaponPassiveItem).weaponPassiveType,
+        };
+      } else if (item.type === ShopItemType.PLAYER_PASSIVE) {
+        return {
+          ...baseData,
+          playerPassiveType: (item as PlayerPassiveItem).playerPassiveType,
+        };
+      }
+
+      return baseData;
+    });
+
+    return JSON.stringify(serializedItems);
+  }
+
+  save(): string {
+    // We want to save the current shop items and the reroll count
+    const serializedItems = this.serializeShopItems();
+    return JSON.stringify({
+      currentShopItems: serializedItems,
+      rerollCount: this.rerollCount,
+    });
+  }
+
+  restoreSave(data: string): void {
+    try {
+      const savedData = JSON.parse(data);
+
+      // Restore shop state values
+      this.rerollCount = savedData.rerollCount || 0;
+      this.chancePercentageIncrease = 0;
+
+      // Restore shop items
+      this.currentShopItems = [];
+      if (savedData.currentShopItems) {
+        const parsedItems = JSON.parse(savedData.currentShopItems);
+
+        parsedItems.forEach((itemData: SavedShopItemData) => {
+          let shopItem: ShopItem;
+
+          // Create the appropriate item type based on the saved data
+          switch (itemData.type) {
+            // We need to re-instanciate the item based on its type
+            case ShopItemType.WEAPON:
+              if (itemData.weaponType === undefined) {
+                throw new Error('WeaponType is undefined for a weapon shop item.');
+              }
+              shopItem = new WeaponItem(
+                itemData.name,
+                itemData.description,
+                itemData.price,
+                itemData.type,
+                itemData.rarity,
+                itemData.weaponType,
+              );
+              break;
+
+            case ShopItemType.WEAPON_PASSIVE:
+              if (itemData.weaponPassiveType === undefined) {
+                throw new Error(
+                  'WeaponPassiveType is undefined for a weapon passive shop item.',
+                );
+              }
+              shopItem = new WeaponPassiveItem(
+                itemData.name,
+                itemData.description,
+                itemData.price,
+                itemData.type,
+                itemData.rarity,
+                itemData.weaponPassiveType,
+              );
+              break;
+
+            case ShopItemType.PLAYER_PASSIVE: {
+            // For players passives it is a bit different, we just get
+            // the item from the map
+            const playerPassiveType = itemData.playerPassiveType;
+            const playerPassiveItemArray = this.playerPassiveItems.get(itemData.rarity);
+            if (!playerPassiveItemArray) {
+              throw new Error(
+                `No player passive items found for rarity: ${itemData.rarity}`,
+              );
+            }
+            const playerPassiveItem = playerPassiveItemArray.find(
+              (item) => item.playerPassiveType === playerPassiveType,
+            );
+            if (!playerPassiveItem) {
+              throw new Error(
+                `Player passive item not found for type: ${playerPassiveType}`,
+              );
+            }
+            shopItem = playerPassiveItem;
+            break;
+          }
+
+            default:
+              throw new Error(`Unknown shop item type: ${itemData.type}`);
+          }
+
+          this.currentShopItems.push(shopItem);
+        });
+      }
+    } catch (error) {
+      console.error('Error restoring shop save:', error);
+      // If restoration fails, generate new shop items
+      this.resetSave();
+    }
+  }
+
+  resetSave(): void {
+    // Reset shop state
+    this.currentShopItems = [];
+    this.rerollCount = 0;
+    this.chancePercentageIncrease = 0;
+
+    // Generate new shop items
+    this.generateShopItems(this.ITEM_SLOT_COUNT);
+
+    // Notify observers
+    this.onChancePercentageChange.notifyObservers(this.chancePercentageIncrease);
+  }
+}
+
+interface SavedShopItemData {
+  name: string;
+  description: string;
+  price: number;
+  type: ShopItemType;
+  rarity: Rarity;
+  weaponType?: WeaponType;
+  weaponPassiveType?: WeaponPassiveType;
+  playerPassiveType?: PlayerPassiveType;
 }

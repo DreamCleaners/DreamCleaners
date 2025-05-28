@@ -13,7 +13,7 @@ export class SceneManager {
   constructor(private game: Game) {}
 
   public start(): void {
-  this.changeScene(StageLayout.HUB);
+    this.changeScene(StageLayout.HUB);
   }
 
   public stop(): void {

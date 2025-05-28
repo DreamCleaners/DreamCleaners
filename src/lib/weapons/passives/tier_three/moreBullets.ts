@@ -9,8 +9,8 @@ export class MoreBullets extends WeaponPassive {
 
   public description: string =
     'Your weapon now shoots per bursts of three bullets.' +
-    ' If it is already a burst weapon, it doubles the amount of bullets per burst' +
-    '. Additionally, the magazine capacity is increased by ' +
+    ' If it is already a burst weapon, shoots a doubled amount of bullets' +
+    '. Magazine capacity is also increased by ' +
     this.MAGAZINE_CAPACITY_INCREASE * 100 +
     "% and the weapon's damage by " +
     this.DAMAGE_INCREASE * 100 +

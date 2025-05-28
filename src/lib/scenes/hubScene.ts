@@ -63,8 +63,6 @@ export class HubScene extends GameScene {
 
     this.game.scoreManager.reset();
 
-    this.game.shopManager.resetShop();
-
     this.game.player.resetHealth();
 
     this.game.saveManager.save();
