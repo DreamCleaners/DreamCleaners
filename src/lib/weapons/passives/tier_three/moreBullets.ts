@@ -32,10 +32,10 @@ export class MoreBullets extends WeaponPassive {
 
       for (const rarity in weapon.weaponData.globalStats) {
         const stats = weapon.weaponData.globalStats[rarity];
-        stats.cadency *= 1.5;
+        stats.cadency *= 1.3;
       }
 
-      weapon.weaponData.globalStats[weapon.currentRarity].cadency *= 1.5;
+      weapon.weaponData.globalStats[weapon.currentRarity].cadency *= 1.3;
 
       weapon.weaponData.staticStats.delayBetweenBursts =
         weapon.weaponData.globalStats[weapon.currentRarity].cadency * 0.32;
@@ -46,7 +46,7 @@ export class MoreBullets extends WeaponPassive {
       weapon.weaponData.staticStats.burstCount =
         (weapon.weaponData.staticStats.burstCount ?? 3) * 2;
       weapon.weaponData.staticStats.delayBetweenBursts =
-        weapon.weaponData.globalStats[weapon.currentRarity].cadency * 0.15;
+        weapon.weaponData.globalStats[weapon.currentRarity].cadency * 0.1;
     }
 
     // Also increase the magazine capacity and damage for all rarities

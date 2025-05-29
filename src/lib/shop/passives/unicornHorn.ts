@@ -8,7 +8,7 @@ export class UnicornHorn extends PlayerPassiveItem {
   constructor(game: Game, playerPassiveType: PlayerPassiveType) {
     super(
       'Unicorn Horn',
-      'Increases your speed by 2% and your slide speed by 2%',
+      'Increases your speed by 5% and your slide speed by 5%',
       ShopItemType.PLAYER_PASSIVE,
       Rarity.RARE,
       game,
@@ -17,7 +17,7 @@ export class UnicornHorn extends PlayerPassiveItem {
   }
 
   public apply(): void {
-    this.game.player.addSpeedPercentage(0.02);
-    this.game.player.addSlideSpeedPercentage(0.02);
+    this.game.player.addSpeedPercentage(0.05);
+    this.game.player.addSlideSpeedPercentage(0.05);
   }
 }

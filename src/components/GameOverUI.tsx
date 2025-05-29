@@ -72,8 +72,7 @@ const GameOverUI = () => {
                 Money spent on shop items :
               </div>
               <p className="game-over-stats-item-value">
-                {game.runManager.totalMoneySpentOnItems}
-                $
+                {game.runManager.totalMoneySpentOnItems}$
               </p>
             </li>
             <li className="game-over-stats-item">
@@ -82,8 +81,7 @@ const GameOverUI = () => {
                 Money spent on shop rerolls :
               </div>
               <p className="game-over-stats-item-value">
-                {game.runManager.totalMoneySpentOnRerolls}
-                $
+                {game.runManager.totalMoneySpentOnRerolls}$
               </p>
             </li>
           </ul>

@@ -8,7 +8,7 @@ export class SuspiciousMixture extends PlayerPassiveItem {
   constructor(game: Game, playerPassiveType: PlayerPassiveType) {
     super(
       'Suspicious Mixture',
-      'Increases your slide speed by 2% and decreases your dodge chance by 1%',
+      'Increases your slide speed by 5% and decreases your dodge chance by 1%',
       ShopItemType.PLAYER_PASSIVE,
       Rarity.COMMON,
       game,
@@ -18,6 +18,6 @@ export class SuspiciousMixture extends PlayerPassiveItem {
 
   public apply(): void {
     this.game.player.addDodgeChancePercentage(-0.01);
-    this.game.player.addSlideSpeedPercentage(0.02);
+    this.game.player.addSlideSpeedPercentage(0.05);
   }
 }

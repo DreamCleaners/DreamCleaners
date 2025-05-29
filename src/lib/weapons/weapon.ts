@@ -383,12 +383,19 @@ export class Weapon {
       for (let i = 0; i < shotsFired; i++) {
         setTimeout(
           () => {
-            this.soundManager.playWeaponShot(this.weaponType);
-            this.shootBullets(bulletsPerShot, projectionCone);
-            this.currentAmmoRemaining--;
-            this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
+            if (!(this.currentAmmoRemaining <= 0)) {
+              // We need this redudant check in case of extreme cadency
+              // where it can reach this point without having the sufficient ammo
+              // Resulting in shooting even if the ammo is 0 or lower
+              this.soundManager.playWeaponShot(this.weaponType);
+              this.shootBullets(bulletsPerShot, projectionCone);
+              this.currentAmmoRemaining--;
+              this.onAmmoChange.notifyObservers(this.currentAmmoRemaining);
 
-            if (i === shotsFired - 1) {
+              if (i === shotsFired - 1) {
+                this.isBurstActive = false;
+              }
+            } else {
               this.isBurstActive = false;
             }
           },
