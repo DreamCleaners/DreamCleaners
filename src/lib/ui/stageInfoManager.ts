@@ -4,7 +4,7 @@ import stageDescriptions from '../../assets/data/stageDescriptions.json' assert 
 
 export class StageInformationManager {
   public getStageImagePath(stageName: string): string {
-    return `/src/assets/img/stage-images/${stageName}.png`;
+    return `./img/stage-images/${stageName}.png`;
   }
 
   public buildStageDescription(enemies: EnemyType[]): string {

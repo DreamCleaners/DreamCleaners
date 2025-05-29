@@ -57,14 +57,13 @@ const GameCanvas = () => {
       {isCrosshairVisible && currentWeapon !== null && (
         <img
           className="player-crosshair"
-          src={`/src/assets/img/crosshairs/${currentWeapon.weaponData.crosshair.name}.png`}
+          src={`./img/crosshairs/${currentWeapon.weaponData.crosshair.name}.png`}
           style={{
             width: CROSSHAIR_SIZE * currentWeapon.weaponData.crosshair.scale,
             height: CROSSHAIR_SIZE * currentWeapon.weaponData.crosshair.scale,
           }}
         />
       )}
-      {/* <div className={`blood-screen show`}></div> */}
       <div className={`blood-screen ${isBloodScreenVisible ? 'show' : ''}`}></div>
       <UserInterface />
       <canvas
