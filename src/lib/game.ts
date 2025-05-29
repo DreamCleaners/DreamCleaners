@@ -317,14 +317,6 @@ export class Game {
     this.scoreManager.endStage();
     this.uiManager.displayUI(UIType.GAME_OVER);
     this.engine.stopRenderLoop();
-    console.log('Game over ! Stats:');
-    console.log(`Total kills: ${this.runManager.totalKill}`);
-    console.log(`Total damage taken: ${this.runManager.totalDamageTaken}`);
-    console.log(`Time spent in stage: ${this.runManager.timeSpentInStage} seconds`);
-    console.log(`Total money spent on items: ${this.runManager.totalMoneySpentOnItems}`);
-    console.log(
-      `Total money spent on rerolls: ${this.runManager.totalMoneySpentOnRerolls}`,
-    );
   }
 
   // Settings ----------------

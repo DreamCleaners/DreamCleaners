@@ -50,7 +50,7 @@ const GameOverUI = () => {
             <li className="game-over-stats-item">
               <div className="game-over-stats-item-title">
                 <StopwatchIcon className="game-over-stats-icon" />
-                Time Spent :
+                Time in dreams :
               </div>
               <p className="game-over-stats-item-value">
                 {Math.floor(game.runManager.timeSpentInStage / 60)} min{' '}
@@ -69,11 +69,20 @@ const GameOverUI = () => {
             <li className="game-over-stats-item">
               <div className="game-over-stats-item-title">
                 <MoneyStackIcon className="game-over-stats-icon" />
-                Total Money Spent :
+                Money spent on shop items :
               </div>
               <p className="game-over-stats-item-value">
-                {game.runManager.totalMoneySpentOnItems +
-                  game.runManager.totalMoneySpentOnRerolls}
+                {game.runManager.totalMoneySpentOnItems}
+                $
+              </p>
+            </li>
+            <li className="game-over-stats-item">
+              <div className="game-over-stats-item-title">
+                <MoneyStackIcon className="game-over-stats-icon" />
+                Money spent on shop rerolls :
+              </div>
+              <p className="game-over-stats-item-value">
+                {game.runManager.totalMoneySpentOnRerolls}
                 $
               </p>
             </li>
