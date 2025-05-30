@@ -240,8 +240,10 @@ export class StageScene extends GameScene {
     }
 
     this.game.moneyManager.addPlayerMoney(
-      this.stageInfo.stageReward.getMoneyReward() *
-        this.game.scoreManager.getScoreFactor(),
+      Math.ceil(
+        this.stageInfo.stageReward.getMoneyReward() *
+        this.game.scoreManager.getScoreFactor()
+      ),
     );
   }
 

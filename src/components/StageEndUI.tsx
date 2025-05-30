@@ -25,8 +25,9 @@ const StageEndUI = () => {
   if (!game) return null;
 
   const stageReward = game.sceneManager.getCurrentScene()?.stageInfo.stageReward;
-  const stageRewardGold =
-    (stageReward?.getMoneyReward() ?? 0) * game.scoreManager.getScoreFactor();
+  const stageRewardGold = Math.ceil(
+    (stageReward?.getMoneyReward() ?? 0) * game.scoreManager.getScoreFactor()
+);
   const weaponReward = stageReward?.getWeaponReward();
 
   const handleReplaceWeapon = async (weaponIndex: number) => {
