@@ -901,6 +901,9 @@ export class Weapon {
   }
 
   public freezeWeapon(): void {
+    if( this.isAkimboWielding) {
+      this.akimboWeapon?.freezeWeapon();
+    }
     this.stopAnimation();
   }
 }
