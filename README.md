@@ -10,7 +10,7 @@ En tant qu’employé de notre célèbre entreprise, votre rôle est simple: ent
 Au détail près qu’ici, la poussière est remplacée par des monstres nés de l’imagination de leur hôte, et votre balais … par une bonne vieille arme à feu.
 
 ## Comment jouer ?
-Notre jeu est hebergé sur Itch.io: : <a href="https://doori4n.itch.io/dream-cleaners">DreamCleaners</a> <br>
+Notre jeu est hebergé sur Itch.io: <a href="https://doori4n.itch.io/dream-cleaners">DreamCleaners</a> <br>
 Si vous rencontrez des problèmes de FPS, nous vous recommandons de tester sur un autre navigateur.
 
 ## Vidéos

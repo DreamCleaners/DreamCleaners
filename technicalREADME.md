@@ -2,7 +2,7 @@
 
 
 Dans ce document, nous aborderons l'aspect technique de ce projet, en expliquant notamment notre organisation, mais aussi en se penchant sur le code en discutant de quelques points dans nos choix d'implémentation et d'utilisation du moteur BabylonJS. <br>
-C'est l'occasion de discuter de la technique derrière ce jeu contrairement au [README.md](./technicalREADME.md) qui en est une description générique.
+C'est l'occasion de discuter de la technique derrière ce jeu contrairement au [README.md](./README.md) qui en est une description générique.
 
 ## Organisation de l'équipe
 
@@ -94,7 +94,7 @@ Cela se traduit dans le code par une seule classe commune à toutes les armes, w
 C'est très pratique pour créer de nouvelles armes, car elles entreront forcément dans les cas d'usage couverts par notre implémentation.
 Cependant, si on essaie de sortir des rails et créer par exemple une arme au comportement singulier, comme un lance roquettes, cela demanderait sa propre implémentation.
 
-Petit point sur ce json: il nous permet aussi de spécifier la configuration du mesh en lui même, où le positionner pour donner l'impression de porter l'arme en main droite, quelle échelle lui donner, etc. Cela peut s'avérer complexe car les mesh des armes venant de sources différentes, les artistes les concoivent différemment et nécessitent chacun une gestion différente. <br>Voir [weapons.json](./src/assets/data/weapons.json) si cela vous intérèsse.
+Petit point sur ce json: il nous permet aussi de spécifier la configuration du mesh en lui même, où le positionner pour donner l'impression de porter l'arme en main droite, quelle échelle lui donner, etc. Cela peut s'avérer complexe car les mesh des armes venant de sources différentes, les artistes les concoivent différemment et nécessitent chacun une gestion différente. <br>Voir [weapons.json](./src/assets/data/weapons.json) si cela vous intéresse.
 
 ### Ennemis
 
@@ -150,7 +150,7 @@ A l'inverse des armes et ennemis, le but ici était que chaque passif ait sa pro
 Tous ont la même logique: une fonction apply() qui va appliquer les effets du passif au joueur, où à l'arme. Une implémentation par passif était nécéssaire, ces derniers affectant divers aspects du jeu qui ne sont pas forcément liés.<br>Par exemple la statistique de chance affecte les taux d'obtention dans l'ordinateur, tandis que la vitesse affecte la vitesse affecte le joueur.
 <br>Pareillement pour les passifs d'arme, "Don't miss" est une mécanique à part entière et nécéssite une implémentation directe dans l'arme, tandis que d'autres passifs n'affectent que simplement les statistiques de l'arme.
 
-Petite aparthée sur le passif d'arme "Akimbo". Ce passif montre bien la nécessité d'avoir une implémentation distincte par passif, si vous jetez un oeil à la classe [weapon.ts](./src/lib/weapons/weapon.ts), vous verrez que tout un pan de la classe est dédiée à la gestion de l'akimbo.
+Petite aparthée sur le passif d'arme "Akimbo". Ce passif montre bien la nécessité d'avoir une implémentation distincte par passif, si vous jetez un oeil à la classe [Weapon](./src/lib/weapons/weapon.ts), vous verrez que tout un pan de la classe est dédiée à la gestion de l'akimbo.
 <br>Evidemment, le mieux serait d'avoir, comme pour les armes et ennemis, une spécification des effets du passif depuis un json, et abstraire cette implémentation au maximum. Mais faire cela réduirait considérablement la flexibilité du système et ne permettrait que la création de passifs se ressemblant.
 
 # Auteurs

@@ -35,7 +35,7 @@ export class Game {
   public scene!: Scene;
   public inputManager!: InputManager;
 
-  public readonly VERSION = '0.2.2';
+  public readonly VERSION = '1.0.0';
 
   public isPointerLocked = false;
   public canPlayerLockPointer = true;
