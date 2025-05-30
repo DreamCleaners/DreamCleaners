@@ -64,7 +64,12 @@ const SettingsUI = () => {
       backButtonCallback={withClickSound(game, handleHideUI)}
     >
       <div className="settings-menu-container">
-        <div className="settings-menu-background"></div>
+        <div
+          className="settings-menu-background"
+          style={{
+            backgroundImage: `url('./img/stage-images/hub.png')`,
+          }}
+        ></div>
         <div className="settings-menu-content">
           <div className="settings-menu-item">
             <h2>Sensivity</h2>

@@ -21,7 +21,7 @@
   font-optical-sizing: auto;
   font-weight: 700;
   font-style: normal;
-  cursor: url('/src/assets/img/pointer.png'), auto;
+  cursor: url('@/assets/img/pointer.png'), auto;
 }
 
 html,

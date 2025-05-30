@@ -58,7 +58,12 @@ const TutorialUI = () => {
       backButtonCallback={withClickSound(game, handleHideUI)}
     >
       <div className="tutorial-container">
-        <div className="tutorial-background"></div>
+        <div
+          className="tutorial-background"
+          style={{
+            backgroundImage: `url('./img/stage-images/hub.png')`,
+          }}
+        ></div>
         <div className="tutorial-content">
           <div className="tutorial-navigation">
             <button

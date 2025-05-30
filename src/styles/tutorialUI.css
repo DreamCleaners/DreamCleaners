@@ -12,7 +12,6 @@
   top: 0;
   left: 0;
   z-index: -1;
-  background-image: url('../assets/img/stage-images/hub.png');
   background-size: cover;
   background-position: center;
   width: 100vw;
@@ -176,21 +175,21 @@
     align-items: flex-start;
     padding-left: 5%;
   }
-  
+
   .tutorial-description {
     width: 45%;
   }
-  
+
   .tutorial-image-wrapper {
     width: 90%;
     margin: 10px 0;
     align-items: flex-start;
   }
-  
+
   .tutorial-image {
     max-width: 100%;
   }
-  
+
   .tutorial-image-caption {
     max-width: 100%;
   }
@@ -201,24 +200,24 @@
   .tutorial-images-container {
     align-items: flex-start;
   }
-  
+
   .tutorial-image-wrapper {
     align-items: flex-start;
   }
-  
+
   .tutorial-section-content:not(.text-only) {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
   }
-  
+
   .tutorial-section-content:not(.text-only) .tutorial-image-container {
     width: 70%;
     margin-bottom: 20px;
     align-self: flex-start;
     padding-left: 5%;
   }
-  
+
   .tutorial-section-content:not(.text-only) .tutorial-description {
     width: 90%;
     align-self: center;

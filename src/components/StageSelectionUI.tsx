@@ -70,7 +70,7 @@ const StageSelectionUI = () => {
       icons.push(
         <img
           key={i}
-          src={`/src/assets/icons/${iconsPaths[iconPathIndex]}.svg`}
+          src={`./img/icons/${iconsPaths[iconPathIndex]}.svg`}
           alt="Difficulty Icon"
           className="difficulty-icon"
         />,
