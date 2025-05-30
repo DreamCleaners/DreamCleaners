@@ -13,6 +13,15 @@ Au détail près qu’ici, la poussière est remplacée par des monstres nés de
 Notre jeu est hebergé sur Itch.io: <a href="https://doori4n.itch.io/dream-cleaners">DreamCleaners</a> <br>
 Si vous rencontrez des problèmes de FPS, nous vous recommandons de tester sur un autre navigateur.
 
+Vous pouvez aussi lancer le jeu en local avec les commandes suivantes : 
+```
+npm i
+```
+```
+npm run dev
+```
+Le jeu sera alors disponible sur ce [lien](http://localhost:5173/)
+
 ## Vidéos
 <a href="https://youtu.be/EBghDwRl0IQ">Trailer - Youtube</a><br>
 <a href="https://youtu.be/4VdWw2Gob2Q">Gameplay début de run - Youtube</a><br>
