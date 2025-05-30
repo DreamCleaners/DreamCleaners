@@ -27,7 +27,10 @@ const MainMenu = () => {
   if (!game) return null;
 
   return (
-    <div className="main-menu-container">
+    <div
+      className="main-menu-container"
+      style={{ backgroundImage: `url('./img/stage-images/hub.png')` }}
+    >
       <div className="main-background"></div>
       <div className="main-content">
         <div className="top-buttons-container">
