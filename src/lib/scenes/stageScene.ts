@@ -101,7 +101,7 @@ export class StageScene extends GameScene {
       this.game.scoreManager.onPlayerDamageTaken.bind(this.game.scoreManager),
     );
 
-    this.enemyFactory.preloadEnemyAssets(this.stageInfo.enemyTypes, this.game);
+    await this.enemyFactory.preloadEnemyAssets(this.stageInfo.enemyTypes, this.game);
   }
 
   public dispose(): void {
@@ -240,8 +240,10 @@ export class StageScene extends GameScene {
     }
 
     this.game.moneyManager.addPlayerMoney(
-      this.stageInfo.stageReward.getMoneyReward() *
-        this.game.scoreManager.getScoreFactor(),
+      Math.ceil(
+        this.stageInfo.stageReward.getMoneyReward() *
+          this.game.scoreManager.getScoreFactor(),
+      ),
     );
   }
 

@@ -101,7 +101,6 @@ export class WeaponPassivesManager {
       passive.embedPassiveToWeapon(weapon);
       if (weapon.isAkimboWielding && passiveType !== WeaponPassiveT3.AKIMBO) {
         // If the weapon is akimbo, we need to apply the passive to the akimbo weapon too
-        console.log('Also applying passive to akimbo weapon');
         passive.embedPassiveToWeapon(weapon.akimboWeapon!);
       }
     } else {

@@ -8,7 +8,7 @@ export class Feather extends PlayerPassiveItem {
   constructor(game: Game, playerPassiveType: PlayerPassiveType) {
     super(
       'Feather',
-      'Increases your dodge chance by 5% and decrease your max health by 100',
+      'Increases your dodge chance by 8% and decrease your max health by 100',
       ShopItemType.PLAYER_PASSIVE,
       Rarity.RARE,
       game,
@@ -17,7 +17,7 @@ export class Feather extends PlayerPassiveItem {
   }
 
   public apply(): void {
-    this.game.player.addDodgeChancePercentage(0.05);
+    this.game.player.addDodgeChancePercentage(0.08);
     this.game.player.addMaxHealth(-100);
   }
 }

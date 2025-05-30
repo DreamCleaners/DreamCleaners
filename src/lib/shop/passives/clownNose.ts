@@ -8,7 +8,7 @@ export class ClownNose extends PlayerPassiveItem {
   constructor(game: Game, playerPassiveType: PlayerPassiveType) {
     super(
       'Clown Nose',
-      'Increases your speed by 2% and decreases your regeneration speed by 1%',
+      'Increases your speed by 5% and decreases your regeneration speed by 2%',
       ShopItemType.PLAYER_PASSIVE,
       Rarity.COMMON,
       game,
@@ -17,7 +17,7 @@ export class ClownNose extends PlayerPassiveItem {
   }
 
   public apply(): void {
-    this.game.player.addSpeedPercentage(0.02);
-    this.game.player.addRegenSpeedPercentage(-0.01);
+    this.game.player.addSpeedPercentage(0.05);
+    this.game.player.addRegenSpeedPercentage(-0.02);
   }
 }

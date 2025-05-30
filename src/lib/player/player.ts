@@ -180,6 +180,8 @@ export class Player implements IDamageable {
 
     this.slideSpeedPercentageIncrease = 0;
     this.currentSlidingSpeedFactor = 0;
+
+    this.maxHealthIncrease = 0;
   }
 
   public setPosition(position: Vector3): void {
@@ -309,6 +311,7 @@ export class Player implements IDamageable {
       this.physicsAggregate.body.setLinearVelocity(Vector3.Zero());
       return;
     }
+
     this.checkForInteractables();
 
     this.handleRegen();
