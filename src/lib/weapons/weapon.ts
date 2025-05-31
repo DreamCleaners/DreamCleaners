@@ -573,13 +573,15 @@ export class Weapon {
       this.akimboWeapon?.initReload();
     }
 
-    if (this.isReloading || this.isBurstActive) {
+    if (this.isReloading || (this.isBurstActive && this.currentAmmoRemaining > 0)) {
       return;
     }
 
     if (this.currentAmmoRemaining === this.currentStats.magazineSize) {
       return;
     }
+
+    this.isBurstActive = false;
 
     this.animationController.stopAnimation('Shoot');
 
